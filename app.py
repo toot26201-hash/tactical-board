@@ -10,21 +10,17 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        .block-container {
-            padding: 0.5rem 0.5rem 0 0.5rem !important;
-            max-width: 100% !important;
-        }
-        header[data-testid="stHeader"], footer {
-            display: none;
-        }
-        iframe {
-            border-radius: 12px;
-            border: 1px solid #1e293b;
-        }
+        .block-container { padding: 0.5rem 0.5rem 0 0.5rem !important; max-width: 100% !important; }
+        header[data-testid="stHeader"], footer { display: none; }
+        iframe { border-radius: 12px; border: 1px solid #1e293b; }
     </style>
 """, unsafe_allow_html=True)
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
-components.html(html_code, height=720, scrolling=False)
+with open("board.js", "r", encoding="utf-8") as f:
+    js_code = f.read()
+
+full_page = html_code.replace("<!-- BOARD_SCRIPT -->", f"<script>\n{js_code}\n</script>")
+components.html(full_page, height=740, scrolling=False)
