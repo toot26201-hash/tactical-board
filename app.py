@@ -32,7 +32,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# كود HTML/JS الكامل للوحة الرسم التكتيكي التفاعلية
 tactical_board_html = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -43,7 +42,7 @@ tactical_board_html = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -64,6 +63,11 @@ tactical_board_html = """
             border-color: #60a5fa;
             box-shadow: 0 0 12px rgba(37, 99, 235, 0.45);
         }
+        .fmt-btn.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #60a5fa;
+        }
         canvas { touch-action: none; display: block; }
     </style>
 </head>
@@ -77,17 +81,23 @@ tactical_board_html = """
             </div>
             <div>
                 <h1 class="text-base md:text-lg font-bold tracking-tight text-white leading-tight">
-                    ProTactics <span class="text-xs font-normal text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full mr-1">Pro Edition</span>
+                    ProTactics <span class="text-xs font-normal text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full mr-1">Studio</span>
                 </h1>
                 <p class="text-[11px] text-slate-400 hidden sm:block">لوحة التحليل والرسم التكتيكي الاحترافية</p>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <!-- زر إدارة تشكيلة وأسماء الفريقين -->
+            <!-- زر إدارة تشكيلة وأسماء وألوان وشعارات الفريقين -->
             <button onclick="openLineupModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/40 text-xs px-3 py-1.5 rounded-lg shadow-md shadow-blue-950/50 transition font-bold">
-                <i class="fa-solid fa-users-gear"></i>
-                <span>تشكيلة وأسماء الفريقين</span>
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>الفريقين (الأسماء، الألوان، الشعارات)</span>
+            </button>
+
+            <!-- زر إظهار/إخفاء شريط تنسيق النصوص -->
+            <button onclick="toggleTextFormatBar()" id="btn-text-fmt" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
+                <i class="fa-solid fa-bold text-yellow-400"></i>
+                <span>تنسيق النصوص</span>
             </button>
 
             <div class="flex items-center bg-slate-900 p-1 rounded-lg border border-slate-800">
@@ -101,7 +111,7 @@ tactical_board_html = """
 
             <button onclick="toggleZones()" id="btn-toggle-zones" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
                 <i class="fa-solid fa-table-columns text-amber-400"></i>
-                <span>5-Zones & Half-spaces</span>
+                <span>5-Zones</span>
             </button>
 
             <button onclick="togglePitchTheme()" id="btn-pitch-theme" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
@@ -129,6 +139,34 @@ tactical_board_html = """
             </button>
         </div>
     </header>
+
+    <!-- شريط تنسيق النصوص (Text Formatting Toolbar) -->
+    <div id="text-format-bar" class="hidden bg-slate-900 border-b border-slate-800 px-4 py-1.5 flex flex-wrap items-center justify-center gap-3 z-10 shadow-md">
+        <span class="text-xs font-bold text-blue-400 flex items-center gap-1">
+            <i class="fa-solid fa-pen-nib"></i> تنسيق النص الافتراضي:
+        </span>
+        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button onclick="toggleDefaultBold()" id="fmt-bold-btn" class="fmt-btn active px-2.5 py-1 rounded text-xs font-en font-bold border border-transparent transition" title="خط عريض Bold">
+                B
+            </button>
+            <button onclick="toggleDefaultItalic()" id="fmt-italic-btn" class="fmt-btn px-2.5 py-1 rounded text-xs font-en italic border border-transparent text-slate-300 transition" title="خط مائل Italic">
+                I
+            </button>
+            <button onclick="toggleDefaultBg()" id="fmt-bg-btn" class="fmt-btn active px-2.5 py-1 rounded text-xs border border-transparent transition" title="خلفية داكنة للنص">
+                <i class="fa-solid fa-square"></i> خلفية
+            </button>
+        </div>
+        <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400">حجم الخط:</span>
+            <select id="default-font-size" onchange="defaultTextStyle.size = parseInt(this.value)" class="bg-transparent text-xs font-en font-bold text-white focus:outline-none cursor-pointer">
+                <option value="12" class="bg-slate-900">صغير (12px)</option>
+                <option value="15" selected class="bg-slate-900">متوسط (15px)</option>
+                <option value="19" class="bg-slate-900">كبير (19px)</option>
+                <option value="24" class="bg-slate-900">عنوان (24px)</option>
+            </select>
+        </div>
+        <span class="text-[11px] text-slate-400 hidden md:inline">💡 انقر مرتين (Double Click) على أي نص في الملعب لتعديله</span>
+    </div>
 
     <!-- Main Workspace -->
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
@@ -185,13 +223,13 @@ tactical_board_html = """
 
             <!-- Colors & Stroke -->
             <div class="flex md:flex-col items-center md:items-stretch gap-2 shrink-0">
-                <div class="hidden md:block text-[11px] font-bold text-slate-400 px-1">لون الرسم وسمك الخط</div>
+                <div class="hidden md:block text-[11px] font-bold text-slate-400 px-1">لون الرسم والنص</div>
                 <div class="flex items-center justify-around gap-1.5 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
                     <button onclick="setColor('#facc15')" data-color="#facc15" class="color-btn w-6 h-6 rounded-full bg-yellow-400 ring-2 ring-white scale-110 transition"></button>
                     <button onclick="setColor('#ffffff')" data-color="#ffffff" class="color-btn w-6 h-6 rounded-full bg-white opacity-80 hover:opacity-100 transition"></button>
                     <button onclick="setColor('#ef4444')" data-color="#ef4444" class="color-btn w-6 h-6 rounded-full bg-red-500 opacity-80 hover:opacity-100 transition"></button>
                     <button onclick="setColor('#38bdf8')" data-color="#38bdf8" class="color-btn w-6 h-6 rounded-full bg-sky-400 opacity-80 hover:opacity-100 transition"></button>
-                    <button onclick="setColor('#f97316')" data-color="#f97316" class="color-btn w-6 h-6 rounded-full bg-orange-500 opacity-80 hover:opacity-100 transition"></button>
+                    <button onclick="setColor('#22c55e')" data-color="#22c55e" class="color-btn w-6 h-6 rounded-full bg-green-500 opacity-80 hover:opacity-100 transition"></button>
                 </div>
                 <div class="hidden md:flex items-center justify-between gap-2 bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
                     <span class="text-[11px] text-slate-400">السمك:</span>
@@ -205,13 +243,13 @@ tactical_board_html = """
             <div class="hidden md:flex flex-col gap-1.5 w-full">
                 <div class="text-[11px] font-bold text-slate-400 px-1">إضافة عناصر للملعب</div>
                 <div class="grid grid-cols-2 gap-1.5">
-                    <button onclick="addPiece('red')" class="flex items-center justify-center gap-1.5 bg-red-950/50 hover:bg-red-900/60 text-red-300 border border-red-800/60 py-1.5 px-2 rounded-lg text-xs font-semibold transition">
-                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
-                        <span>+ لاعب أحمر</span>
+                    <button onclick="addPiece('team1')" class="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg text-xs font-semibold transition">
+                        <span id="sidebar-team1-dot" class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                        <span>+ لاعب (1)</span>
                     </button>
-                    <button onclick="addPiece('blue')" class="flex items-center justify-center gap-1.5 bg-sky-950/50 hover:bg-sky-900/60 text-sky-300 border border-sky-800/60 py-1.5 px-2 rounded-lg text-xs font-semibold transition">
-                        <span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span>
-                        <span>+ لاعب أزرق</span>
+                    <button onclick="addPiece('team2')" class="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg text-xs font-semibold transition">
+                        <span id="sidebar-team2-dot" class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span>
+                        <span>+ لاعب (2)</span>
                     </button>
                     <button onclick="addPiece('ball')" class="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg text-xs font-semibold transition">
                         <i class="fa-solid fa-futbol text-white"></i>
@@ -226,24 +264,26 @@ tactical_board_html = """
 
             <div id="tool-hint-box" class="hidden md:block mt-auto w-full bg-slate-900/90 border border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-400 leading-relaxed">
                 <div class="font-bold text-blue-400 mb-0.5"><i class="fa-solid fa-circle-info ml-1"></i> تلميح الاستخدام:</div>
-                <span id="tool-hint-text">اسحب اللاعبين لتحريكهم. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو اسمه.</span>
+                <span id="tool-hint-text">اسحب اللاعبين لتحريكهم. انقر مرتين (Double Click) على أي لاعب أو نص لتعديله وتنسيقه.</span>
             </div>
         </aside>
 
         <!-- Canvas Area -->
         <main id="canvas-container" class="flex-1 relative bg-[#080c14] flex flex-col items-center justify-center p-2 sm:p-3 overflow-hidden">
-            <!-- شريط عرض أسماء الفريقين وخططهما أعلى الملعب -->
-            <div class="w-full max-w-4xl flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-lg px-4 py-1.5 mb-2 shadow-md">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow shadow-red-500/50"></span>
-                    <span id="display-red-name" class="text-xs sm:text-sm font-bold text-white">الفريق الأحمر</span>
-                    <span id="display-red-form" class="text-[11px] font-en font-semibold bg-red-950/80 text-red-300 border border-red-800/60 px-2 py-0.5 rounded">5-4-1</span>
+            <!-- شريط عرض أسماء الفريقين وشعاراتهم وخططهم أعلى الملعب -->
+            <div class="w-full max-w-4xl flex items-center justify-between bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-1.5 mb-2 shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <img id="banner-team1-logo" src="" alt="" class="hidden w-7 h-7 object-contain rounded bg-slate-800/80 p-0.5 border border-slate-700">
+                    <span id="banner-team1-dot" class="w-3.5 h-3.5 rounded-full bg-red-500 inline-block border border-white/50"></span>
+                    <span id="display-team1-name" class="text-xs sm:text-sm font-bold text-white">الفريق الأول</span>
+                    <span id="display-team1-form" class="text-[11px] font-en font-semibold bg-slate-800 text-slate-200 border border-slate-700 px-2 py-0.5 rounded">5-4-1</span>
                 </div>
-                <span class="text-xs font-en font-bold text-slate-500">VS</span>
-                <div class="flex items-center gap-2">
-                    <span id="display-blue-form" class="text-[11px] font-en font-semibold bg-sky-950/80 text-sky-300 border border-sky-800/60 px-2 py-0.5 rounded">4-3-3</span>
-                    <span id="display-blue-name" class="text-xs sm:text-sm font-bold text-white">الفريق الأزرق</span>
-                    <span class="w-3 h-3 rounded-full bg-sky-500 inline-block shadow shadow-sky-500/50"></span>
+                <span class="text-xs font-en font-extrabold text-slate-500 tracking-wider">VS</span>
+                <div class="flex items-center gap-2.5">
+                    <span id="display-team2-form" class="text-[11px] font-en font-semibold bg-slate-800 text-slate-200 border border-slate-700 px-2 py-0.5 rounded">4-3-3</span>
+                    <span id="display-team2-name" class="text-xs sm:text-sm font-bold text-white">الفريق الثاني</span>
+                    <span id="banner-team2-dot" class="w-3.5 h-3.5 rounded-full bg-sky-500 inline-block border border-white/50"></span>
+                    <img id="banner-team2-logo" src="" alt="" class="hidden w-7 h-7 object-contain rounded bg-slate-800/80 p-0.5 border border-slate-700">
                 </div>
             </div>
 
@@ -261,32 +301,57 @@ tactical_board_html = """
         </main>
     </div>
 
-    <!-- Modal: Lineup & Teams Manager (إدارة تشكيلة وأسماء الفريقين) -->
+    <!-- Modal: Lineup, Colors & Logos Manager -->
     <div id="lineup-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
         <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 px-5 py-3.5 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-users-gear text-blue-400"></i>
-                    <span>إعداد تشكيلة وأسماء لاعبي الفريقين</span>
+                    <i class="fa-solid fa-shield-halved text-blue-400"></i>
+                    <span>إعداد الفريقين (الأسماء، ألوان القمصان، الشعارات، التشكيلة)</span>
                 </h3>
                 <button onclick="closeLineupModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
             <div class="p-4 sm:p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- الفريق الأحمر -->
-                <div class="bg-slate-900/80 border border-red-900/50 rounded-xl p-3.5">
-                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
-                        <span class="w-3.5 h-3.5 rounded-full bg-red-500"></span>
-                        <span class="font-bold text-sm text-red-400">الفريق الأول (الأحمر - يسار)</span>
+                <!-- الفريق الأول -->
+                <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3.5">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                        <span class="font-bold text-sm text-white">الفريق الأول (يسار الملعب)</span>
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-xs text-blue-300 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-image"></i>
+                            <span>رفع شعار النادي</span>
+                            <input type="file" accept="image/*" onchange="handleLogoUpload('team1', this)" class="hidden">
+                        </label>
                     </div>
+
+                    <!-- معاينة الشعار واختيار اللون -->
+                    <div class="flex items-center gap-3 mb-3 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                        <div class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            <img id="preview-team1-logo" src="" class="hidden w-full h-full object-contain p-1">
+                            <i id="placeholder-team1-logo" class="fa-solid fa-shield text-slate-600 text-lg"></i>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[11px] text-slate-400 mb-1">لون قمصان الفريق:</label>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <input type="color" id="input-team1-color" value="#dc2626" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                                <button type="button" onclick="setTeamColorInput('team1', '#dc2626')" class="w-5 h-5 rounded-full bg-red-600 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team1', '#ffffff')" class="w-5 h-5 rounded-full bg-white border border-slate-400"></button>
+                                <button type="button" onclick="setTeamColorInput('team1', '#facc15')" class="w-5 h-5 rounded-full bg-yellow-400 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team1', '#16a34a')" class="w-5 h-5 rounded-full bg-green-600 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team1', '#111827')" class="w-5 h-5 rounded-full bg-gray-900 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team1', '#7c3aed')" class="w-5 h-5 rounded-full bg-violet-600 border border-white/40"></button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-2 mb-3">
                         <div>
-                            <label class="block text-[11px] text-slate-400 mb-1">اسم الفريق:</label>
-                            <input type="text" id="input-red-team-name" value="الفريق الأحمر" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-red-500">
+                            <label class="block text-[11px] text-slate-400 mb-1">اسم النادي:</label>
+                            <input type="text" id="input-team1-name" value="الفريق الأول" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <label class="block text-[11px] text-slate-400 mb-1">الخطة التكتيكية:</label>
-                            <select id="select-red-formation" onchange="populateLineupInputs('red', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-red-500">
+                            <select id="select-team1-formation" onchange="populateLineupInputs('team1', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-blue-500">
                                 <option value="5-4-1">5-4-1</option>
                                 <option value="4-3-3">4-3-3</option>
                                 <option value="3-5-2">3-5-2</option>
@@ -295,27 +360,48 @@ tactical_board_html = """
                             </select>
                         </div>
                     </div>
-                    <div class="text-[11px] font-semibold text-slate-400 mb-1.5 flex justify-between px-1">
-                        <span>المركز / الرقم</span>
-                        <span>اسم اللاعب (يظهر أسفل الدائرة)</span>
-                    </div>
-                    <div id="red-players-list" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
+                    <div id="team1-players-list" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- الفريق الأزرق -->
-                <div class="bg-slate-900/80 border border-sky-900/50 rounded-xl p-3.5">
-                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
-                        <span class="w-3.5 h-3.5 rounded-full bg-sky-500"></span>
-                        <span class="font-bold text-sm text-sky-400">الفريق الثاني (الأزرق - يمين)</span>
+                <!-- الفريق الثاني -->
+                <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3.5">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                        <span class="font-bold text-sm text-white">الفريق الثاني (يمين الملعب)</span>
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-xs text-blue-300 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-image"></i>
+                            <span>رفع شعار النادي</span>
+                            <input type="file" accept="image/*" onchange="handleLogoUpload('team2', this)" class="hidden">
+                        </label>
                     </div>
+
+                    <!-- معاينة الشعار واختيار اللون -->
+                    <div class="flex items-center gap-3 mb-3 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                        <div class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            <img id="preview-team2-logo" src="" class="hidden w-full h-full object-contain p-1">
+                            <i id="placeholder-team2-logo" class="fa-solid fa-shield text-slate-600 text-lg"></i>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[11px] text-slate-400 mb-1">لون قمصان الفريق:</label>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <input type="color" id="input-team2-color" value="#0284c7" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                                <button type="button" onclick="setTeamColorInput('team2', '#0284c7')" class="w-5 h-5 rounded-full bg-sky-600 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team2', '#ffffff')" class="w-5 h-5 rounded-full bg-white border border-slate-400"></button>
+                                <button type="button" onclick="setTeamColorInput('team2', '#facc15')" class="w-5 h-5 rounded-full bg-yellow-400 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team2', '#ea580c')" class="w-5 h-5 rounded-full bg-orange-600 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team2', '#111827')" class="w-5 h-5 rounded-full bg-gray-900 border border-white/40"></button>
+                                <button type="button" onclick="setTeamColorInput('team2', '#dc2626')" class="w-5 h-5 rounded-full bg-red-600 border border-white/40"></button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-2 mb-3">
                         <div>
-                            <label class="block text-[11px] text-slate-400 mb-1">اسم الفريق:</label>
-                            <input type="text" id="input-blue-team-name" value="الفريق الأزرق" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                            <label class="block text-[11px] text-slate-400 mb-1">اسم النادي:</label>
+                            <input type="text" id="input-team2-name" value="الفريق الثاني" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <label class="block text-[11px] text-slate-400 mb-1">الخطة التكتيكية:</label>
-                            <select id="select-blue-formation" onchange="populateLineupInputs('blue', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-sky-500">
+                            <select id="select-team2-formation" onchange="populateLineupInputs('team2', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-blue-500">
                                 <option value="4-3-3">4-3-3</option>
                                 <option value="4-2-3-1">4-2-3-1</option>
                                 <option value="5-4-1">5-4-1</option>
@@ -324,11 +410,7 @@ tactical_board_html = """
                             </select>
                         </div>
                     </div>
-                    <div class="text-[11px] font-semibold text-slate-400 mb-1.5 flex justify-between px-1">
-                        <span>المركز / الرقم</span>
-                        <span>اسم اللاعب (يظهر أسفل الدائرة)</span>
-                    </div>
-                    <div id="blue-players-list" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
+                    <div id="team2-players-list" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
                 </div>
             </div>
 
@@ -336,7 +418,7 @@ tactical_board_html = """
                 <button onclick="closeLineupModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition">إلغاء</button>
                 <button onclick="applyBothTeamsLineups()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-lg shadow-emerald-950/50 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-check"></i>
-                    <span>تطبيق التشكيلة والأسماء على الملعب</span>
+                    <span>تطبيق التغييرات على الملعب</span>
                 </button>
             </div>
         </div>
@@ -354,7 +436,7 @@ tactical_board_html = """
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">الرقم أو الرمز داخل الدائرة (مثل 4 أو CB):</label>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">الرقم أو الرمز داخل الدائرة:</label>
                     <input type="text" id="edit-number" maxlength="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-en font-bold focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
@@ -362,39 +444,57 @@ tactical_board_html = """
                     <input type="text" id="edit-label" maxlength="18" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <span class="block text-[11px] text-slate-500 mb-1.5">اختصارات سريعة للمراكز:</span>
-                    <div class="flex flex-wrap gap-1.5 font-en">
-                        <button type="button" onclick="quickFillRole('GK', 'حارس')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">GK</button>
-                        <button type="button" onclick="quickFillRole('CB', 'قلب دفاع')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">CB</button>
-                        <button type="button" onclick="quickFillRole('WB', 'جناح خلفي')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">WB</button>
-                        <button type="button" onclick="quickFillRole('DM', 'ارتكاز')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">DM</button>
-                        <button type="button" onclick="quickFillRole('CM', 'وسط')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">CM</button>
-                        <button type="button" onclick="quickFillRole('IF', 'مساحة نصفية')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">IF</button>
-                        <button type="button" onclick="quickFillRole('FWD', 'مهاجم')" class="text-[11px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300">FWD</button>
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">لون مخصص لهذا اللاعب فقط:</label>
+                    <input type="color" id="edit-piece-color" class="w-full h-8 rounded cursor-pointer bg-slate-900 border border-slate-700">
                 </div>
             </div>
             <div class="flex items-center justify-between gap-2 mt-5 pt-3 border-t border-slate-800">
-                <button onclick="deleteSelectedPiece()" class="bg-red-950/70 hover:bg-red-900 text-red-300 border border-red-800/70 text-xs font-semibold px-3 py-2 rounded-lg transition">حذف العنصر</button>
+                <button onclick="deleteSelectedPiece()" class="bg-red-950/70 hover:bg-red-900 text-red-300 border border-red-800/70 text-xs font-semibold px-3 py-2 rounded-lg transition">حذف</button>
                 <div class="flex items-center gap-2">
                     <button onclick="closeEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg">إلغاء</button>
-                    <button onclick="saveEditModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg">حفظ التعديل</button>
+                    <button onclick="saveEditModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg">حفظ</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Add Text -->
+    <!-- Modal: Add / Edit Rich Text Annotation -->
     <div id="text-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-sm p-5 shadow-2xl">
-            <h3 class="text-base font-bold text-white mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-font text-yellow-400"></i>
-                <span>إضافة ملاحظة تكتيكية على الملعب</span>
-            </h3>
-            <input type="text" id="annotation-input" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 mb-4" placeholder="اكتب النص التوضيحي هنا...">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeTextModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg">إلغاء</button>
-                <button onclick="confirmTextAnnotation()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg">إضافة للملعب</button>
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-font text-yellow-400"></i>
+                    <span id="text-modal-title">إضافة وتنسيق نص تكتيكي</span>
+                </h3>
+                <button onclick="closeTextModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <input type="text" id="annotation-input" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 mb-3" placeholder="اكتب النص التكتيكي هنا...">
+
+            <!-- أدوات التنسيق داخل نافذة النص -->
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 mb-4">
+                <div class="flex items-center gap-1.5">
+                    <button type="button" id="modal-btn-bold" onclick="toggleModalTextFlag('bold')" class="fmt-btn active px-3 py-1.5 rounded-lg text-xs font-en font-extrabold border border-slate-700 transition">B</button>
+                    <button type="button" id="modal-btn-italic" onclick="toggleModalTextFlag('italic')" class="fmt-btn px-3 py-1.5 rounded-lg text-xs font-en italic border border-slate-700 text-slate-300 transition">I</button>
+                    <button type="button" id="modal-btn-bg" onclick="toggleModalTextFlag('hasBg')" class="fmt-btn active px-2.5 py-1.5 rounded-lg text-xs border border-slate-700 transition">خلفية</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="modal-text-size" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs font-en text-white">
+                        <option value="12">12px</option>
+                        <option value="15" selected>15px</option>
+                        <option value="19">19px</option>
+                        <option value="24">24px</option>
+                    </select>
+                    <input type="color" id="modal-text-color" value="#facc15" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+                <button id="btn-delete-text" onclick="deleteEditingText()" class="hidden bg-red-950/70 hover:bg-red-900 text-red-300 border border-red-800/70 text-xs font-semibold px-3 py-2 rounded-lg">حذف النص</button>
+                <div class="flex items-center gap-2 mr-auto">
+                    <button onclick="closeTextModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg">إلغاء</button>
+                    <button onclick="confirmTextAnnotation()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg">حفظ النص</button>
+                </div>
             </div>
         </div>
     </div>
@@ -412,8 +512,18 @@ tactical_board_html = """
         let currentStrokeWidth = 3;
         let pitchRect = { x: 0, y: 0, w: 0, h: 0 };
 
-        let redTeamMeta = { name: 'الفريق الأحمر', formation: '5-4-1' };
-        let blueTeamMeta = { name: 'الفريق الأزرق', formation: '4-3-3' };
+        // إعدادات التنسيق الافتراضية للنصوص
+        let defaultTextStyle = {
+            bold: true,
+            italic: false,
+            size: 15,
+            hasBg: true
+        };
+
+        // بيانات الفريقين (الاسم، الخطة، اللون، الشعار)
+        let team1Meta = { name: 'الفريق الأول', formation: '5-4-1', color: '#dc2626', logoSrc: '', logoImg: null };
+        let team2Meta = { name: 'الفريق الثاني', formation: '4-3-3', color: '#0284c7', logoSrc: '', logoImg: null };
+        let tempLogos = { team1: '', team2: '' };
 
         let pieces = [];
         let drawings = [];
@@ -426,6 +536,8 @@ tactical_board_html = """
         let polygonPoints = [];
         let editingPieceId = null;
         let pendingTextPos = null;
+        let editingTextIndex = null;
+        let modalTextFlags = { bold: true, italic: false, hasBg: true };
 
         const formationTemplates = {
             '5-4-1': [
@@ -496,53 +608,143 @@ tactical_board_html = """
         };
 
         const toolHints = {
-            select: 'اسحب اللاعبين لتحريكهم بحرية. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو اسمه.',
+            select: 'اسحب اللاعبين لتحريكهم بحرية. انقر مرتين (Double Click) على أي لاعب أو نص لتعديله وتنسيقه.',
             arrow: 'اضغط واسحب على الملعب لرسم سهم حركة مستقيم.',
             curved: 'اضغط واسحب لرسم سهم حركة مقوس (Curved Run) للضغط القوسي وغلق زوايا التمرير.',
             pass: 'اضغط واسحب لرسم خط تمرير متقطع بين اللاعبين.',
             polygon: 'انقر في عدة نقاط لتحديد زوايا منطقة، ثم اضغط "إغلاق وتظليل".',
             ruler: 'اضغط واسحب بين خطين أو لاعبين لقياس المسافة بالمتر (105×68م).',
             connect: 'اضغط واسحب من لاعب إلى آخر لربطهم بخط تكتيكي.',
-            text: 'انقر في أي مكان على الملعب لكتابة ملاحظة تكتيكية.'
+            text: 'انقر في أي مكان على الملعب لإضافة نص وتنسيقه (Bold / Italic / الحجم).'
         };
+
+        // حساب تباين اللون لاختيار نص أبيض أو أسود تلقائياً داخل دائرة اللاعب
+        function getContrastTextColor(hex) {
+            if (!hex || hex.length < 7) return '#ffffff';
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 145) ? '#0f172a' : '#ffffff';
+        }
 
         function initDefaultPieces() {
             pieces = [];
-            const redTemplate = formationTemplates['5-4-1'];
-            redTemplate.forEach((p, idx) => {
-                pieces.push({ id: 'red_' + idx, type: 'red', nx: p.nx, ny: p.ny, number: p.num, label: p.label });
+            formationTemplates['5-4-1'].forEach((p, idx) => {
+                pieces.push({ id: 'team1_' + idx, type: 'team1', nx: p.nx, ny: p.ny, number: p.num, label: p.label, color: team1Meta.color });
             });
-
-            const blueTemplate = formationTemplates['4-3-3'];
-            blueTemplate.forEach((p, idx) => {
-                pieces.push({ id: 'blue_' + idx, type: 'blue', nx: 1 - p.nx, ny: p.ny, number: p.num, label: p.label });
+            formationTemplates['4-3-3'].forEach((p, idx) => {
+                pieces.push({ id: 'team2_' + idx, type: 'team2', nx: 1 - p.nx, ny: p.ny, number: p.num, label: p.label, color: team2Meta.color });
             });
-
             pieces.push({ id: 'ball_1', type: 'ball', nx: 0.50, ny: 0.50, number: '', label: '' });
             updateTeamBanner();
         }
 
         function updateTeamBanner() {
-            document.getElementById('display-red-name').textContent = redTeamMeta.name || 'الفريق الأحمر';
-            document.getElementById('display-red-form').textContent = redTeamMeta.formation;
-            document.getElementById('display-blue-name').textContent = blueTeamMeta.name || 'الفريق الأزرق';
-            document.getElementById('display-blue-form').textContent = blueTeamMeta.formation;
+            document.getElementById('display-team1-name').textContent = team1Meta.name;
+            document.getElementById('display-team1-form').textContent = team1Meta.formation;
+            document.getElementById('banner-team1-dot').style.backgroundColor = team1Meta.color;
+            document.getElementById('sidebar-team1-dot').style.backgroundColor = team1Meta.color;
+
+            const logo1El = document.getElementById('banner-team1-logo');
+            if (team1Meta.logoSrc) {
+                logo1El.src = team1Meta.logoSrc;
+                logo1El.classList.remove('hidden');
+            } else {
+                logo1El.classList.add('hidden');
+            }
+
+            document.getElementById('display-team2-name').textContent = team2Meta.name;
+            document.getElementById('display-team2-form').textContent = team2Meta.formation;
+            document.getElementById('banner-team2-dot').style.backgroundColor = team2Meta.color;
+            document.getElementById('sidebar-team2-dot').style.backgroundColor = team2Meta.color;
+
+            const logo2El = document.getElementById('banner-team2-logo');
+            if (team2Meta.logoSrc) {
+                logo2El.src = team2Meta.logoSrc;
+                logo2El.classList.remove('hidden');
+            } else {
+                logo2El.classList.add('hidden');
+            }
         }
 
-        // إدارة نافذة تشكيلة وأسماء الفريقين
-        function openLineupModal() {
-            document.getElementById('input-red-team-name').value = redTeamMeta.name;
-            document.getElementById('select-red-formation').value = redTeamMeta.formation;
-            document.getElementById('input-blue-team-name').value = blueTeamMeta.name;
-            document.getElementById('select-blue-formation').value = blueTeamMeta.formation;
+        // تنسيق النصوص (Toolbar Functions)
+        function toggleTextFormatBar() {
+            const bar = document.getElementById('text-format-bar');
+            const btn = document.getElementById('btn-text-fmt');
+            bar.classList.toggle('hidden');
+            if (!bar.classList.contains('hidden')) {
+                btn.classList.add('border-blue-500', 'bg-slate-800', 'text-white');
+            } else {
+                btn.classList.remove('border-blue-500', 'bg-slate-800', 'text-white');
+            }
+            resizeCanvas();
+        }
 
-            populateLineupInputs('red', redTeamMeta.formation, true);
-            populateLineupInputs('blue', blueTeamMeta.formation, true);
+        function toggleDefaultBold() {
+            defaultTextStyle.bold = !defaultTextStyle.bold;
+            document.getElementById('fmt-bold-btn').classList.toggle('active', defaultTextStyle.bold);
+        }
+
+        function toggleDefaultItalic() {
+            defaultTextStyle.italic = !defaultTextStyle.italic;
+            document.getElementById('fmt-italic-btn').classList.toggle('active', defaultTextStyle.italic);
+        }
+
+        function toggleDefaultBg() {
+            defaultTextStyle.hasBg = !defaultTextStyle.hasBg;
+            document.getElementById('fmt-bg-btn').classList.toggle('active', defaultTextStyle.hasBg);
+        }
+
+        // إدارة نافذة الفريقين والألوان والشعارات
+        function openLineupModal() {
+            document.getElementById('input-team1-name').value = team1Meta.name;
+            document.getElementById('select-team1-formation').value = team1Meta.formation;
+            document.getElementById('input-team1-color').value = team1Meta.color;
+            tempLogos.team1 = team1Meta.logoSrc;
+            updateLogoPreview('team1', team1Meta.logoSrc);
+
+            document.getElementById('input-team2-name').value = team2Meta.name;
+            document.getElementById('select-team2-formation').value = team2Meta.formation;
+            document.getElementById('input-team2-color').value = team2Meta.color;
+            tempLogos.team2 = team2Meta.logoSrc;
+            updateLogoPreview('team2', team2Meta.logoSrc);
+
+            populateLineupInputs('team1', team1Meta.formation, true);
+            populateLineupInputs('team2', team2Meta.formation, true);
             document.getElementById('lineup-modal').classList.remove('hidden');
         }
 
         function closeLineupModal() {
             document.getElementById('lineup-modal').classList.add('hidden');
+        }
+
+        function setTeamColorInput(team, hex) {
+            document.getElementById(`input-${team}-color`).value = hex;
+        }
+
+        function handleLogoUpload(team, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempLogos[team] = e.target.result;
+                updateLogoPreview(team, e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateLogoPreview(team, src) {
+            const img = document.getElementById(`preview-${team}-logo`);
+            const icon = document.getElementById(`placeholder-${team}-logo`);
+            if (src) {
+                img.src = src;
+                img.classList.remove('hidden');
+                icon.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
         }
 
         function populateLineupInputs(team, formation, keepExisting = false) {
@@ -563,7 +765,7 @@ tactical_board_html = """
                     <input type="text" data-team="${team}" data-idx="${idx}" data-field="num" value="${numVal}" maxlength="4"
                         class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-center font-en font-bold text-white focus:outline-none focus:border-blue-500" placeholder="رقم">
                     <input type="text" data-team="${team}" data-idx="${idx}" data-field="label" value="${labelVal}" maxlength="18"
-                        class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="اسم اللاعب أو المركز...">
+                        class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="اسم اللاعب...">
                 `;
                 containerEl.appendChild(row);
             });
@@ -572,51 +774,64 @@ tactical_board_html = """
         function applyBothTeamsLineups() {
             saveHistory();
 
-            const redName = document.getElementById('input-red-team-name').value.trim() || 'الفريق الأحمر';
-            const redForm = document.getElementById('select-red-formation').value;
-            const blueName = document.getElementById('input-blue-team-name').value.trim() || 'الفريق الأزرق';
-            const blueForm = document.getElementById('select-blue-formation').value;
+            const t1Name = document.getElementById('input-team1-name').value.trim() || 'الفريق الأول';
+            const t1Form = document.getElementById('select-team1-formation').value;
+            const t1Color = document.getElementById('input-team1-color').value;
 
-            redTeamMeta = { name: redName, formation: redForm };
-            blueTeamMeta = { name: blueName, formation: blueForm };
+            const t2Name = document.getElementById('input-team2-name').value.trim() || 'الفريق الثاني';
+            const t2Form = document.getElementById('select-team2-formation').value;
+            const t2Color = document.getElementById('input-team2-color').value;
 
-            // الاحتفاظ بالكرات والأقماع فقط وإعادة بناء لاعبي الفريقين
-            pieces = pieces.filter(p => p.type !== 'red' && p.type !== 'blue');
+            team1Meta = { name: t1Name, formation: t1Form, color: t1Color, logoSrc: tempLogos.team1, logoImg: null };
+            team2Meta = { name: t2Name, formation: t2Form, color: t2Color, logoSrc: tempLogos.team2, logoImg: null };
 
-            const redTemplate = formationTemplates[redForm];
-            redTemplate.forEach((slot, idx) => {
-                const numInput = document.querySelector(`input[data-team="red"][data-idx="${idx}"][data-field="num"]`);
-                const lblInput = document.querySelector(`input[data-team="red"][data-idx="${idx}"][data-field="label"]`);
+            if (team1Meta.logoSrc) {
+                const img1 = new Image();
+                img1.src = team1Meta.logoSrc;
+                team1Meta.logoImg = img1;
+            }
+            if (team2Meta.logoSrc) {
+                const img2 = new Image();
+                img2.src = team2Meta.logoSrc;
+                team2Meta.logoImg = img2;
+            }
+
+            pieces = pieces.filter(p => p.type !== 'team1' && p.type !== 'team2');
+
+            formationTemplates[t1Form].forEach((slot, idx) => {
+                const numInput = document.querySelector(`input[data-team="team1"][data-idx="${idx}"][data-field="num"]`);
+                const lblInput = document.querySelector(`input[data-team="team1"][data-idx="${idx}"][data-field="label"]`);
                 const posX = pitchMode === 'half' ? Math.min(0.48, slot.nx * 0.95) : slot.nx;
                 pieces.push({
-                    id: 'red_' + idx,
-                    type: 'red',
+                    id: 'team1_' + idx,
+                    type: 'team1',
                     nx: posX,
                     ny: slot.ny,
                     number: numInput ? numInput.value.trim() : slot.num,
-                    label: lblInput ? lblInput.value.trim() : slot.label
+                    label: lblInput ? lblInput.value.trim() : slot.label,
+                    color: t1Color
                 });
             });
 
-            const blueTemplate = formationTemplates[blueForm];
-            blueTemplate.forEach((slot, idx) => {
-                const numInput = document.querySelector(`input[data-team="blue"][data-idx="${idx}"][data-field="num"]`);
-                const lblInput = document.querySelector(`input[data-team="blue"][data-idx="${idx}"][data-field="label"]`);
+            formationTemplates[t2Form].forEach((slot, idx) => {
+                const numInput = document.querySelector(`input[data-team="team2"][data-idx="${idx}"][data-field="num"]`);
+                const lblInput = document.querySelector(`input[data-team="team2"][data-idx="${idx}"][data-field="label"]`);
                 const posX = pitchMode === 'half' ? Math.max(0.52, 1 - slot.nx * 0.95) : (1 - slot.nx);
                 pieces.push({
-                    id: 'blue_' + idx,
-                    type: 'blue',
+                    id: 'team2_' + idx,
+                    type: 'team2',
                     nx: posX,
                     ny: slot.ny,
                     number: numInput ? numInput.value.trim() : slot.num,
-                    label: lblInput ? lblInput.value.trim() : slot.label
+                    label: lblInput ? lblInput.value.trim() : slot.label,
+                    color: t2Color
                 });
             });
 
             updateTeamBanner();
             closeLineupModal();
             render();
-            showToast('تم تحديث تشكيلة وأسماء الفريقين بنجاح');
+            showToast('تم تحديث الفريقين والألوان والشعارات');
         }
 
         function resizeCanvas() {
@@ -734,660 +949,4 @@ tactical_board_html = """
                 const spotDist = (11 / 105) * w;
                 ctx.beginPath();
                 ctx.arc(x + spotDist, y + h / 2, 2.5, 0, Math.PI * 2);
-                ctx.arc(x + w - spotDist, y + h / 2, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + spotDist, y + h / 2, centerR, -0.92, 0.92);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + w - spotDist, y + h / 2, centerR, Math.PI - 0.92, Math.PI + 0.92);
-                ctx.stroke();
-
-                const netDepth = 6;
-                const netH = (7.32 / 68) * h;
-                ctx.strokeRect(x - netDepth, y + (h - netH) / 2, netDepth, netH);
-                ctx.strokeRect(x + w, y + (h - netH) / 2, netDepth, netH);
-            } else {
-                const halfLen = 52.5;
-                const penW = (16.5 / halfLen) * w;
-                const penH = (40.32 / 68) * h;
-                const penY = y + (h - penH) / 2;
-                ctx.strokeRect(x, penY, penW, penH);
-
-                const goalW = (5.5 / halfLen) * w;
-                const goalH = (18.32 / 68) * h;
-                const goalY = y + (h - goalH) / 2;
-                ctx.strokeRect(x, goalY, goalW, goalH);
-
-                const spotDist = (11 / halfLen) * w;
-                const centerR = Math.max(1, (9.15 / halfLen) * w);
-                ctx.fillStyle = ctx.strokeStyle;
-                ctx.beginPath();
-                ctx.arc(x + spotDist, y + h / 2, 3, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + spotDist, y + h / 2, centerR, -0.92, 0.92);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + w, y + h / 2, centerR, Math.PI * 0.5, Math.PI * 1.5);
-                ctx.stroke();
-
-                const netDepth = 7;
-                const netH = (7.32 / 68) * h;
-                ctx.strokeRect(x - netDepth, y + (h - netH) / 2, netDepth, netH);
-            }
-        }
-
-        function drawTacticalZones(x, y, w, h) {
-            const penH = (40.32 / 68) * h;
-            const goalH = (18.32 / 68) * h;
-            const topWideH = (h - penH) / 2;
-            const halfSpaceH = (penH - goalH) / 2;
-
-            const y1 = y + topWideH;
-            const y2 = y1 + halfSpaceH;
-            const y3 = y2 + goalH;
-            const y4 = y3 + halfSpaceH;
-
-            ctx.fillStyle = 'rgba(250, 204, 21, 0.08)';
-            ctx.fillRect(x, y1, w, halfSpaceH);
-            ctx.fillRect(x, y3, w, halfSpaceH);
-
-            ctx.save();
-            ctx.strokeStyle = 'rgba(250, 204, 21, 0.42)';
-            ctx.setLineDash([6, 6]);
-            ctx.lineWidth = 1.2;
-            [y1, y2, y3, y4].forEach(lineY => {
-                ctx.beginPath();
-                ctx.moveTo(x, lineY);
-                ctx.lineTo(x + w, lineY);
-                ctx.stroke();
-            });
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-            [x + w / 3, x + (2 * w) / 3].forEach(lineX => {
-                ctx.beginPath();
-                ctx.moveTo(lineX, y);
-                ctx.lineTo(lineX, y + h);
-                ctx.stroke();
-            });
-            ctx.restore();
-
-            ctx.save();
-            ctx.font = '600 10px Inter, sans-serif';
-            ctx.fillStyle = 'rgba(250, 204, 21, 0.75)';
-            ctx.textAlign = 'right';
-            ctx.fillText('Wide Channel', x + w - 8, y + topWideH / 2 + 3);
-            ctx.fillText('Half-Space', x + w - 8, y1 + halfSpaceH / 2 + 3);
-            ctx.fillText('Central Zone', x + w - 8, y2 + goalH / 2 + 3);
-            ctx.fillText('Half-Space', x + w - 8, y3 + halfSpaceH / 2 + 3);
-            ctx.fillText('Wide Channel', x + w - 8, y4 + topWideH / 2 + 3);
-            ctx.restore();
-        }
-
-        function drawDrawings() {
-            drawings.forEach(item => renderDrawingItem(item));
-            if (currentDraft) renderDrawingItem(currentDraft, true);
-            if (polygonPoints.length > 0) {
-                ctx.save();
-                ctx.strokeStyle = currentColor;
-                ctx.fillStyle = hexToRgba(currentColor, 0.22);
-                ctx.lineWidth = currentStrokeWidth;
-                ctx.beginPath();
-                polygonPoints.forEach((pt, idx) => {
-                    const c = normToCanvas(pt.nx, pt.ny);
-                    if (idx === 0) ctx.moveTo(c.x, c.y);
-                    else ctx.lineTo(c.x, c.y);
-                });
-                ctx.stroke();
-                polygonPoints.forEach(pt => {
-                    const c = normToCanvas(pt.nx, pt.ny);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath();
-                    ctx.arc(c.x, c.y, 4.5, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                ctx.restore();
-            }
-        }
-
-        function renderDrawingItem(item) {
-            ctx.save();
-            ctx.strokeStyle = item.color;
-            ctx.fillStyle = item.color;
-            ctx.lineWidth = item.width || 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            if (item.type === 'arrow') {
-                const p1 = normToCanvas(item.points[0].nx, item.points[0].ny);
-                const p2 = normToCanvas(item.points[1].nx, item.points[1].ny);
-                drawArrowLine(p1.x, p1.y, p2.x, p2.y, item.width, false);
-            } else if (item.type === 'pass') {
-                const p1 = normToCanvas(item.points[0].nx, item.points[0].ny);
-                const p2 = normToCanvas(item.points[1].nx, item.points[1].ny);
-                drawArrowLine(p1.x, p1.y, p2.x, p2.y, item.width, true);
-            } else if (item.type === 'curved') {
-                const p1 = normToCanvas(item.points[0].nx, item.points[0].ny);
-                const p2 = normToCanvas(item.points[1].nx, item.points[1].ny);
-                drawCurvedArrow(p1.x, p1.y, p2.x, p2.y, item.width);
-            } else if (item.type === 'connect') {
-                const p1 = normToCanvas(item.points[0].nx, item.points[0].ny);
-                const p2 = normToCanvas(item.points[1].nx, item.points[1].ny);
-                ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-            } else if (item.type === 'polygon') {
-                ctx.beginPath();
-                item.points.forEach((pt, idx) => {
-                    const c = normToCanvas(pt.nx, pt.ny);
-                    if (idx === 0) ctx.moveTo(c.x, c.y);
-                    else ctx.lineTo(c.x, c.y);
-                });
-                ctx.closePath();
-                ctx.fillStyle = hexToRgba(item.color, 0.24);
-                ctx.fill();
-                ctx.stroke();
-            } else if (item.type === 'ruler') {
-                const p1 = normToCanvas(item.points[0].nx, item.points[0].ny);
-                const p2 = normToCanvas(item.points[1].nx, item.points[1].ny);
-                const meters = calculateMeters(item.points[0], item.points[1]);
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-                [p1, p2].forEach(pt => {
-                    ctx.beginPath();
-                    ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                const midX = (p1.x + p2.x) / 2;
-                const midY = (p1.y + p2.y) / 2;
-                const label = `${meters} m`;
-                ctx.font = 'bold 12px Inter, Cairo, sans-serif';
-                const textW = ctx.measureText(label).width + 14;
-                ctx.fillStyle = '#0f172a';
-                ctx.strokeStyle = item.color;
-                ctx.lineWidth = 1.5;
-                roundRect(ctx, midX - textW / 2, midY - 12, textW, 24, 6, true, true);
-                ctx.fillStyle = item.color;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(label, midX, midY);
-            } else if (item.type === 'text') {
-                const p = normToCanvas(item.points[0].nx, item.points[0].ny);
-                ctx.font = 'bold 13px Cairo, Inter, sans-serif';
-                const textW = ctx.measureText(item.text).width + 18;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                ctx.strokeStyle = item.color;
-                ctx.lineWidth = 1.5;
-                roundRect(ctx, p.x - textW / 2, p.y - 14, textW, 28, 7, true, true);
-                ctx.fillStyle = item.color;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(item.text, p.x, p.y);
-            }
-            ctx.restore();
-        }
-
-        function drawArrowLine(x1, y1, x2, y2, width, dashed) {
-            const headLen = 11 + width * 1.5;
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-            ctx.save();
-            if (dashed) ctx.setLineDash([8, 6]);
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2 - Math.cos(angle) * (headLen * 0.6), y2 - Math.sin(angle) * (headLen * 0.6));
-            ctx.stroke();
-            ctx.restore();
-
-            ctx.beginPath();
-            ctx.moveTo(x2, y2);
-            ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
-            ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        function drawCurvedArrow(x1, y1, x2, y2, width) {
-            const dx = x2 - x1;
-            const dy = y2 - y1;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 5) return;
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
-            const cpX = midX + (-dy / dist) * (dist * 0.28);
-            const cpY = midY + (dx / dist) * (dist * 0.28);
-
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.quadraticCurveTo(cpX, cpY, x2, y2);
-            ctx.stroke();
-
-            const angle = Math.atan2(y2 - cpY, x2 - cpX);
-            const headLen = 11 + width * 1.5;
-            ctx.beginPath();
-            ctx.moveTo(x2, y2);
-            ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
-            ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        function drawPieces() {
-            const radius = Math.max(13, Math.min(18, pitchRect.w * 0.021));
-            pieces.forEach(p => {
-                const pos = normToCanvas(p.nx, p.ny);
-                ctx.save();
-                if (p.type === 'red' || p.type === 'blue') {
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-                    ctx.shadowBlur = 6;
-                    ctx.shadowOffsetY = 3;
-                    const grad = ctx.createRadialGradient(pos.x - 4, pos.y - 4, 2, pos.x, pos.y, radius);
-                    if (p.type === 'red') {
-                        grad.addColorStop(0, '#f87171');
-                        grad.addColorStop(1, '#b91c1c');
-                    } else {
-                        grad.addColorStop(0, '#38bdf8');
-                        grad.addColorStop(1, '#0369a1');
-                    }
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.shadowColor = 'transparent';
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${radius * 0.72}px Inter, sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(p.number || '', pos.x, pos.y + 0.5);
-
-                    if (p.label) {
-                        ctx.font = 'bold 10px Cairo, Inter, sans-serif';
-                        const lblW = ctx.measureText(p.label).width + 8;
-                        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                        roundRect(ctx, pos.x - lblW / 2, pos.y + radius + 3, lblW, 14, 4, true, false);
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.fillText(p.label, pos.x, pos.y + radius + 10);
-                    }
-                } else if (p.type === 'ball') {
-                    const ballR = radius * 0.65;
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                    ctx.shadowBlur = 4;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, ballR, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#0f172a';
-                    ctx.lineWidth = 1.5;
-                    ctx.stroke();
-                    ctx.fillStyle = '#0f172a';
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, ballR * 0.38, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (p.type === 'cone') {
-                    const coneR = radius * 0.65;
-                    ctx.fillStyle = '#f97316';
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.moveTo(pos.x, pos.y - coneR);
-                    ctx.lineTo(pos.x + coneR, pos.y + coneR * 0.8);
-                    ctx.lineTo(pos.x - coneR, pos.y + coneR * 0.8);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                ctx.restore();
-            });
-        }
-
-        function render() {
-            drawPitch();
-            drawDrawings();
-            drawPieces();
-        }
-
-        function getPointerPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        function findPieceAt(cx, cy) {
-            const hitRadius = Math.max(18, pitchRect.w * 0.025);
-            for (let i = pieces.length - 1; i >= 0; i--) {
-                const pos = normToCanvas(pieces[i].nx, pieces[i].ny);
-                if (Math.hypot(cx - pos.x, cy - pos.y) <= hitRadius) return pieces[i];
-            }
-            return null;
-        }
-
-        function handlePointerDown(e) {
-            const pos = getPointerPos(e);
-            const norm = canvasToNorm(pos.x, pos.y);
-            if (currentTool === 'select') {
-                const hit = findPieceAt(pos.x, pos.y);
-                if (hit) {
-                    saveHistory();
-                    draggingPiece = hit;
-                    const pCanvas = normToCanvas(hit.nx, hit.ny);
-                    dragOffset = { x: pos.x - pCanvas.x, y: pos.y - pCanvas.y };
-                    pieces = pieces.filter(p => p.id !== hit.id);
-                    pieces.push(hit);
-                    render();
-                }
-            } else if (currentTool === 'polygon') {
-                polygonPoints.push(norm);
-                document.getElementById('polygon-controls').classList.remove('hidden');
-                render();
-            } else if (currentTool === 'text') {
-                pendingTextPos = norm;
-                document.getElementById('annotation-input').value = '';
-                document.getElementById('text-modal').classList.remove('hidden');
-                setTimeout(() => document.getElementById('annotation-input').focus(), 50);
-            } else {
-                isDrawing = true;
-                currentDraft = { type: currentTool, points: [norm, norm], color: currentColor, width: currentStrokeWidth };
-            }
-        }
-
-        function handlePointerMove(e) {
-            if (draggingPiece) {
-                e.preventDefault();
-                const pos = getPointerPos(e);
-                const norm = canvasToNorm(pos.x - dragOffset.x, pos.y - dragOffset.y);
-                draggingPiece.nx = norm.nx;
-                draggingPiece.ny = norm.ny;
-                render();
-            } else if (isDrawing && currentDraft) {
-                e.preventDefault();
-                const pos = getPointerPos(e);
-                currentDraft.points[1] = canvasToNorm(pos.x, pos.y);
-                render();
-            }
-        }
-
-        function handlePointerUp() {
-            if (draggingPiece) {
-                draggingPiece = null;
-                render();
-            } else if (isDrawing && currentDraft) {
-                isDrawing = false;
-                const p1 = currentDraft.points[0];
-                const p2 = currentDraft.points[1];
-                if (Math.hypot(p2.nx - p1.nx, p2.ny - p1.ny) > 0.015) {
-                    saveHistory();
-                    drawings.push(currentDraft);
-                }
-                currentDraft = null;
-                render();
-            }
-        }
-
-        function handleDoubleClick(e) {
-            const pos = getPointerPos(e);
-            if (currentTool === 'polygon' && polygonPoints.length >= 3) {
-                finishPolygon();
-                return;
-            }
-            const hit = findPieceAt(pos.x, pos.y);
-            if (hit && (hit.type === 'red' || hit.type === 'blue')) openEditModal(hit);
-        }
-
-        canvas.addEventListener('mousedown', handlePointerDown);
-        canvas.addEventListener('mousemove', handlePointerMove);
-        window.addEventListener('mouseup', handlePointerUp);
-        canvas.addEventListener('dblclick', handleDoubleClick);
-        canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
-        canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
-        window.addEventListener('touchend', handlePointerUp);
-
-        function finishPolygon() {
-            if (polygonPoints.length >= 3) {
-                saveHistory();
-                drawings.push({ type: 'polygon', points: [...polygonPoints], color: currentColor, width: currentStrokeWidth });
-            }
-            cancelPolygon();
-        }
-
-        function cancelPolygon() {
-            polygonPoints = [];
-            document.getElementById('polygon-controls').classList.add('hidden');
-            render();
-        }
-
-        function closeTextModal() {
-            document.getElementById('text-modal').classList.add('hidden');
-            pendingTextPos = null;
-        }
-
-        function confirmTextAnnotation() {
-            const val = document.getElementById('annotation-input').value.trim();
-            if (val && pendingTextPos) {
-                saveHistory();
-                drawings.push({ type: 'text', points: [pendingTextPos], color: currentColor, text: val });
-                render();
-            }
-            closeTextModal();
-        }
-
-        document.getElementById('annotation-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') confirmTextAnnotation();
-        });
-
-        function openEditModal(piece) {
-            editingPieceId = piece.id;
-            document.getElementById('edit-number').value = piece.number || '';
-            document.getElementById('edit-label').value = piece.label || '';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-            editingPieceId = null;
-        }
-
-        function quickFillRole(num, label) {
-            document.getElementById('edit-number').value = num;
-            document.getElementById('edit-label').value = label;
-        }
-
-        function saveEditModal() {
-            const piece = pieces.find(p => p.id === editingPieceId);
-            if (piece) {
-                saveHistory();
-                piece.number = document.getElementById('edit-number').value.trim();
-                piece.label = document.getElementById('edit-label').value.trim();
-                render();
-            }
-            closeEditModal();
-        }
-
-        function deleteSelectedPiece() {
-            if (editingPieceId) {
-                saveHistory();
-                pieces = pieces.filter(p => p.id !== editingPieceId);
-                render();
-                showToast('تم حذف العنصر');
-            }
-            closeEditModal();
-        }
-
-        function addPiece(type) {
-            saveHistory();
-            const count = pieces.filter(p => p.type === type).length + 1;
-            pieces.push({
-                id: `${type}_${Date.now()}`,
-                type: type,
-                nx: 0.5 + (Math.random() - 0.5) * 0.08,
-                ny: 0.5 + (Math.random() - 0.5) * 0.08,
-                number: (type === 'red' || type === 'blue') ? String(count) : '',
-                label: ''
-            });
-            setTool('select');
-            render();
-            showToast('تمت إضافة العنصر');
-        }
-
-        function setTool(tool) {
-            if (currentTool === 'polygon' && tool !== 'polygon') cancelPolygon();
-            currentTool = tool;
-            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`tool-${tool}`);
-            if (activeBtn) activeBtn.classList.add('active');
-            document.getElementById('tool-hint-text').textContent = toolHints[tool] || '';
-            canvas.style.cursor = tool === 'select' ? 'grab' : 'crosshair';
-        }
-
-        function setColor(hex) {
-            currentColor = hex;
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                if (btn.dataset.color === hex) {
-                    btn.classList.add('ring-2', 'ring-white', 'scale-110');
-                    btn.classList.remove('opacity-80');
-                } else {
-                    btn.classList.remove('ring-2', 'ring-white', 'scale-110');
-                    btn.classList.add('opacity-80');
-                }
-            });
-        }
-
-        function setPitchMode(mode) {
-            pitchMode = mode;
-            document.querySelectorAll('.pitch-mode-btn').forEach(btn => {
-                btn.classList.remove('active', 'bg-slate-700', 'text-white');
-                btn.classList.add('text-slate-400');
-            });
-            const activeBtn = document.getElementById(`btn-pitch-${mode}`);
-            activeBtn.classList.add('active', 'bg-slate-700', 'text-white');
-            activeBtn.classList.remove('text-slate-400');
-            resizeCanvas();
-        }
-
-        function toggleZones() {
-            showZones = !showZones;
-            const btn = document.getElementById('btn-toggle-zones');
-            if (showZones) btn.classList.add('border-amber-500', 'bg-amber-950/40', 'text-amber-200');
-            else btn.classList.remove('border-amber-500', 'bg-amber-950/40', 'text-amber-200');
-            render();
-        }
-
-        function togglePitchTheme() {
-            pitchTheme = pitchTheme === 'green' ? 'dark' : 'green';
-            document.getElementById('theme-label').textContent = pitchTheme === 'green' ? 'عشب داكن' : 'داكن تكتيكي';
-            render();
-        }
-
-        function saveHistory() {
-            historyStack.push({
-                pieces: JSON.parse(JSON.stringify(pieces)),
-                drawings: JSON.parse(JSON.stringify(drawings)),
-                redTeamMeta: { ...redTeamMeta },
-                blueTeamMeta: { ...blueTeamMeta }
-            });
-            if (historyStack.length > 30) historyStack.shift();
-        }
-
-        function undoAction() {
-            if (historyStack.length === 0) return showToast('لا يوجد إجراءات للتراجع');
-            const prev = historyStack.pop();
-            pieces = prev.pieces;
-            drawings = prev.drawings;
-            if (prev.redTeamMeta) redTeamMeta = prev.redTeamMeta;
-            if (prev.blueTeamMeta) blueTeamMeta = prev.blueTeamMeta;
-            updateTeamBanner();
-            render();
-            showToast('تم التراجع');
-        }
-
-        function clearDrawings() {
-            if (drawings.length === 0) return;
-            saveHistory();
-            drawings = [];
-            cancelPolygon();
-            render();
-            showToast('تم مسح الرسومات');
-        }
-
-        function resetBoard() {
-            saveHistory();
-            drawings = [];
-            cancelPolygon();
-            redTeamMeta = { name: 'الفريق الأحمر', formation: '5-4-1' };
-            blueTeamMeta = { name: 'الفريق الأزرق', formation: '4-3-3' };
-            initDefaultPieces();
-            render();
-            showToast('تمت إعادة ضبط الملعب');
-        }
-
-        function exportPNG() {
-            render();
-            ctx.save();
-            ctx.font = 'bold 12px Cairo, Inter, sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.textAlign = 'left';
-            ctx.fillText(`${redTeamMeta.name} (${redTeamMeta.formation}) vs ${blueTeamMeta.name} (${blueTeamMeta.formation})`, pitchRect.x + 10, pitchRect.y + pitchRect.h - 10);
-            ctx.restore();
-
-            const link = document.createElement('a');
-            link.download = `tactical-board-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png', 1.0);
-            link.click();
-            render();
-            showToast('تم تحميل الصورة بنجاح');
-        }
-
-        function hexToRgba(hex, alpha) {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        }
-
-        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + width - radius, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-            ctx.lineTo(x + width, y + height - radius);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-            ctx.lineTo(x + radius, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-            if (fill) ctx.fill();
-            if (stroke) ctx.stroke();
-        }
-
-        let toastTimer = null;
-        function showToast(msg) {
-            const el = document.getElementById('toast-msg');
-            el.textContent = msg;
-            el.classList.remove('opacity-0');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => el.classList.add('opacity-0'), 2200);
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        window.onload = function () {
-            initDefaultPieces();
-            resizeCanvas();
-        };
-    </script>
-</body>
-</html>
-"""
-
-# عرض اللوحة التكتيكية داخل Streamlit بارتفاع مناسب لشاشة العرض الكاملة
-components.html(tactical_board_html, height=800, scrolling=False)
+                ctx.arc(x + w - spotDist, y + h / 2,
