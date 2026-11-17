@@ -5,15 +5,12 @@ st.set_page_config(page_title="ProTactics", page_icon="⚽", layout="wide")
 st.markdown("<style>.block-container{padding:0.3rem!important;max-width:100%!important;}header,footer{display:none;}iframe{width:100%!important;border:none;}</style>", unsafe_allow_html=True)
 
 with open("index.html", "r", encoding="utf-8") as f:
-    html = f.read()
+    html = f.read().split("<script>")[0]
 
 with open("board.js", "r", encoding="utf-8") as f:
-    js = f.read()
+    js = f.read().rsplit(";", 1)[0]
 
-if "<script>" in html:
-    html = html.split("<script>")[0] + "</body></html>"
+# إلحاق الجافاسكريبت مباشرة في نهاية HTML دون البحث عن </body>
+full_html = f"{html}\n<script>\n{js};\ninitDefaultPieces();\nresizeCanvas();\nwindow.addEventListener('resize', resizeCanvas);\n</script>\n</body></html>"
 
-# التأكد من أن نهاية الجافاسكريبت تعمل حتى لو انقطعت أثناء اللصق
-safe_js = js.rsplit(";", 1)[0] + ";\ninitDefaultPieces(); resizeCanvas(); window.addEventListener('resize', resizeCanvas);"
-
-components.html(html.replace("</body>", f"<script>{safe_js}</script></body>"), height=740, scrolling=False)
+components.html(full_html, height=740, scrolling=False)
