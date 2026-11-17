@@ -77,13 +77,19 @@ tactical_board_html = """
             </div>
             <div>
                 <h1 class="text-base md:text-lg font-bold tracking-tight text-white leading-tight">
-                    ProTactics <span class="text-xs font-normal text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full mr-1">Streamlit Edition</span>
+                    ProTactics <span class="text-xs font-normal text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full mr-1">Pro Edition</span>
                 </h1>
                 <p class="text-[11px] text-slate-400 hidden sm:block">لوحة التحليل والرسم التكتيكي الاحترافية</p>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+            <!-- زر إدارة تشكيلة وأسماء الفريقين -->
+            <button onclick="openLineupModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/40 text-xs px-3 py-1.5 rounded-lg shadow-md shadow-blue-950/50 transition font-bold">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>تشكيلة وأسماء الفريقين</span>
+            </button>
+
             <div class="flex items-center bg-slate-900 p-1 rounded-lg border border-slate-800">
                 <button onclick="setPitchMode('full')" id="btn-pitch-full" class="pitch-mode-btn active bg-slate-700 text-white text-xs px-2.5 py-1.5 rounded-md font-semibold transition">
                     ملعب كامل <span class="font-en text-[10px] opacity-75">(Full)</span>
@@ -102,17 +108,6 @@ tactical_board_html = """
                 <i class="fa-solid fa-palette text-emerald-400"></i>
                 <span id="theme-label">عشب داكن</span>
             </button>
-
-            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-                <span class="text-xs text-slate-400 hidden md:inline">تشكيل:</span>
-                <select id="formation-select" onchange="applyFormation(this.value)" class="bg-transparent text-xs font-en font-semibold text-white focus:outline-none cursor-pointer py-0.5">
-                    <option value="" class="bg-slate-900">-- اختر قالب --</option>
-                    <option value="5-4-1" class="bg-slate-900">5-4-1 (Low/Mid Block)</option>
-                    <option value="4-3-3" class="bg-slate-900">4-3-3 (Attacking)</option>
-                    <option value="3-5-2" class="bg-slate-900">3-5-2 (Wing-backs)</option>
-                    <option value="4-2-3-1" class="bg-slate-900">4-2-3-1 (Double Pivot)</option>
-                </select>
-            </div>
         </div>
 
         <div class="flex items-center gap-1.5">
@@ -231,12 +226,27 @@ tactical_board_html = """
 
             <div id="tool-hint-box" class="hidden md:block mt-auto w-full bg-slate-900/90 border border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-400 leading-relaxed">
                 <div class="font-bold text-blue-400 mb-0.5"><i class="fa-solid fa-circle-info ml-1"></i> تلميح الاستخدام:</div>
-                <span id="tool-hint-text">اسحب اللاعبين لتحريكهم. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو مركزه (مثل CB, WB).</span>
+                <span id="tool-hint-text">اسحب اللاعبين لتحريكهم. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو اسمه.</span>
             </div>
         </aside>
 
         <!-- Canvas Area -->
-        <main id="canvas-container" class="flex-1 relative bg-[#080c14] flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+        <main id="canvas-container" class="flex-1 relative bg-[#080c14] flex flex-col items-center justify-center p-2 sm:p-3 overflow-hidden">
+            <!-- شريط عرض أسماء الفريقين وخططهما أعلى الملعب -->
+            <div class="w-full max-w-4xl flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-lg px-4 py-1.5 mb-2 shadow-md">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow shadow-red-500/50"></span>
+                    <span id="display-red-name" class="text-xs sm:text-sm font-bold text-white">الفريق الأحمر</span>
+                    <span id="display-red-form" class="text-[11px] font-en font-semibold bg-red-950/80 text-red-300 border border-red-800/60 px-2 py-0.5 rounded">5-4-1</span>
+                </div>
+                <span class="text-xs font-en font-bold text-slate-500">VS</span>
+                <div class="flex items-center gap-2">
+                    <span id="display-blue-form" class="text-[11px] font-en font-semibold bg-sky-950/80 text-sky-300 border border-sky-800/60 px-2 py-0.5 rounded">4-3-3</span>
+                    <span id="display-blue-name" class="text-xs sm:text-sm font-bold text-white">الفريق الأزرق</span>
+                    <span class="w-3 h-3 rounded-full bg-sky-500 inline-block shadow shadow-sky-500/50"></span>
+                </div>
+            </div>
+
             <canvas id="tactical-canvas" class="rounded-xl shadow-2xl border border-slate-800"></canvas>
 
             <div id="polygon-controls" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-yellow-500/60 px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-20">
@@ -245,19 +255,100 @@ tactical_board_html = """
                 <button onclick="cancelPolygon()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-2.5 py-1 rounded-full transition">إلغاء</button>
             </div>
 
-            <div id="toast-msg" class="pointer-events-none opacity-0 transition-opacity duration-300 absolute top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-xl z-30">
+            <div id="toast-msg" class="pointer-events-none opacity-0 transition-opacity duration-300 absolute top-14 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-xl z-30">
                 تم الحفظ
             </div>
         </main>
     </div>
 
-    <!-- Modal: Edit Player -->
+    <!-- Modal: Lineup & Teams Manager (إدارة تشكيلة وأسماء الفريقين) -->
+    <div id="lineup-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 px-5 py-3.5 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users-gear text-blue-400"></i>
+                    <span>إعداد تشكيلة وأسماء لاعبي الفريقين</span>
+                </h3>
+                <button onclick="closeLineupModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-4 sm:p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- الفريق الأحمر -->
+                <div class="bg-slate-900/80 border border-red-900/50 rounded-xl p-3.5">
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
+                        <span class="w-3.5 h-3.5 rounded-full bg-red-500"></span>
+                        <span class="font-bold text-sm text-red-400">الفريق الأول (الأحمر - يسار)</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">اسم الفريق:</label>
+                            <input type="text" id="input-red-team-name" value="الفريق الأحمر" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-red-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">الخطة التكتيكية:</label>
+                            <select id="select-red-formation" onchange="populateLineupInputs('red', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-red-500">
+                                <option value="5-4-1">5-4-1</option>
+                                <option value="4-3-3">4-3-3</option>
+                                <option value="3-5-2">3-5-2</option>
+                                <option value="4-2-3-1">4-2-3-1</option>
+                                <option value="4-4-2">4-4-2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-[11px] font-semibold text-slate-400 mb-1.5 flex justify-between px-1">
+                        <span>المركز / الرقم</span>
+                        <span>اسم اللاعب (يظهر أسفل الدائرة)</span>
+                    </div>
+                    <div id="red-players-list" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- الفريق الأزرق -->
+                <div class="bg-slate-900/80 border border-sky-900/50 rounded-xl p-3.5">
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
+                        <span class="w-3.5 h-3.5 rounded-full bg-sky-500"></span>
+                        <span class="font-bold text-sm text-sky-400">الفريق الثاني (الأزرق - يمين)</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">اسم الفريق:</label>
+                            <input type="text" id="input-blue-team-name" value="الفريق الأزرق" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">الخطة التكتيكية:</label>
+                            <select id="select-blue-formation" onchange="populateLineupInputs('blue', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-en text-white focus:outline-none focus:border-sky-500">
+                                <option value="4-3-3">4-3-3</option>
+                                <option value="4-2-3-1">4-2-3-1</option>
+                                <option value="5-4-1">5-4-1</option>
+                                <option value="3-5-2">3-5-2</option>
+                                <option value="4-4-2">4-4-2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-[11px] font-semibold text-slate-400 mb-1.5 flex justify-between px-1">
+                        <span>المركز / الرقم</span>
+                        <span>اسم اللاعب (يظهر أسفل الدائرة)</span>
+                    </div>
+                    <div id="blue-players-list" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-slate-800 shrink-0 bg-slate-900/50 rounded-b-2xl">
+                <button onclick="closeLineupModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition">إلغاء</button>
+                <button onclick="applyBothTeamsLineups()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-lg shadow-emerald-950/50 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-check"></i>
+                    <span>تطبيق التشكيلة والأسماء على الملعب</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Single Player -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-sm p-5 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-user-pen text-blue-400"></i>
-                    <span>تعديل بيانات العنصر</span>
+                    <span>تعديل بيانات اللاعب</span>
                 </h3>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
@@ -267,8 +358,8 @@ tactical_board_html = """
                     <input type="text" id="edit-number" maxlength="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-en font-bold focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">المركز / الاسم التوضيحي أسفل اللاعب:</label>
-                    <input type="text" id="edit-label" maxlength="16" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">اسم اللاعب أو المركز أسفل الدائرة:</label>
+                    <input type="text" id="edit-label" maxlength="18" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <span class="block text-[11px] text-slate-500 mb-1.5">اختصارات سريعة للمراكز:</span>
@@ -321,6 +412,9 @@ tactical_board_html = """
         let currentStrokeWidth = 3;
         let pitchRect = { x: 0, y: 0, w: 0, h: 0 };
 
+        let redTeamMeta = { name: 'الفريق الأحمر', formation: '5-4-1' };
+        let blueTeamMeta = { name: 'الفريق الأزرق', formation: '4-3-3' };
+
         let pieces = [];
         let drawings = [];
         let historyStack = [];
@@ -333,8 +427,76 @@ tactical_board_html = """
         let editingPieceId = null;
         let pendingTextPos = null;
 
+        const formationTemplates = {
+            '5-4-1': [
+                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
+                { nx: 0.22, ny: 0.12, num: 'WB', label: 'LWB' },
+                { nx: 0.20, ny: 0.31, num: 'CB', label: 'LCB' },
+                { nx: 0.19, ny: 0.50, num: 'CB', label: 'CB' },
+                { nx: 0.20, ny: 0.69, num: 'CB', label: 'RCB' },
+                { nx: 0.22, ny: 0.88, num: 'WB', label: 'RWB' },
+                { nx: 0.34, ny: 0.20, num: 'WM', label: 'LM' },
+                { nx: 0.33, ny: 0.41, num: 'DM', label: 'Pivot' },
+                { nx: 0.33, ny: 0.59, num: 'DM', label: 'Pivot' },
+                { nx: 0.34, ny: 0.80, num: 'WM', label: 'RM' },
+                { nx: 0.47, ny: 0.50, num: '9', label: 'FWD' }
+            ],
+            '4-3-3': [
+                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
+                { nx: 0.22, ny: 0.15, num: '3', label: 'LB' },
+                { nx: 0.20, ny: 0.38, num: '4', label: 'CB' },
+                { nx: 0.20, ny: 0.62, num: '5', label: 'CB' },
+                { nx: 0.22, ny: 0.85, num: '2', label: 'RB' },
+                { nx: 0.33, ny: 0.50, num: '6', label: 'DM' },
+                { nx: 0.39, ny: 0.30, num: '8', label: 'CM' },
+                { nx: 0.39, ny: 0.70, num: '10', label: 'CM' },
+                { nx: 0.46, ny: 0.16, num: '11', label: 'LW' },
+                { nx: 0.48, ny: 0.50, num: '9', label: 'ST' },
+                { nx: 0.46, ny: 0.84, num: '7', label: 'RW' }
+            ],
+            '3-5-2': [
+                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
+                { nx: 0.20, ny: 0.28, num: 'CB', label: 'LCB' },
+                { nx: 0.19, ny: 0.50, num: 'CB', label: 'CB' },
+                { nx: 0.20, ny: 0.72, num: 'CB', label: 'RCB' },
+                { nx: 0.34, ny: 0.10, num: 'WB', label: 'LWB' },
+                { nx: 0.31, ny: 0.50, num: '6', label: 'DM' },
+                { nx: 0.36, ny: 0.34, num: '8', label: 'CM' },
+                { nx: 0.36, ny: 0.66, num: '10', label: 'CM' },
+                { nx: 0.34, ny: 0.90, num: 'WB', label: 'RWB' },
+                { nx: 0.47, ny: 0.38, num: '9', label: 'ST' },
+                { nx: 0.47, ny: 0.62, num: '11', label: 'ST' }
+            ],
+            '4-2-3-1': [
+                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
+                { nx: 0.22, ny: 0.15, num: '3', label: 'LB' },
+                { nx: 0.20, ny: 0.38, num: '4', label: 'CB' },
+                { nx: 0.20, ny: 0.62, num: '5', label: 'CB' },
+                { nx: 0.22, ny: 0.85, num: '2', label: 'RB' },
+                { nx: 0.32, ny: 0.38, num: '6', label: 'Pivot' },
+                { nx: 0.32, ny: 0.62, num: '8', label: 'Pivot' },
+                { nx: 0.41, ny: 0.18, num: '11', label: 'LW' },
+                { nx: 0.42, ny: 0.50, num: '10', label: 'CAM' },
+                { nx: 0.41, ny: 0.82, num: '7', label: 'RW' },
+                { nx: 0.48, ny: 0.50, num: '9', label: 'ST' }
+            ],
+            '4-4-2': [
+                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
+                { nx: 0.22, ny: 0.15, num: '3', label: 'LB' },
+                { nx: 0.20, ny: 0.38, num: '4', label: 'CB' },
+                { nx: 0.20, ny: 0.62, num: '5', label: 'CB' },
+                { nx: 0.22, ny: 0.85, num: '2', label: 'RB' },
+                { nx: 0.35, ny: 0.16, num: '11', label: 'LM' },
+                { nx: 0.34, ny: 0.40, num: '6', label: 'CM' },
+                { nx: 0.34, ny: 0.60, num: '8', label: 'CM' },
+                { nx: 0.35, ny: 0.84, num: '7', label: 'RM' },
+                { nx: 0.47, ny: 0.38, num: '9', label: 'ST' },
+                { nx: 0.47, ny: 0.62, num: '10', label: 'ST' }
+            ]
+        };
+
         const toolHints = {
-            select: 'اسحب اللاعبين لتحريكهم بحرية. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو مركزه.',
+            select: 'اسحب اللاعبين لتحريكهم بحرية. انقر مرتين (Double Click) على أي لاعب لتعديل رقمه أو اسمه.',
             arrow: 'اضغط واسحب على الملعب لرسم سهم حركة مستقيم.',
             curved: 'اضغط واسحب لرسم سهم حركة مقوس (Curved Run) للضغط القوسي وغلق زوايا التمرير.',
             pass: 'اضغط واسحب لرسم خط تمرير متقطع بين اللاعبين.',
@@ -346,112 +508,123 @@ tactical_board_html = """
 
         function initDefaultPieces() {
             pieces = [];
-            const redSquad = [
-                { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
-                { nx: 0.22, ny: 0.14, num: 'WB', label: 'LWB' },
-                { nx: 0.20, ny: 0.32, num: 'CB', label: 'LCB' },
-                { nx: 0.19, ny: 0.50, num: 'CB', label: 'CB' },
-                { nx: 0.20, ny: 0.68, num: 'CB', label: 'RCB' },
-                { nx: 0.22, ny: 0.86, num: 'WB', label: 'RWB' },
-                { nx: 0.34, ny: 0.22, num: 'WM', label: 'LM' },
-                { nx: 0.33, ny: 0.41, num: 'DM', label: 'Pivot' },
-                { nx: 0.33, ny: 0.59, num: 'DM', label: 'Pivot' },
-                { nx: 0.34, ny: 0.78, num: 'WM', label: 'RM' },
-                { nx: 0.47, ny: 0.50, num: '9', label: 'FWD' }
-            ];
-            redSquad.forEach((p, idx) => pieces.push({ id: 'red_' + idx, type: 'red', nx: p.nx, ny: p.ny, number: p.num, label: p.label }));
+            const redTemplate = formationTemplates['5-4-1'];
+            redTemplate.forEach((p, idx) => {
+                pieces.push({ id: 'red_' + idx, type: 'red', nx: p.nx, ny: p.ny, number: p.num, label: p.label });
+            });
 
-            const blueSquad = [
-                { nx: 0.94, ny: 0.50, num: '1', label: 'GK' },
-                { nx: 0.78, ny: 0.15, num: '2', label: 'RB' },
-                { nx: 0.80, ny: 0.38, num: '4', label: 'CB' },
-                { nx: 0.80, ny: 0.62, num: '5', label: 'CB' },
-                { nx: 0.78, ny: 0.85, num: '3', label: 'LB' },
-                { nx: 0.65, ny: 0.50, num: '6', label: 'DM' },
-                { nx: 0.58, ny: 0.30, num: '8', label: 'CM' },
-                { nx: 0.58, ny: 0.70, num: '10', label: 'CM' },
-                { nx: 0.52, ny: 0.14, num: '7', label: 'RW' },
-                { nx: 0.50, ny: 0.50, num: '9', label: 'ST' },
-                { nx: 0.52, ny: 0.86, num: '11', label: 'LW' }
-            ];
-            blueSquad.forEach((p, idx) => pieces.push({ id: 'blue_' + idx, type: 'blue', nx: p.nx, ny: p.ny, number: p.num, label: p.label }));
-            pieces.push({ id: 'ball_1', type: 'ball', nx: 0.65, ny: 0.50, number: '', label: '' });
+            const blueTemplate = formationTemplates['4-3-3'];
+            blueTemplate.forEach((p, idx) => {
+                pieces.push({ id: 'blue_' + idx, type: 'blue', nx: 1 - p.nx, ny: p.ny, number: p.num, label: p.label });
+            });
+
+            pieces.push({ id: 'ball_1', type: 'ball', nx: 0.50, ny: 0.50, number: '', label: '' });
+            updateTeamBanner();
         }
 
-        function applyFormation(formation) {
-            if (!formation) return;
-            saveHistory();
-            const formations = {
-                '5-4-1': [
-                    { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
-                    { nx: 0.22, ny: 0.12, num: 'WB', label: 'LWB' },
-                    { nx: 0.20, ny: 0.31, num: 'CB', label: 'LCB' },
-                    { nx: 0.19, ny: 0.50, num: 'CB', label: 'CB' },
-                    { nx: 0.20, ny: 0.69, num: 'CB', label: 'RCB' },
-                    { nx: 0.22, ny: 0.88, num: 'WB', label: 'RWB' },
-                    { nx: 0.34, ny: 0.20, num: 'WM', label: 'LM' },
-                    { nx: 0.33, ny: 0.41, num: 'DM', label: 'Pivot' },
-                    { nx: 0.33, ny: 0.59, num: 'DM', label: 'Pivot' },
-                    { nx: 0.34, ny: 0.80, num: 'WM', label: 'RM' },
-                    { nx: 0.47, ny: 0.50, num: '9', label: 'FWD' }
-                ],
-                '4-3-3': [
-                    { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
-                    { nx: 0.22, ny: 0.15, num: '3', label: 'LB' },
-                    { nx: 0.20, ny: 0.38, num: '4', label: 'CB' },
-                    { nx: 0.20, ny: 0.62, num: '5', label: 'CB' },
-                    { nx: 0.22, ny: 0.85, num: '2', label: 'RB' },
-                    { nx: 0.33, ny: 0.50, num: '6', label: 'DM' },
-                    { nx: 0.39, ny: 0.30, num: '8', label: 'CM' },
-                    { nx: 0.39, ny: 0.70, num: '10', label: 'CM' },
-                    { nx: 0.46, ny: 0.16, num: '11', label: 'LW' },
-                    { nx: 0.48, ny: 0.50, num: '9', label: 'ST' },
-                    { nx: 0.46, ny: 0.84, num: '7', label: 'RW' }
-                ],
-                '3-5-2': [
-                    { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
-                    { nx: 0.20, ny: 0.28, num: 'CB', label: 'LCB' },
-                    { nx: 0.19, ny: 0.50, num: 'CB', label: 'CB' },
-                    { nx: 0.20, ny: 0.72, num: 'CB', label: 'RCB' },
-                    { nx: 0.34, ny: 0.10, num: 'WB', label: 'LWB' },
-                    { nx: 0.31, ny: 0.50, num: '6', label: 'DM' },
-                    { nx: 0.36, ny: 0.34, num: '8', label: 'CM' },
-                    { nx: 0.36, ny: 0.66, num: '10', label: 'CM' },
-                    { nx: 0.34, ny: 0.90, num: 'WB', label: 'RWB' },
-                    { nx: 0.47, ny: 0.38, num: '9', label: 'ST' },
-                    { nx: 0.47, ny: 0.62, num: '11', label: 'ST' }
-                ],
-                '4-2-3-1': [
-                    { nx: 0.06, ny: 0.50, num: '1', label: 'GK' },
-                    { nx: 0.22, ny: 0.15, num: '3', label: 'LB' },
-                    { nx: 0.20, ny: 0.38, num: '4', label: 'CB' },
-                    { nx: 0.20, ny: 0.62, num: '5', label: 'CB' },
-                    { nx: 0.22, ny: 0.85, num: '2', label: 'RB' },
-                    { nx: 0.32, ny: 0.38, num: '6', label: 'Pivot' },
-                    { nx: 0.32, ny: 0.62, num: '8', label: 'Pivot' },
-                    { nx: 0.41, ny: 0.18, num: '11', label: 'LW' },
-                    { nx: 0.42, ny: 0.50, num: '10', label: 'CAM' },
-                    { nx: 0.41, ny: 0.82, num: '7', label: 'RW' },
-                    { nx: 0.48, ny: 0.50, num: '9', label: 'ST' }
-                ]
-            };
-            const template = formations[formation];
-            if (!template) return;
-            pieces = pieces.filter(p => p.type !== 'red');
-            template.forEach((p, idx) => {
-                const adjustedX = pitchMode === 'half' ? p.nx * 1.8 : p.nx;
-                pieces.push({ id: 'red_' + idx, type: 'red', nx: Math.min(0.95, adjustedX), ny: p.ny, number: p.num, label: p.label });
+        function updateTeamBanner() {
+            document.getElementById('display-red-name').textContent = redTeamMeta.name || 'الفريق الأحمر';
+            document.getElementById('display-red-form').textContent = redTeamMeta.formation;
+            document.getElementById('display-blue-name').textContent = blueTeamMeta.name || 'الفريق الأزرق';
+            document.getElementById('display-blue-form').textContent = blueTeamMeta.formation;
+        }
+
+        // إدارة نافذة تشكيلة وأسماء الفريقين
+        function openLineupModal() {
+            document.getElementById('input-red-team-name').value = redTeamMeta.name;
+            document.getElementById('select-red-formation').value = redTeamMeta.formation;
+            document.getElementById('input-blue-team-name').value = blueTeamMeta.name;
+            document.getElementById('select-blue-formation').value = blueTeamMeta.formation;
+
+            populateLineupInputs('red', redTeamMeta.formation, true);
+            populateLineupInputs('blue', blueTeamMeta.formation, true);
+            document.getElementById('lineup-modal').classList.remove('hidden');
+        }
+
+        function closeLineupModal() {
+            document.getElementById('lineup-modal').classList.add('hidden');
+        }
+
+        function populateLineupInputs(team, formation, keepExisting = false) {
+            const containerEl = document.getElementById(`${team}-players-list`);
+            const template = formationTemplates[formation] || formationTemplates['4-3-3'];
+            const existingPlayers = pieces.filter(p => p.type === team);
+
+            containerEl.innerHTML = '';
+            template.forEach((slot, idx) => {
+                const current = keepExisting && existingPlayers[idx] ? existingPlayers[idx] : null;
+                const numVal = current ? current.number : slot.num;
+                const labelVal = current ? current.label : slot.label;
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-1.5';
+                row.innerHTML = `
+                    <span class="text-[10px] font-en text-slate-500 w-5 text-center">${idx + 1}</span>
+                    <input type="text" data-team="${team}" data-idx="${idx}" data-field="num" value="${numVal}" maxlength="4"
+                        class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-center font-en font-bold text-white focus:outline-none focus:border-blue-500" placeholder="رقم">
+                    <input type="text" data-team="${team}" data-idx="${idx}" data-field="label" value="${labelVal}" maxlength="18"
+                        class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="اسم اللاعب أو المركز...">
+                `;
+                containerEl.appendChild(row);
             });
-            showToast(`تم تطبيق تشكيل ${formation}`);
+        }
+
+        function applyBothTeamsLineups() {
+            saveHistory();
+
+            const redName = document.getElementById('input-red-team-name').value.trim() || 'الفريق الأحمر';
+            const redForm = document.getElementById('select-red-formation').value;
+            const blueName = document.getElementById('input-blue-team-name').value.trim() || 'الفريق الأزرق';
+            const blueForm = document.getElementById('select-blue-formation').value;
+
+            redTeamMeta = { name: redName, formation: redForm };
+            blueTeamMeta = { name: blueName, formation: blueForm };
+
+            // الاحتفاظ بالكرات والأقماع فقط وإعادة بناء لاعبي الفريقين
+            pieces = pieces.filter(p => p.type !== 'red' && p.type !== 'blue');
+
+            const redTemplate = formationTemplates[redForm];
+            redTemplate.forEach((slot, idx) => {
+                const numInput = document.querySelector(`input[data-team="red"][data-idx="${idx}"][data-field="num"]`);
+                const lblInput = document.querySelector(`input[data-team="red"][data-idx="${idx}"][data-field="label"]`);
+                const posX = pitchMode === 'half' ? Math.min(0.48, slot.nx * 0.95) : slot.nx;
+                pieces.push({
+                    id: 'red_' + idx,
+                    type: 'red',
+                    nx: posX,
+                    ny: slot.ny,
+                    number: numInput ? numInput.value.trim() : slot.num,
+                    label: lblInput ? lblInput.value.trim() : slot.label
+                });
+            });
+
+            const blueTemplate = formationTemplates[blueForm];
+            blueTemplate.forEach((slot, idx) => {
+                const numInput = document.querySelector(`input[data-team="blue"][data-idx="${idx}"][data-field="num"]`);
+                const lblInput = document.querySelector(`input[data-team="blue"][data-idx="${idx}"][data-field="label"]`);
+                const posX = pitchMode === 'half' ? Math.max(0.52, 1 - slot.nx * 0.95) : (1 - slot.nx);
+                pieces.push({
+                    id: 'blue_' + idx,
+                    type: 'blue',
+                    nx: posX,
+                    ny: slot.ny,
+                    number: numInput ? numInput.value.trim() : slot.num,
+                    label: lblInput ? lblInput.value.trim() : slot.label
+                });
+            });
+
+            updateTeamBanner();
+            closeLineupModal();
             render();
+            showToast('تم تحديث تشكيلة وأسماء الفريقين بنجاح');
         }
 
         function resizeCanvas() {
             const rect = container.getBoundingClientRect();
-            const padX = window.innerWidth < 640 ? 12 : 28;
-            const padY = window.innerWidth < 640 ? 12 : 24;
+            const padX = window.innerWidth < 640 ? 12 : 24;
+            const padY = window.innerWidth < 640 ? 44 : 52;
             const availW = Math.max(200, rect.width - padX * 2);
-            const availH = Math.max(150, rect.height - padY * 2);
+            const availH = Math.max(150, rect.height - padY);
             const targetRatio = pitchMode === 'full' ? (105 / 68) : (68 / 58);
 
             let finalW = availW;
@@ -840,7 +1013,7 @@ tactical_board_html = """
                     if (p.label) {
                         ctx.font = 'bold 10px Cairo, Inter, sans-serif';
                         const lblW = ctx.measureText(p.label).width + 8;
-                        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
                         roundRect(ctx, pos.x - lblW / 2, pos.y + radius + 3, lblW, 14, 4, true, false);
                         ctx.fillStyle = '#f8fafc';
                         ctx.fillText(p.label, pos.x, pos.y + radius + 10);
@@ -1116,7 +1289,12 @@ tactical_board_html = """
         }
 
         function saveHistory() {
-            historyStack.push({ pieces: JSON.parse(JSON.stringify(pieces)), drawings: JSON.parse(JSON.stringify(drawings)) });
+            historyStack.push({
+                pieces: JSON.parse(JSON.stringify(pieces)),
+                drawings: JSON.parse(JSON.stringify(drawings)),
+                redTeamMeta: { ...redTeamMeta },
+                blueTeamMeta: { ...blueTeamMeta }
+            });
             if (historyStack.length > 30) historyStack.shift();
         }
 
@@ -1125,6 +1303,9 @@ tactical_board_html = """
             const prev = historyStack.pop();
             pieces = prev.pieces;
             drawings = prev.drawings;
+            if (prev.redTeamMeta) redTeamMeta = prev.redTeamMeta;
+            if (prev.blueTeamMeta) blueTeamMeta = prev.blueTeamMeta;
+            updateTeamBanner();
             render();
             showToast('تم التراجع');
         }
@@ -1142,8 +1323,9 @@ tactical_board_html = """
             saveHistory();
             drawings = [];
             cancelPolygon();
+            redTeamMeta = { name: 'الفريق الأحمر', formation: '5-4-1' };
+            blueTeamMeta = { name: 'الفريق الأزرق', formation: '4-3-3' };
             initDefaultPieces();
-            document.getElementById('formation-select').value = '';
             render();
             showToast('تمت إعادة ضبط الملعب');
         }
@@ -1151,10 +1333,10 @@ tactical_board_html = """
         function exportPNG() {
             render();
             ctx.save();
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.font = 'bold 12px Cairo, Inter, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
             ctx.textAlign = 'left';
-            ctx.fillText('ProTactics Tactical Board', pitchRect.x + 8, pitchRect.y + pitchRect.h - 8);
+            ctx.fillText(`${redTeamMeta.name} (${redTeamMeta.formation}) vs ${blueTeamMeta.name} (${blueTeamMeta.formation})`, pitchRect.x + 10, pitchRect.y + pitchRect.h - 10);
             ctx.restore();
 
             const link = document.createElement('a');
@@ -1208,4 +1390,4 @@ tactical_board_html = """
 """
 
 # عرض اللوحة التكتيكية داخل Streamlit بارتفاع مناسب لشاشة العرض الكاملة
-components.html(tactical_board_html, height=780, scrolling=False)
+components.html(tactical_board_html, height=800, scrolling=False)
