@@ -22,5 +22,9 @@ with open("index.html", "r", encoding="utf-8") as f:
 with open("board.js", "r", encoding="utf-8") as f:
     js_code = f.read()
 
-full_page = html_code.replace("<!-- BOARD_SCRIPT -->", f"<script>\n{js_code}\n</script>")
+# حذف أي سكريبت قديم مقطوع في نهاية index.html وحقن board.js النظيف قبل </body>
+if "<script>" in html_code:
+    html_code = html_code.split("<script>")[0] + "</body></html>"
+
+full_page = html_code.replace("</body>", f"<script>\n{js_code}\n</script>\n</body>")
 components.html(full_page, height=740, scrolling=False)
