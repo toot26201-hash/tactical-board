@@ -10,9 +10,9 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        .block-container { padding: 0.5rem 0.5rem 0 0.5rem !important; max-width: 100% !important; }
+        .block-container { padding: 0.4rem 0.5rem 0 0.5rem !important; max-width: 100% !important; }
         header[data-testid="stHeader"], footer { display: none; }
-        iframe { border-radius: 12px; border: 1px solid #1e293b; }
+        iframe { border-radius: 12px; border: 1px solid #1e293b; width: 100% !important; }
     </style>
 """, unsafe_allow_html=True)
 
