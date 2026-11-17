@@ -1,35 +1,160 @@
-function resizeCanvas() {
-    const rect = container.getBoundingClientRect();
-    const padX = 24;
-    const padY = 56;
-    const availW = Math.max(300, rect.width - padX * 2);
-    const availH = Math.max(250, rect.height - padY);
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ProTactics - لوحة التحليل والرسم التكتيكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-en { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .tool-btn.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.45);
+        }
+        canvas {
+            touch-action: none;
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col bg-[#0b0f19] text-slate-200">
 
-    const targetRatio = pitchMode === 'full' ? (105 / 68) : (68 / 52.5);
+    <!-- Header / Top Bar -->
+    <header class="bg-[#111827] border-b border-slate-800 px-3 py-2 flex flex-wrap items-center justify-between gap-2 z-20 shadow-lg">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-md shadow-emerald-900/40">
+                <i class="fa-solid fa-chess-board text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-base md:text-lg font-bold tracking-tight text-white leading-tight">
+                    ProTactics <span class="text-xs font-normal text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full mr-1">Pro Edition</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 hidden sm:block">لوحة التحليل والرسم التكتيكي الاحترافية</p>
+            </div>
+        </div>
 
-    let finalH = availH;
-    let finalW = finalH * targetRatio;
+        <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openLineupModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/40 text-xs px-3 py-1.5 rounded-lg shadow-md shadow-blue-950/50 transition font-bold">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>تشكيلة وأسماء الفريقين</span>
+            </button>
 
-    if (finalW > availW) {
-        finalW = availW;
-        finalH = finalW / targetRatio;
-    }
+            <div class="flex items-center bg-slate-900 p-1 rounded-lg border border-slate-800">
+                <button onclick="setPitchMode('full')" id="btn-pitch-full" class="pitch-mode-btn active bg-slate-700 text-white text-xs px-2.5 py-1.5 rounded-md font-semibold transition">
+                    ملعب كامل <span class="font-en text-[10px] opacity-75">(Full)</span>
+                </button>
+                <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-md font-semibold transition">
+                    نصف ملعب <span class="font-en text-[10px] opacity-75">(Half)</span>
+                </button>
+            </div>
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(finalW * dpr);
-    canvas.height = Math.round(finalH * dpr);
-    canvas.style.width = Math.round(finalW) + 'px';
-    canvas.style.height = Math.round(finalH) + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            <button onclick="toggleZones()" id="btn-toggle-zones" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
+                <i class="fa-solid fa-table-columns text-amber-400"></i>
+                <span>5-Zones & Half-spaces</span>
+            </button>
 
-    const margin = Math.max(12, Math.min(finalW, finalH) * 0.025);
-    pitchRect = {
-        x: margin,
-        y: margin,
-        w: finalW - margin * 2,
-        h: finalH - margin * 2,
-        canvasW: finalW,
-        canvasH: finalH
-    };
-    render();
-}
+            <button onclick="togglePitchTheme()" id="btn-pitch-theme" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-3 py-1.5 rounded-lg transition font-semibold">
+                <i class="fa-solid fa-palette text-emerald-400"></i>
+                <span id="theme-label">عشب داكن</span>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+            <button onclick="undoAction()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span class="hidden lg:inline">تراجع</span>
+            </button>
+            <button onclick="clearDrawings()" class="bg-slate-800 hover:bg-amber-950/60 text-amber-300 border border-slate-700 hover:border-amber-700 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                <i class="fa-solid fa-eraser"></i>
+                <span class="hidden lg:inline">مسح الرسم</span>
+            </button>
+            <button onclick="resetBoard()" class="bg-slate-800 hover:bg-red-950/60 text-red-400 border border-slate-700 hover:border-red-800 text-xs px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="hidden lg:inline">إعادة ضبط</span>
+            </button>
+            <button onclick="exportPNG()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-emerald-900/40 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-camera"></i>
+                <span>تصدير PNG</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside class="bg-[#111827] border-b md:border-b-0 md:border-l border-slate-800 p-2 flex md:flex-col items-center justify-between md:justify-start gap-2 overflow-x-auto md:overflow-y-auto md:w-56 shrink-0 z-10">
+            <div class="w-full hidden md:block text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1 mb-0.5">
+                أدوات التحليل والرسم
+            </div>
+
+            <div class="flex md:grid md:grid-cols-2 gap-1.5 w-auto md:w-full shrink-0">
+                <button onclick="setTool('select')" id="tool-select" class="tool-btn active flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-arrow-pointer text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">تحريك</span>
+                    <span class="text-[9px] font-en opacity-70">Select</span>
+                </button>
+                <button onclick="setTool('arrow')" id="tool-arrow" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-arrow-up-long text-sm mb-1 rotate-45"></i>
+                    <span class="text-[11px] font-semibold">سهم حركة</span>
+                    <span class="text-[9px] font-en opacity-70">Run</span>
+                </button>
+                <button onclick="setTool('curved')" id="tool-curved" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-share text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">ضغط قوسي</span>
+                    <span class="text-[9px] font-en opacity-70">Curved</span>
+                </button>
+                <button onclick="setTool('pass')" id="tool-pass" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-ellipsis text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">تمرير</span>
+                    <span class="text-[9px] font-en opacity-70">Pass</span>
+                </button>
+                <button onclick="setTool('polygon')" id="tool-polygon" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-draw-polygon text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">تظليل مساحة</span>
+                    <span class="text-[9px] font-en opacity-70">Zone</span>
+                </button>
+                <button onclick="setTool('ruler')" id="tool-ruler" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-ruler-horizontal text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">قياس متر</span>
+                    <span class="text-[9px] font-en opacity-70">Distance</span>
+                </button>
+                <button onclick="setTool('connect')" id="tool-connect" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-circle-nodes text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">ربط خطوط</span>
+                    <span class="text-[9px] font-en opacity-70">Connect</span>
+                </button>
+                <button onclick="setTool('text')" id="tool-text" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-300 transition min-w-[68px]">
+                    <i class="fa-solid fa-font text-sm mb-1"></i>
+                    <span class="text-[11px] font-semibold">نص شرح</span>
+                    <span class="text-[9px] font-en opacity-70">Text</span>
+                </button>
+            </div>
+
+            <div class="hidden md:block w-full border-t border-slate-800 my-1"></div>
+
+            <!-- Colors & Stroke -->
+            <div class="flex md:flex-col items-center md:items-stretch gap-2 shrink-0">
+                <div class="hidden md:block text-[11px] font-bold text-slate-400 px-1">لون الرسم وسمك الخط</div>
+                <div class="flex items-center justify-around gap-1.5 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+                    <button onclick="setColor('#facc15')" data-color="#facc15" class="color-btn w-6 h-6 rounded-full bg-yellow-400 ring-2 ring-white scale-110 transition"></button>
+                    <button onclick="setColor('#ffffff')" data-color="#ffffff" class="color-btn w-6 h-6 rounded-full bg-white opacity-80 hover:opacity-100 transition"></button>
+                    <button onclick="setColor('#ef4444')" data-color="#ef4444" class="color-btn w-6 h-6 rounded-full bg-red-500 opacity-80 hover:opacity-
