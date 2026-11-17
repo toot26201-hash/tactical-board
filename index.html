@@ -1,14 +1,12 @@
 function resizeCanvas() {
     const rect = container.getBoundingClientRect();
     const padX = 24;
-    const padY = 56; // مساحة كافية للشريط العلوي
+    const padY = 56;
     const availW = Math.max(300, rect.width - padX * 2);
     const availH = Math.max(250, rect.height - padY);
 
-    // النسبة القانونية الدقيقة للملعب (105 متر طول × 68 متر عرض)
     const targetRatio = pitchMode === 'full' ? (105 / 68) : (68 / 52.5);
 
-    // حساب الأبعاد بناءً على الارتفاع أولاً لضمان عدم تمدد الملعب أفقياً
     let finalH = availH;
     let finalW = finalH * targetRatio;
 
