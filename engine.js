@@ -104,4 +104,33 @@ function updateTeamBanner() {
     document.getElementById('badge-blue-color').style.backgroundColor = blueTeamMeta.primary;
     const bLogo = document.getElementById('banner-blue-logo');
     if (blueTeamMeta.logoData) { bLogo.src = blueTeamMeta.logoData; bLogo.classList.remove('hidden'); }
-    else { bLogo.src = ''; bLogo.classList.add('hidden');
+    else { bLogo.src = ''; bLogo.classList.add('hidden'); }
+}
+
+function setPitchTheme(theme) {
+    pitchTheme = theme;
+    if (theme !== 'custom' && pitchThemes[theme]) {
+        document.getElementById('custom-pitch-color').value = pitchThemes[theme].inner;
+    }
+    render();
+}
+
+function setCustomPitchColor(hex) {
+    customPitchBg = hex;
+    pitchThemes.custom.inner = hex;
+    pitchTheme = 'custom';
+    document.getElementById('pitch-theme-select').value = 'custom';
+    render();
+}
+
+function toggleNotesPanel() {
+    const panel = document.getElementById('notes-panel');
+    panel.classList.toggle('hidden');
+    document.getElementById('btn-toggle-notes').classList.toggle('active', !panel.classList.contains('hidden'));
+    setTimeout(resizeCanvas, 50);
+}
+
+function updateFrameNotes() {
+    if (!keyframes[currentFrameIdx]) return;
+    keyframes[currentFrameIdx].title = document.getElementById('frame-title-input').value;
+    keyframes[currentFrameIdx].notes = document.get
