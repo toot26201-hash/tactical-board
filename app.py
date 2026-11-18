@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="ProTactics Pro - التحليل التكتيكي المتقدم",
+    page_title="ProTactics Studio - التحليل التكتيكي المتكامل",
     page_icon="⚽",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -23,4 +23,4 @@ with open("engine.js", "r", encoding="utf-8") as f:
     js_code = f.read()
 
 full_page = html_code.replace("<!-- ENGINE_SCRIPT -->", f"<script>\n{js_code}\n</script>")
-components.html(full_page, height=740, scrolling=False)
+components.html(full_page, height=750, scrolling=False)
