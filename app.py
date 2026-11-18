@@ -1,33 +1,26 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-st.set_page_config(page_title="ProTactics Studio", page_icon="⚽", layout="wide")
+st.set_page_config(
+    page_title="ProTactics Pro - التحليل التكتيكي المتقدم",
+    page_icon="⚽",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 st.markdown("""
     <style>
-    .main { background-color: #0b0f19; color: #e2e8f0; }
-    h1 { color: #facc15; font-family: 'Cairo', sans-serif; }
+        .block-container { padding: 0 !important; max-width: 100% !important; }
+        header[data-testid="stHeader"], footer { display: none; }
+        iframe { border: none !important; width: 100% !important; height: 100vh !important; display: block; }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("⚽ ProTactics Studio - لوحة التحليل التكتيكي")
-st.write("مرحباً بك يا محمود! هذا تطبيق بايثون المخصص لإدارة الوحدات التدريبية وتحليل المباريات.")
+with open("index.html", "r", encoding="utf-8") as f:
+    html_code = f.read()
 
-# لوحة تحكم بسيطة لتجربة الأدوات والتشكيلات
-col1, col2 = st.columns([1, 3])
+with open("engine.js", "r", encoding="utf-8") as f:
+    js_code = f.read()
 
-with col1:
-    st.subheader("إعدادات الفريق والملعب")
-    team_name = st.text_input("اسم الفريق", "الفريق الأول")
-    formation = st.selectbox("الخطة التكتيكية", ["5-4-1", "4-3-3", "4-2-3-1", "3-5-2"])
-    pitch_mode = st.radio("وضع الملعب", ["ملعب كامل", "نصف ملعب"])
-    
-    st.markdown("### أدوات التدريب والتميز")
-    spotlight_player = st.checkbox("✨ تفعيل حلقة التمييز (Spotlight Pulse)")
-    add_cone = st.checkbox("+ إضافة أقماع تدريبية")
-    add_mannequin = st.checkbox("+ إضافة دمى دفاعية")
-    add_minigoal = st.checkbox("+ إضافة مرمى صغير")
-
-with col2:
-    st.info(f"جاري عرض الملعب الحالي لخطة **{formation}** وفريق **{team_name}** ({pitch_mode}).")
-    # محاكاة عرض الملعب التكتيكي
-    st.image("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop", caption="ProTactics Studio Pitch View")
+full_page = html_code.replace("<!-- ENGINE_SCRIPT -->", f"<script>\n{js_code}\n</script>")
+components.html(full_page, height=740, scrolling=False)
