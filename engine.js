@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d');
 const container = document.getElementById('canvas-container');
 
 let pitchMode = 'full', showZones = false, showOffside = false, offsideNx = 0.72;
-let draggingOffside = false, pitchTheme = 'green', currentTool = 'select';
+let draggingOffside = false, pitchTheme = 'green', customPitchBg = '#133824', currentTool = 'select';
 let currentColor = '#facc15', currentStrokeWidth = 3;
 let pitchRect = { x: 0, y: 0, w: 0, h: 0 };
 
@@ -14,6 +14,15 @@ let pieces = [], drawings = [], historyStack = [];
 let keyframes = [], currentFrameIdx = 0, isPlaying = false, animRaf = null;
 let draggingPiece = null, dragOffset = { x: 0, y: 0 }, isDrawing = false, currentDraft = null;
 let polygonPoints = [], editingPieceId = null, pendingTextPos = null;
+
+const pitchThemes = {
+    green:    { outer: '#0d2618', inner: '#133824', lines: 'rgba(255,255,255,0.68)', stripes: true,  stripeColor: 'rgba(255,255,255,0.03)' },
+    classic:  { outer: '#14532d', inner: '#166534', lines: 'rgba(255,255,255,0.85)', stripes: true,  stripeColor: 'rgba(255,255,255,0.05)' },
+    navy:     { outer: '#0f172a', inner: '#122c3d', lines: 'rgba(148,163,184,0.65)', stripes: false },
+    midnight: { outer: '#09090b', inner: '#1a1a1a', lines: 'rgba(212,175,55,0.65)',  stripes: false },
+    opta:     { outer: '#e2e8f0', inner: '#ffffff', lines: 'rgba(30,41,59,0.55)',    stripes: false },
+    custom:   { outer: '#0b0f19', inner: customPitchBg, lines: 'rgba(255,255,255,0.75)', stripes: false }
+};
 
 const formationTemplates = {
     '5-4-1': [{nx:0.06,ny:0.5,num:'1',label:'GK'},{nx:0.22,ny:0.12,num:'WB',label:'LWB'},{nx:0.20,ny:0.31,num:'CB',label:'LCB'},{nx:0.19,ny:0.5,num:'CB',label:'CB'},{nx:0.20,ny:0.69,num:'CB',label:'RCB'},{nx:0.22,ny:0.88,num:'WB',label:'RWB'},{nx:0.34,ny:0.20,num:'WM',label:'LM'},{nx:0.33,ny:0.41,num:'DM',label:'Pivot'},{nx:0.33,ny:0.59,num:'DM',label:'Pivot'},{nx:0.34,ny:0.80,num:'WM',label:'RM'},{nx:0.47,ny:0.5,num:'9',label:'FWD'}],
@@ -56,7 +65,22 @@ function updateTeamBanner() {
     document.getElementById('badge-blue-color').style.backgroundColor = blueTeamMeta.primary;
 }
 
-// Keyframes Animation System
+function setPitchTheme(theme) {
+    pitchTheme = theme;
+    if (theme !== 'custom' && pitchThemes[theme]) {
+        document.getElementById('custom-pitch-color').value = pitchThemes[theme].inner;
+    }
+    render();
+}
+
+function setCustomPitchColor(hex) {
+    customPitchBg = hex;
+    pitchThemes.custom.inner = hex;
+    pitchTheme = 'custom';
+    document.getElementById('pitch-theme-select').value = 'custom';
+    render();
+}
+
 function syncCurrentFrame() {
     if (keyframes[currentFrameIdx]) {
         keyframes[currentFrameIdx] = { pieces: JSON.parse(JSON.stringify(pieces)), drawings: JSON.parse(JSON.stringify(drawings)) };
@@ -160,7 +184,6 @@ function stopAnimation() {
     document.getElementById('play-label').textContent = 'تشغيل الحركة';
 }
 
-// Set-Piece Templates
 function loadSetPiece(type) {
     if (!type) return;
     saveHistory();
@@ -241,34 +264,46 @@ const calculateMeters = (p1, p2) => Math.hypot((p2.nx - p1.nx) * (pitchMode === 
 function drawPitch() {
     const { x, y, w, h, canvasW, canvasH } = pitchRect;
     if (w <= 0 || h <= 0) return;
-    ctx.fillStyle = pitchTheme === 'green' ? '#0d2618' : '#0f172a';
+
+    const th = pitchThemes[pitchTheme] || pitchThemes.green;
+    ctx.fillStyle = th.outer;
     ctx.fillRect(0, 0, canvasW, canvasH);
-    ctx.fillStyle = pitchTheme === 'green' ? '#133824' : '#151e32';
+    ctx.fillStyle = th.inner;
     ctx.fillRect(x, y, w, h);
-    if (pitchTheme === 'green') {
+
+    if (th.stripes) {
         const s = pitchMode === 'full' ? 14 : 8, sw = w / s;
-        for (let i = 0; i < s; i += 2) { ctx.fillStyle = 'rgba(255,255,255,0.025)'; ctx.fillRect(x + i * sw, y, sw, h); }
+        for (let i = 0; i < s; i += 2) {
+            ctx.fillStyle = th.stripeColor;
+            ctx.fillRect(x + i * sw, y, sw, h);
+        }
     }
+
     if (showZones) {
         const penH = (40.32 / 68) * h, goalH = (18.32 / 68) * h, topW = (h - penH) / 2, hsH = (penH - goalH) / 2;
         const y1 = y + topW, y2 = y1 + hsH, y3 = y2 + goalH, y4 = y3 + hsH;
-        ctx.fillStyle = 'rgba(250,204,21,0.08)'; ctx.fillRect(x, y1, w, hsH); ctx.fillRect(x, y3, w, hsH);
-        ctx.save(); ctx.strokeStyle = 'rgba(250,204,21,0.42)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 1.2;
+        ctx.fillStyle = pitchTheme === 'opta' ? 'rgba(212,175,55,0.16)' : 'rgba(250,204,21,0.08)';
+        ctx.fillRect(x, y1, w, hsH); ctx.fillRect(x, y3, w, hsH);
+        ctx.save(); ctx.strokeStyle = pitchTheme === 'opta' ? 'rgba(180,130,20,0.6)' : 'rgba(250,204,21,0.42)';
+        ctx.setLineDash([6, 6]); ctx.lineWidth = 1.2;
         [y1, y2, y3, y4].forEach(ly => { ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x + w, ly); ctx.stroke(); });
-        ctx.strokeStyle = 'rgba(56,189,248,0.35)';
+        ctx.strokeStyle = 'rgba(56,189,248,0.4)';
         [x + w / 3, x + (2 * w) / 3].forEach(lx => { ctx.beginPath(); ctx.moveTo(lx, y); ctx.lineTo(lx, y + h); ctx.stroke(); });
         ctx.restore();
     }
-    ctx.strokeStyle = pitchTheme === 'green' ? 'rgba(255,255,255,0.65)' : 'rgba(148,163,184,0.55)';
+
+    ctx.strokeStyle = th.lines;
     ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
     const len = pitchMode === 'full' ? 105 : 52.5, cR = Math.max(1, (9.15 / len) * w);
     const penW = (16.5 / len) * w, penH = (40.32 / 68) * h, penY = y + (h - penH) / 2;
     const goalW = (5.5 / len) * w, goalH = (18.32 / 68) * h, goalY = y + (h - goalH) / 2;
     const spot = (11 / len) * w, netH = (7.32 / 68) * h;
+
     ctx.strokeRect(x, penY, penW, penH); ctx.strokeRect(x, goalY, goalW, goalH);
-    ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(x + spot, y + h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = th.lines; ctx.beginPath(); ctx.arc(x + spot, y + h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(x + spot, y + h / 2, cR, -0.92, 0.92); ctx.stroke();
     ctx.strokeRect(x - 6, y + (h - netH) / 2, 6, netH);
+
     if (pitchMode === 'full') {
         ctx.beginPath(); ctx.moveTo(x + w / 2, y); ctx.lineTo(x + w / 2, y + h); ctx.stroke();
         ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, cR, 0, Math.PI * 2); ctx.stroke();
@@ -281,19 +316,13 @@ function drawPitch() {
         ctx.beginPath(); ctx.arc(x + w, y + h / 2, cR, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke();
     }
 
-    // Dynamic Offside Line
     if (showOffside) {
         const ox = x + offsideNx * w;
         ctx.save();
-        ctx.strokeStyle = '#f43f5e';
-        ctx.setLineDash([7, 5]);
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#f43f5e'; ctx.setLineDash([7, 5]); ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(ox, y + h); ctx.stroke();
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(ox - 24, y + 4, 48, 15);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 9px Inter, sans-serif';
-        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f43f5e'; ctx.fillRect(ox - 24, y + 4, 48, 15);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 9px Inter, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('OFFSIDE', ox, y + 14);
         ctx.restore();
     }
@@ -318,7 +347,6 @@ function renderDrawingItem(item) {
             ctx.beginPath(); ctx.moveTo(p2.x, p2.y); ctx.lineTo(p2.x - hl * Math.cos(ang - 0.52), p2.y - hl * Math.sin(ang - 0.52)); ctx.lineTo(p2.x - hl * Math.cos(ang + 0.52), p2.y - hl * Math.sin(ang + 0.52)); ctx.closePath(); ctx.fill();
         }
     } else if (item.type === 'shadow') {
-        // Cover Shadow Cone
         const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x), dist = Math.max(45, Math.hypot(p2.x - p1.x, p2.y - p1.y) * 2.4);
         const spread = 0.26;
         const grad = ctx.createRadialGradient(p1.x, p1.y, 5, p1.x, p1.y, dist);
@@ -327,7 +355,6 @@ function renderDrawingItem(item) {
         ctx.fillStyle = grad;
         ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.arc(p1.x, p1.y, dist, ang - spread, ang + spread); ctx.closePath(); ctx.fill();
     } else if (item.type === 'vision') {
-        // Field of Vision Cone
         const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x), dist = Math.max(55, Math.hypot(p2.x - p1.x, p2.y - p1.y));
         const spread = 0.58;
         ctx.fillStyle = hexToRgba(item.color, 0.18);
@@ -369,9 +396,8 @@ function drawPieces() {
             }
             ctx.restore(); ctx.save();
             ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = pitchTheme === 'opta' ? '#0f172a' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
-            // Number badge with dark contrast halo
             ctx.font = `bold ${r * 0.72}px Inter, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 3; ctx.strokeText(p.number || '', pos.x, pos.y);
             ctx.fillStyle = '#fff'; ctx.fillText(p.number || '', pos.x, pos.y);
@@ -450,7 +476,6 @@ canvas.addEventListener('dblclick', e => {
     }
 });
 
-// JSON Save & Load
 function exportJSON() {
     syncCurrentFrame();
     const data = { redTeamMeta, blueTeamMeta, pitchMode, keyframes };
@@ -489,7 +514,6 @@ function setColor(hex) { currentColor = hex; document.querySelectorAll('.color-b
 function setPitchMode(m) { pitchMode = m; document.querySelectorAll('.pitch-mode-btn').forEach(b => b.classList.remove('bg-slate-700', 'text-white')); document.getElementById('btn-pitch-' + m).classList.add('bg-slate-700', 'text-white'); resizeCanvas(); }
 function toggleZones() { showZones = !showZones; render(); }
 function toggleOffside() { showOffside = !showOffside; render(); }
-function togglePitchTheme() { pitchTheme = pitchTheme === 'green' ? 'dark' : 'green'; document.getElementById('theme-label').textContent = pitchTheme === 'green' ? 'عشب' : 'داكن'; render(); }
 function saveHistory() { historyStack.push({ pieces: JSON.parse(JSON.stringify(pieces)), drawings: JSON.parse(JSON.stringify(drawings)) }); if (historyStack.length > 25) historyStack.shift(); }
 function undoAction() { if (!historyStack.length) return; const prev = historyStack.pop(); pieces = prev.pieces; drawings = prev.drawings; syncCurrentFrame(); render(); }
 function clearDrawings() { saveHistory(); drawings = []; polygonPoints = []; syncCurrentFrame(); render(); }
