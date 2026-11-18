@@ -30,8 +30,289 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-1">
-            <button onclick="openLineupModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+            <button onclick="openLineupModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
                 <i class="fa-solid fa-shield-halved"></i><span>الأندية والتشكيلة</span>
             </button>
 
-            <select onchange="loadSetPiece(this.value); this.value='';" class="bg-slate-900 border border-slate-700 text-amber-300 text-[11px] px-2 py-
+            <select onchange="loadSetPiece(this.value); this.value='';" class="bg-slate-900 border border-slate-700 text-amber-300 text-[11px] px-2 py-1 rounded-lg font-semibold focus:outline-none">
+                <option value="">⚡ قوالب تكتيكية جاهزة</option>
+                <option value="corner_att">ركنية هجومية (In-swinger)</option>
+                <option value="fk_direct">ركلة حرة مباشرة وحائط صد</option>
+                <option value="gk_buildup">بناء اللعب من ركلة مرمى</option>
+                <option value="high_press">ضغط عالي (4-3-3 vs 4-2-3-1)</option>
+                <option value="counter_att">تحول هجومي سريع (Counter-Attack)</option>
+                <option value="throw_in">رمية تماس في الثلث الهجومي</option>
+            </select>
+
+            <div class="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800">
+                <button onclick="setPitchMode('full')" id="btn-pitch-full" class="pitch-mode-btn bg-slate-700 text-white text-[11px] px-2 py-0.5 rounded font-semibold">ملعب كامل</button>
+                <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 text-[11px] px-2 py-0.5 rounded font-semibold">نصف ملعب</button>
+            </div>
+
+            <button onclick="toggleZones()" id="btn-toggle-zones" class="toggle-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg font-semibold">
+                <i class="fa-solid fa-table-columns text-amber-400"></i> 5-Zones
+            </button>
+            <button onclick="toggleOffside()" id="btn-toggle-offside" class="toggle-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg font-semibold">
+                <i class="fa-solid fa-grip-lines-vertical text-rose-400"></i> التسلل
+            </button>
+            <button onclick="toggleCompactness()" id="btn-toggle-compact" class="toggle-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg font-semibold" title="قياس التماسك ومضلعات الفريقين">
+                <i class="fa-solid fa-vector-square text-emerald-400"></i> التماسك
+            </button>
+            <button onclick="toggleNotesPanel()" id="btn-toggle-notes" class="toggle-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg font-semibold">
+                <i class="fa-solid fa-clipboard-list text-sky-400"></i> الملاحظات
+            </button>
+
+            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-0.5">
+                <i class="fa-solid fa-palette text-emerald-400 text-[11px]"></i>
+                <select id="pitch-theme-select" onchange="setPitchTheme(this.value)" class="bg-transparent text-slate-200 text-[11px] font-semibold focus:outline-none cursor-pointer">
+                    <option value="green" class="bg-slate-900">أخضر عشبي</option>
+                    <option value="classic" class="bg-slate-900">أخضر فاتح</option>
+                    <option value="navy" class="bg-slate-900">كحلي تكتيكي</option>
+                    <option value="midnight" class="bg-slate-900">أسود ليلي</option>
+                    <option value="opta" class="bg-slate-900">أبيض Opta</option>
+                    <option value="custom" class="bg-slate-900">مخصص...</option>
+                </select>
+                <input type="color" id="custom-pitch-color" value="#133824" onchange="setCustomPitchColor(this.value)" class="w-4 h-4 bg-transparent border-0 cursor-pointer">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1">
+            <button onclick="exportJSON()" title="حفظ السيناريو" class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-floppy-disk"></i></button>
+            <label title="فتح سيناريو" class="bg-slate-800 hover:bg-slate-700 text-purple-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg cursor-pointer">
+                <i class="fa-solid fa-folder-open"></i><input type="file" accept=".json" onchange="importJSON(event)" class="hidden">
+            </label>
+            <button onclick="undoAction()" title="تراجع" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-rotate-left"></i></button>
+            <button onclick="clearDrawings()" title="مسح الرسومات" class="bg-slate-800 hover:bg-amber-950 text-amber-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-eraser"></i></button>
+            <button onclick="resetBoard()" title="إعادة ضبط" class="bg-slate-800 hover:bg-red-950 text-red-400 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="exportPNG()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-camera"></i> PNG</button>
+            <button onclick="exportVideo()" id="btn-export-video" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-video"></i> فيديو</button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Tools Sidebar -->
+        <aside class="bg-[#111827] border-l border-slate-800 p-2 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-y-auto md:w-52 shrink-0">
+            <div class="text-[11px] font-bold text-slate-400 hidden md:block">أدوات الرسم والتحليل</div>
+            <div class="flex md:grid md:grid-cols-2 gap-1 shrink-0">
+                <button onclick="setTool('select')" id="tool-select" class="tool-btn active flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-arrow-pointer mb-0.5"></i><span>تحريك</span></button>
+                <button onclick="setTool('spotlight')" id="tool-spotlight" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px] text-amber-300"><i class="fa-solid fa-bullseye mb-0.5"></i><span>تمييز لاعب</span></button>
+                <button onclick="setTool('arrow')" id="tool-arrow" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-arrow-up-long rotate-45 mb-0.5"></i><span>سهم حركة</span></button>
+                <button onclick="setTool('curved')" id="tool-curved" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-share mb-0.5"></i><span>ضغط قوسي</span></button>
+                <button onclick="setTool('pass')" id="tool-pass" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-ellipsis mb-0.5"></i><span>تمرير</span></button>
+                <button onclick="setTool('shadow')" id="tool-shadow" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px] text-rose-300"><i class="fa-solid fa-shield-halved mb-0.5"></i><span>ظل دفاعي</span></button>
+                <button onclick="setTool('vision')" id="tool-vision" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px] text-cyan-300"><i class="fa-solid fa-eye mb-0.5"></i><span>مخروط رؤية</span></button>
+                <button onclick="setTool('polygon')" id="tool-polygon" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-draw-polygon mb-0.5"></i><span>تظليل مساحة</span></button>
+                <button onclick="setTool('ruler')" id="tool-ruler" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-ruler-horizontal mb-0.5"></i><span>قياس متر</span></button>
+                <button onclick="setTool('text')" id="tool-text" class="tool-btn flex flex-col items-center p-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-[11px]"><i class="fa-solid fa-font mb-0.5"></i><span>نص شرح</span></button>
+            </div>
+
+            <div class="hidden md:block border-t border-slate-800 my-0.5"></div>
+            <div class="flex md:flex-col gap-1 shrink-0">
+                <div class="flex items-center justify-around bg-slate-900 p-1.5 rounded-lg border border-slate-800">
+                    <button onclick="setColor('#facc15')" data-color="#facc15" class="color-btn w-4 h-4 rounded-full bg-yellow-400 ring-2 ring-white"></button>
+                    <button onclick="setColor('#ffffff')" data-color="#ffffff" class="color-btn w-4 h-4 rounded-full bg-white"></button>
+                    <button onclick="setColor('#ef4444')" data-color="#ef4444" class="color-btn w-4 h-4 rounded-full bg-red-500"></button>
+                    <button onclick="setColor('#38bdf8')" data-color="#38bdf8" class="color-btn w-4 h-4 rounded-full bg-sky-400"></button>
+                    <button onclick="setColor('#f97316')" data-color="#f97316" class="color-btn w-4 h-4 rounded-full bg-orange-500"></button>
+                </div>
+                <div class="hidden md:flex items-center justify-between bg-slate-900 px-2 py-1 rounded-lg border border-slate-800 text-[11px]">
+                    <span>السمك:</span>
+                    <input type="range" min="2" max="7" value="3" oninput="currentStrokeWidth=parseInt(this.value)" class="w-24 accent-blue-500">
+                </div>
+            </div>
+
+            <div class="hidden md:block border-t border-slate-800 my-0.5"></div>
+            <div class="hidden md:block text-[11px] font-bold text-slate-400">عناصر الملعب والتدريب</div>
+            <div class="hidden md:grid grid-cols-2 gap-1">
+                <button onclick="addPiece('red')" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-800 py-1 rounded text-[11px] font-semibold">+ لاعب 1</button>
+                <button onclick="addPiece('blue')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800 py-1 rounded text-[11px] font-semibold">+ لاعب 2</button>
+                <button onclick="addPiece('ball')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1 rounded text-[11px] font-semibold">+ كرة</button>
+                <button onclick="addPiece('cone')" class="bg-amber-950/50 hover:bg-amber-900 text-amber-300 border border-amber-800 py-1 rounded text-[11px] font-semibold">+ قمع</button>
+                <button onclick="addPiece('mannequin')" class="bg-purple-950/50 hover:bg-purple-900 text-purple-300 border border-purple-800 py-1 rounded text-[11px] font-semibold">+ دمية تدريب</button>
+                <button onclick="addPiece('minigoal')" class="bg-emerald-950/50 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 py-1 rounded text-[11px] font-semibold">+ مرمى صغير</button>
+            </div>
+        </aside>
+
+        <!-- Canvas & Timeline Area -->
+        <main id="canvas-container" class="flex-1 relative bg-[#080c14] flex flex-col items-center justify-between p-2 overflow-hidden">
+            <!-- Match & Compactness Banner -->
+            <div class="w-full max-w-5xl flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-lg px-3 py-1 shrink-0">
+                <div class="flex items-center gap-2">
+                    <img id="banner-red-logo" src="" class="hidden w-5 h-5 object-contain rounded">
+                    <span id="badge-red-color" class="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>
+                    <span id="display-red-name" class="text-xs font-bold text-white">الفريق الأول</span>
+                    <span id="display-red-form" class="text-[10px] font-en bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">5-4-1</span>
+                    <span id="metrics-red" class="hidden text-[10px] font-en bg-red-950/80 border border-red-800 text-red-200 px-2 py-0.5 rounded">L: 0m × W: 0m</span>
+                </div>
+                <span class="text-[11px] font-en font-bold text-slate-500">VS</span>
+                <div class="flex items-center gap-2">
+                    <span id="metrics-blue" class="hidden text-[10px] font-en bg-sky-950/80 border border-sky-800 text-sky-200 px-2 py-0.5 rounded">L: 0m × W: 0m</span>
+                    <span id="display-blue-form" class="text-[10px] font-en bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">4-3-3</span>
+                    <span id="display-blue-name" class="text-xs font-bold text-white">الفريق الثاني</span>
+                    <span id="badge-blue-color" class="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block"></span>
+                    <img id="banner-blue-logo" src="" class="hidden w-5 h-5 object-contain rounded">
+                </div>
+            </div>
+
+            <!-- Tactical Pitch -->
+            <div class="flex-1 w-full flex items-center justify-center overflow-hidden my-1">
+                <canvas id="tactical-canvas" class="rounded-xl shadow-2xl border border-slate-800"></canvas>
+            </div>
+
+            <!-- Animation Keyframes Bar -->
+            <div class="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <button onclick="togglePlayAnimation()" id="btn-play-anim" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-play" id="play-icon"></i><span id="play-label">تشغيل</span>
+                    </button>
+                    <button onclick="addKeyframe()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
+                        <i class="fa-solid fa-plus"></i> إطار جديد
+                    </button>
+                    <button onclick="deleteCurrentKeyframe()" class="bg-slate-800 hover:bg-red-950 text-red-400 text-xs px-2 py-1 rounded-lg" title="حذف الإطار الحالي">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+
+                <div id="frames-list" class="flex items-center gap-1 overflow-x-auto py-0.5"></div>
+
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                    <span>السرعة:</span>
+                    <select id="anim-speed" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-white font-en">
+                        <option value="1400">بطيء</option>
+                        <option value="900" selected>متوسط</option>
+                        <option value="500">سريع</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="polygon-controls" class="hidden absolute bottom-16 left-1/2 -translate-x-1/2 bg-slate-900 border border-yellow-500 px-4 py-1.5 rounded-full flex items-center gap-2 z-30">
+                <span class="text-xs text-yellow-300">حدد زوايا المساحة</span>
+                <button onclick="finishPolygon()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">إغلاق وتظليل</button>
+                <button onclick="cancelPolygon()" class="bg-slate-700 text-slate-200 text-xs px-2.5 py-1 rounded-full">إلغاء</button>
+            </div>
+            <div id="toast-msg" class="pointer-events-none opacity-0 transition-opacity duration-300 absolute top-12 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-4 py-1.5 rounded-full z-40"></div>
+        </main>
+
+        <!-- Tactical Notes Drawer -->
+        <aside id="notes-panel" class="hidden bg-[#111827] border-r border-slate-800 p-3 flex flex-col gap-2 w-64 shrink-0">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                <span class="text-xs font-bold text-sky-400"><i class="fa-solid fa-clipboard-list ml-1"></i>ملاحظات الإطار الحالي</span>
+                <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="text" id="frame-title-input" oninput="updateFrameNotes()" placeholder="عنوان اللقطة (مثال: غلق عمق الملعب)" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+            <textarea id="frame-notes-input" oninput="updateFrameNotes()" rows="8" placeholder="اكتب النقاط التكتيكية، مفاتيح اللعب، أو تعليمات اللاعبين هنا..." class="bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-200 resize-none flex-1"></textarea>
+            <label class="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer bg-slate-900 p-2 rounded border border-slate-800">
+                <input type="checkbox" id="show-note-overlay" checked onchange="render()">
+                <span>عرض عنوان اللقطة على الملعب عند التصدير</span>
+            </label>
+        </aside>
+    </div>
+
+    <!-- Lineup, Logos & Kit Modal -->
+    <div id="lineup-modal" class="hidden fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-3">
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-800 px-5 py-3">
+                <h3 class="text-base font-bold text-white">إعداد شعارات الأندية، الأطقم، والتشكيلة</h3>
+                <button onclick="closeLineupModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Team 1 -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input type="text" id="input-red-team-name" value="الفريق الأول" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                        <select id="select-red-formation" onchange="populateLineupInputs('red', this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-en text-white">
+                            <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="3-5-2">3-5-2</option><option value="4-2-3-1">4-2-3-1</option><option value="4-4-2">4-4-2</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mb-2 bg-slate-950 p-1.5 rounded border border-slate-800 text-xs">
+                        <div class="flex items-center gap-2">
+                            <img id="preview-red-logo" src="" class="hidden w-7 h-7 object-contain bg-slate-900 rounded p-0.5 border border-slate-700">
+                            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded cursor-pointer flex items-center gap-1">
+                                <i class="fa-solid fa-upload text-blue-400"></i><span>رفع شعار النادي 1</span>
+                                <input type="file" accept="image/*" onchange="handleLogoUpload('red', event)" class="hidden">
+                            </label>
+                        </div>
+                        <button type="button" onclick="clearTeamLogo('red')" class="text-red-400 text-[11px]">حذف</button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2 text-xs bg-slate-950 p-1.5 rounded border border-slate-800">
+                        <span>لون القميص:</span><input type="color" id="red-kit-primary" value="#dc2626" class="w-6 h-6 bg-transparent cursor-pointer">
+                        <span>ثانوي:</span><input type="color" id="red-kit-secondary" value="#dc2626" class="w-6 h-6 bg-transparent cursor-pointer">
+                        <label class="flex items-center gap-1 mr-auto"><input type="checkbox" id="red-kit-striped"> مخطط</label>
+                    </div>
+                    <div id="red-players-list" class="space-y-1 max-h-52 overflow-y-auto"></div>
+                </div>
+
+                <!-- Team 2 -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input type="text" id="input-blue-team-name" value="الفريق الثاني" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                        <select id="select-blue-formation" onchange="populateLineupInputs('blue', this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-en text-white">
+                            <option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="4-4-2">4-4-2</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mb-2 bg-slate-950 p-1.5 rounded border border-slate-800 text-xs">
+                        <div class="flex items-center gap-2">
+                            <img id="preview-blue-logo" src="" class="hidden w-7 h-7 object-contain bg-slate-900 rounded p-0.5 border border-slate-700">
+                            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded cursor-pointer flex items-center gap-1">
+                                <i class="fa-solid fa-upload text-sky-400"></i><span>رفع شعار النادي 2</span>
+                                <input type="file" accept="image/*" onchange="handleLogoUpload('blue', event)" class="hidden">
+                            </label>
+                        </div>
+                        <button type="button" onclick="clearTeamLogo('blue')" class="text-red-400 text-[11px]">حذف</button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2 text-xs bg-slate-950 p-1.5 rounded border border-slate-800">
+                        <span>لون القميص:</span><input type="color" id="blue-kit-primary" value="#0284c7" class="w-6 h-6 bg-transparent cursor-pointer">
+                        <span>ثانوي:</span><input type="color" id="blue-kit-secondary" value="#ffffff" class="w-6 h-6 bg-transparent cursor-pointer">
+                        <label class="flex items-center gap-1 mr-auto"><input type="checkbox" id="blue-kit-striped"> مخطط</label>
+                    </div>
+                    <div id="blue-players-list" class="space-y-1 max-h-52 overflow-y-auto"></div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between px-5 py-2.5 border-t border-slate-800">
+                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                    <input type="checkbox" id="toggle-pitch-logos" checked onchange="showPitchLogos = this.checked; render();">
+                    <span>إظهار شعارات الأندية في زوايا الملعب</span>
+                </label>
+                <div class="flex gap-2">
+                    <button onclick="closeLineupModal()" class="bg-slate-800 text-slate-300 text-xs px-4 py-1.5 rounded-lg">إلغاء</button>
+                    <button onclick="applyBothTeamsLineups()" class="bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-lg">تطبيق على الملعب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Single Player Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-sm p-4">
+            <h3 class="text-sm font-bold text-white mb-3">تعديل بيانات اللاعب</h3>
+            <input type="text" id="edit-number" maxlength="4" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm text-white font-en mb-2" placeholder="الرقم">
+            <input type="text" id="edit-label" maxlength="18" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm text-white mb-3" placeholder="الاسم أو المركز">
+            <label class="flex items-center gap-2 text-xs text-amber-300 mb-3 cursor-pointer">
+                <input type="checkbox" id="edit-spotlight"> تفعيل حلقة التمييز المضيئة (Spotlight)
+            </label>
+            <div class="flex justify-between">
+                <button onclick="deleteSelectedPiece()" class="bg-red-950 text-red-300 text-xs px-3 py-1.5 rounded-lg">حذف</button>
+                <div class="flex gap-2">
+                    <button onclick="closeEditModal()" class="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg">إلغاء</button>
+                    <button onclick="saveEditModal()" class="bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-lg">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Annotation Modal -->
+    <div id="text-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-sm p-4">
+            <h3 class="text-sm font-bold text-white mb-2">إضافة نص تكتيكي</h3>
+            <input type="text" id="annotation-input" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm text-white mb-3" placeholder="اكتب الملاحظة...">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeTextModal()" class="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg">إلغاء</button>
+                <button onclick="confirmTextAnnotation()" class="bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-lg">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENGINE_SCRIPT -->
+</body>
+</html>
