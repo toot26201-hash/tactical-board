@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="ProTactics Studio", page_icon="⚽", layout="wide", initial_sidebar_state="collapsed")
 st.markdown("<style>.block-container{padding:0!important;max-width:100%!important;}header[data-testid='stHeader'],footer{display:none;}iframe{border:none!important;width:100%!important;height:100vh!important;display:block;}</style>", unsafe_allow_html=True)
 
-APP_HTML = r"""<!DOCTYPE html>
+HTML_HEAD = r"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -20,8 +20,9 @@ body{font-family:'Cairo','Inter',sans-serif;background:#0b0f19;color:#e2e8f0;ove
 .frame-btn.active{background:#10b981;color:#fff;border-color:#34d399}
 canvas{touch-action:none;display:block}
 </style>
-</head>
-<body class="h-screen flex flex-col bg-[#0b0f19]">
+</head>"""
+
+HTML_BODY = r"""<body class="h-screen flex flex-col bg-[#0b0f19]">
 <header class="bg-[#111827] border-b border-slate-800 px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0">
   <div class="flex items-center gap-2">
     <span class="text-sm font-bold text-white">⚽ ProTactics <span class="text-[10px] text-amber-300 bg-amber-950 border border-amber-700 px-1.5 py-0.5 rounded-full">Studio</span></span>
@@ -72,53 +73,4 @@ canvas{touch-action:none;display:block}
       <button onclick="setTool('vision')" id="tool-vision" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px] text-cyan-300">مخروط رؤية</button>
       <button onclick="setTool('polygon')" id="tool-polygon" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px]">تظليل مساحة</button>
       <button onclick="setTool('ruler')" id="tool-ruler" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px]">قياس متر</button>
-      <button onclick="setTool('text')" id="tool-text" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px]">نص شرح</button>
-    </div>
-    <div class="flex items-center justify-around bg-slate-900 p-1.5 rounded border border-slate-800">
-      <button onclick="setColor('#facc15')" data-color="#facc15" class="color-btn w-4 h-4 rounded-full bg-yellow-400 ring-2 ring-white"></button>
-      <button onclick="setColor('#ffffff')" data-color="#ffffff" class="color-btn w-4 h-4 rounded-full bg-white"></button>
-      <button onclick="setColor('#ef4444')" data-color="#ef4444" class="color-btn w-4 h-4 rounded-full bg-red-500"></button>
-      <button onclick="setColor('#38bdf8')" data-color="#38bdf8" class="color-btn w-4 h-4 rounded-full bg-sky-400"></button>
-      <button onclick="setColor('#f97316')" data-color="#f97316" class="color-btn w-4 h-4 rounded-full bg-orange-500"></button>
-    </div>
-    <div class="grid grid-cols-2 gap-1">
-      <button onclick="addPiece('red')" class="bg-red-950 text-red-300 border border-red-800 py-1 rounded text-[11px]">+ لاعب 1</button>
-      <button onclick="addPiece('blue')" class="bg-sky-950 text-sky-300 border border-sky-800 py-1 rounded text-[11px]">+ لاعب 2</button>
-      <button onclick="addPiece('ball')" class="bg-slate-800 text-slate-200 border border-slate-700 py-1 rounded text-[11px]">+ كرة</button>
-      <button onclick="addPiece('cone')" class="bg-amber-950 text-amber-300 border border-amber-800 py-1 rounded text-[11px]">+ قمع</button>
-      <button onclick="addPiece('mannequin')" class="bg-purple-950 text-purple-300 border border-purple-800 py-1 rounded text-[11px]">+ دمية</button>
-      <button onclick="addPiece('minigoal')" class="bg-emerald-950 text-emerald-300 border border-emerald-800 py-1 rounded text-[11px]">+ مرمى صغير</button>
-    </div>
-  </aside>
-
-  <main id="canvas-container" class="flex-1 relative bg-[#080c14] flex flex-col items-center justify-between p-2 overflow-hidden">
-    <div class="w-full max-w-5xl flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-3 py-1 shrink-0">
-      <div class="flex items-center gap-2">
-        <img id="banner-red-logo" src="" class="hidden w-5 h-5 object-contain rounded">
-        <span id="badge-red-color" class="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>
-        <span id="display-red-name" class="text-xs font-bold text-white">الفريق الأول</span>
-        <span id="display-red-form" class="text-[10px] font-en bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">5-4-1</span>
-        <span id="metrics-red" class="hidden text-[10px] font-en bg-red-950 border border-red-800 text-red-200 px-2 py-0.5 rounded"></span>
-      </div>
-      <span class="text-[11px] font-en font-bold text-slate-500">VS</span>
-      <div class="flex items-center gap-2">
-        <span id="metrics-blue" class="hidden text-[10px] font-en bg-sky-950 border border-sky-800 text-sky-200 px-2 py-0.5 rounded"></span>
-        <span id="display-blue-form" class="text-[10px] font-en bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">4-3-3</span>
-        <span id="display-blue-name" class="text-xs font-bold text-white">الفريق الثاني</span>
-        <span id="badge-blue-color" class="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block"></span>
-        <img id="banner-blue-logo" src="" class="hidden w-5 h-5 object-contain rounded">
-      </div>
-    </div>
-
-    <div id="pitch-wrapper" class="flex-1 w-full flex items-center justify-center overflow-hidden my-1">
-      <canvas id="tactical-canvas" class="rounded-xl shadow-2xl border border-slate-800"></canvas>
-    </div>
-
-    <div class="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 flex items-center justify-between gap-2 shrink-0">
-      <div class="flex items-center gap-1.5">
-        <button onclick="togglePlayAnimation()" id="btn-play-anim" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-lg"><span id="play-label">▶ تشغيل</span></button>
-        <button onclick="addKeyframe()" class="bg-blue-600 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">+ إطار</button>
-        <button onclick="deleteCurrentKeyframe()" class="bg-slate-800 text-red-400 text-xs px-2 py-1 rounded-lg">حذف</button>
-      </div>
-      <div id="frames-list" class="flex items-center gap-1 overflow-x-auto"></div>
-      <select id="anim-speed" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white"><option value="1400">بطيء</option><option value="900" selected>متوسط</option><option value="500">سريع</option></
+      <button onclick="setTool('text')" id="tool-text" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px]">نص
