@@ -36,7 +36,6 @@
             <select onchange="loadSetPiece(this.value); this.value='';" class="bg-slate-900 border border-slate-700 text-amber-300 text-xs px-2 py-1.5 rounded-lg font-semibold focus:outline-none">
                 <option value="">⚡ قوالب الكرات الثابتة</option>
                 <option value="corner_att">ركنية هجومية (In-swinger)</option>
-                <option value="corner_def">ركنية دفاعية (Zonal + Man)</option>
                 <option value="fk_direct">ركلة حرة مباشرة وحائط صد</option>
                 <option value="gk_buildup">بناء اللعب من ركلة مرمى</option>
             </select>
@@ -52,9 +51,19 @@
             <button onclick="toggleOffside()" id="btn-toggle-offside" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-2.5 py-1.5 rounded-lg font-semibold">
                 <i class="fa-solid fa-grip-lines-vertical text-rose-400"></i> خط التسلل
             </button>
-            <button onclick="togglePitchTheme()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs px-2.5 py-1.5 rounded-lg font-semibold">
-                <i class="fa-solid fa-palette text-emerald-400"></i> <span id="theme-label">عشب</span>
-            </button>
+
+            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                <i class="fa-solid fa-palette text-emerald-400 text-xs"></i>
+                <select id="pitch-theme-select" onchange="setPitchTheme(this.value)" class="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer">
+                    <option value="green" class="bg-slate-900">أخضر عشبي (داكن)</option>
+                    <option value="classic" class="bg-slate-900">أخضر ملاعب (فاتح)</option>
+                    <option value="navy" class="bg-slate-900">كحلي تكتيكي (Slate)</option>
+                    <option value="midnight" class="bg-slate-900">أسود ليلي (Dark)</option>
+                    <option value="opta" class="bg-slate-900">أبيض نظيف (Opta)</option>
+                    <option value="custom" class="bg-slate-900">لون مخصص...</option>
+                </select>
+                <input type="color" id="custom-pitch-color" value="#133824" onchange="setCustomPitchColor(this.value)" class="w-5 h-5 bg-transparent border-0 cursor-pointer" title="اختر أي لون للملعب">
+            </div>
         </div>
 
         <div class="flex items-center gap-1">
