@@ -297,17 +297,38 @@ function loadSetPiece(type) {
 
 function resizeCanvas() {
     const rect = container.getBoundingClientRect();
-    const availW = Math.max(300, rect.width - 30);
-    const availH = Math.max(240, rect.height - 95);
+    const bannerH = 44;
+    const timelineH = 54;
+    const availW = Math.max(320, rect.width - 28);
+    const availH = Math.max(220, rect.height - bannerH - timelineH - 24);
+
     const targetRatio = pitchMode === 'full' ? (105 / 68) : (68 / 52.5);
-    let finalW = availW, finalH = availW / targetRatio;
-    if (finalH > availH) { finalH = availH; finalW = availH * targetRatio; }
+    let finalW = availW;
+    let finalH = availW / targetRatio;
+
+    if (finalH > availH) {
+        finalH = availH;
+        finalW = availH * targetRatio;
+    }
+
+    if (finalW <= 10 || finalH <= 10) return;
+
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = finalW * dpr; canvas.height = finalH * dpr;
-    canvas.style.width = `${finalW}px`; canvas.style.height = `${finalH}px`;
+    canvas.width = finalW * dpr;
+    canvas.height = finalH * dpr;
+    canvas.style.width = `${finalW}px`;
+    canvas.style.height = `${finalH}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
     const m = Math.max(10, Math.min(finalW, finalH) * 0.025);
-    pitchRect = { x: m, y: m, w: finalW - m * 2, h: finalH - m * 2, canvasW: finalW, canvasH: finalH };
+    pitchRect = {
+        x: m,
+        y: m,
+        w: finalW - m * 2,
+        h: finalH - m * 2,
+        canvasW: finalW,
+        canvasH: finalH
+    };
     render();
 }
 
@@ -370,7 +391,6 @@ function drawPitch() {
         ctx.beginPath(); ctx.arc(x + w, y + h / 2, cR, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke();
     }
 
-    // Club Logos Watermark on Pitch Corners
     if (showPitchLogos) {
         const logoSize = Math.max(26, Math.min(44, w * 0.048));
         ctx.save();
@@ -682,6 +702,13 @@ function showToast(msg) {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('opacity-0'), 2000);
 }
 
+const ro = new ResizeObserver(() => resizeCanvas());
+ro.observe(container);
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', () => {
+    initDefaultPieces();
+    resizeCanvas();
+    setTimeout(resizeCanvas, 150);
+});
 initDefaultPieces();
-resizeCanvas();
+setTimeout(resizeCanvas, 100);
