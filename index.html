@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    html, body { width: 100%; height: 100vh; margin: 0; padding: 0; font-family: "Cairo", "Inter", sans-serif; background: #070b14; color: #e2e8f0; overflow: hidden; user-select: none; }
+    html, body { width: 100%; min-height: 100vh; margin: 0; padding: 0; font-family: "Cairo", "Inter", sans-serif; background: #070b14; color: #e2e8f0; overflow-x: hidden; overflow-y: auto; user-select: none; }
     .font-en { font-family: "Inter", sans-serif; }
     .tool-btn { transition: all 0.15s ease; }
     .tool-btn.active { background: #2563eb; color: #ffffff; border-color: #60a5fa; }
@@ -23,10 +23,10 @@
     .gold-glow { box-shadow: 0 0 35px rgba(212, 175, 55, 0.18); }
   </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col min-h-screen">
 
 <!-- ================= 1. صفحة الهبوط (Landing Page) ================= -->
-<div id="landing-page" class="fixed inset-0 z-[110] w-full h-full bg-[#070b14] pitch-grid-bg overflow-y-auto overflow-x-hidden select-text">
+<div id="landing-page" class="relative z-[110] w-full min-h-screen bg-[#070b14] pitch-grid-bg select-text pb-16">
   <nav class="sticky top-0 z-20 bg-[#070b14]/90 backdrop-blur-md border-b border-slate-800/80 px-4 md:px-10 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
@@ -220,7 +220,7 @@
 </div>
 
 <!-- ================= 3. شريط التحكم العلوي للسبورة ================= -->
-<header class="bg-[#0f172a] border-b border-slate-800 px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20">
+<header id="board-header" class="hidden bg-[#0f172a] border-b border-slate-800 px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20">
   <div class="flex items-center gap-2">
     <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-bold text-xs shadow">
       <i class="fa-solid fa-futbol"></i>
@@ -282,11 +282,11 @@
   </div>
 </header>
 
-<div class="flex flex-1 overflow-hidden">
+<div id="board-main" class="hidden flex flex-1 h-screen overflow-hidden">
   <!-- الشريط الجانبي للأدوات -->
   <aside class="bg-[#111827] border-l border-slate-800 p-2 flex flex-col gap-1.5 w-52 shrink-0 overflow-y-auto">
     <div class="text-[10px] font-bold text-slate-400">أدوات الرسم والربط</div>
-<div class="grid grid-cols-2 gap-1">
+    <div class="grid grid-cols-2 gap-1">
       <button onclick="setTool('select')" id="tool-select" class="tool-btn active p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px]">تحريك وتعديل</button>
       <button onclick="setTool('link')" id="tool-link" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px] text-amber-300">🔗 ربط لاعبين</button>
       <button onclick="setTool('curved')" id="tool-curved" class="tool-btn p-1.5 rounded border border-slate-700 bg-slate-800 text-[11px] text-emerald-300">↪ سهم منحني</button>
@@ -576,6 +576,8 @@ function startSessionGuard(userId) {
       await sbClient.auth.signOut();
       currentUser = null;
       document.getElementById("user-badge")?.classList.add("hidden");
+      document.getElementById("board-header")?.classList.add("hidden");
+      document.getElementById("board-main")?.classList.add("hidden");
       document.getElementById("auth-overlay").classList.remove("hidden");
       const msgBox = document.getElementById("auth-msg");
       msgBox.textContent = "⚠️ تم تسجيل الخروج تلقائياً لفتح الحساب من جهاز أو متصفح آخر (مسموح بجهاز واحد فقط).";
@@ -611,6 +613,8 @@ async function showUserOnBoard(user) {
     userPlan = "pro";
     document.getElementById("landing-page")?.classList.add("hidden");
     document.getElementById("auth-overlay")?.classList.add("hidden");
+    document.getElementById("board-header")?.classList.remove("hidden");
+    document.getElementById("board-main")?.classList.remove("hidden");
     const badge = document.getElementById("user-badge");
     if (badge) {
       badge.innerHTML = `👑 أدمن PRO <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`;
@@ -650,6 +654,8 @@ async function showUserOnBoard(user) {
   currentUser = user;
   document.getElementById("landing-page")?.classList.add("hidden");
   document.getElementById("auth-overlay")?.classList.add("hidden");
+  document.getElementById("board-header")?.classList.remove("hidden");
+  document.getElementById("board-main")?.classList.remove("hidden");
   const badge = document.getElementById("user-badge");
   if (badge) {
     const displayName = profile.full_name || user.email.split("@")[0];
@@ -715,6 +721,8 @@ async function logoutSession() {
   currentUser = null;
   localSessionToken = null;
   document.getElementById("user-badge")?.classList.add("hidden");
+  document.getElementById("board-header")?.classList.add("hidden");
+  document.getElementById("board-main")?.classList.add("hidden");
   document.getElementById("auth-overlay")?.classList.add("hidden");
   document.getElementById("landing-page").classList.remove("hidden");
 }
