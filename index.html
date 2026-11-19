@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProTactics Studio 3D PRO</title>
+<title>ProTactics Studio 3D PRO - TootScouting</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=Inter:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -22,28 +23,37 @@
 </head>
 <body class="w-full h-screen flex flex-col bg-[#0b0f19] overflow-hidden">
 
-<!-- شاشة تسجيل الدخول المحمية -->
+<!-- شاشة تسجيل الدخول وإنشاء الحساب (Supabase Auth) -->
 <div id="auth-overlay" class="fixed inset-0 z-[100] bg-[#070b14]/95 backdrop-blur-md flex items-center justify-center p-4">
-  <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center space-y-5">
-    <div class="space-y-1.5">
+  <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+    <div class="space-y-1">
       <div class="w-12 h-12 mx-auto rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl">⚽</div>
       <h2 class="text-lg font-extrabold text-white tracking-wide">ProTactics <span class="text-amber-400">3D PRO</span></h2>
-      <p class="text-xs text-slate-400">منصة التحليل التكتيكي المتقدمة • أدخل بيانات الدخول</p>
+      <p class="text-xs text-slate-400">منصة التحليل التكتيكي • TootScouting</p>
     </div>
 
-    <form onsubmit="handleLogin(event)" class="space-y-3 text-right">
-      <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1">اسم المستخدم</label>
-        <input type="text" id="login-user" required placeholder="mahmoud" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-en text-left" dir="ltr">
+    <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+      <button type="button" id="tab-login" onclick="switchAuthMode('login')" class="bg-amber-500 text-slate-950 py-1.5 rounded-lg transition">تسجيل الدخول</button>
+      <button type="button" id="tab-signup" onclick="switchAuthMode('signup')" class="text-slate-400 hover:text-white py-1.5 rounded-lg transition">حساب جديد</button>
+    </div>
+
+    <form onsubmit="handleSupabaseAuth(event)" class="space-y-3 text-right">
+      <div id="name-field" class="hidden">
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1">الاسم الكامل / النادي</label>
+        <input type="text" id="auth-name" placeholder="مثال: كابتن محمود" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none">
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1">كود الوصول (Password)</label>
-        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-en text-left" dir="ltr">
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1">البريد الإلكتروني</label>
+        <input type="email" id="auth-email" required placeholder="coach@club.com" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-en text-left" dir="ltr">
       </div>
-      <div id="login-error" class="hidden text-[11px] text-rose-400 bg-rose-950/50 border border-rose-800/60 rounded-lg px-2.5 py-1.5 text-center">
-        بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1">كلمة المرور (6 أحرف على الأقل)</label>
+        <input type="password" id="auth-pass" required minlength="6" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-en text-left" dir="ltr">
       </div>
-      <button type="submit" class="w-full bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl shadow-lg transition">
+
+      <div id="auth-msg" class="hidden text-[11px] rounded-lg px-2.5 py-1.5 text-center"></div>
+
+      <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl shadow-lg transition">
         دخول إلى غرفة التحليل 🔓
       </button>
     </form>
@@ -90,6 +100,7 @@
   </div>
 
   <div class="flex items-center gap-1">
+    <span id="user-badge" class="hidden text-[10px] text-amber-300 bg-slate-800 border border-slate-700 px-2 py-1 rounded-lg font-semibold"></span>
     <button onclick="exportJSON()" title="حفظ" class="bg-slate-800 text-sky-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-floppy-disk"></i></button>
     <label title="فتح" class="bg-slate-800 text-purple-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg cursor-pointer"><i class="fa-solid fa-folder-open"></i><input type="file" accept=".json" onchange="importJSON(event)" class="hidden"></label>
     <button onclick="undoAction()" title="تراجع" class="bg-slate-800 text-slate-200 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-rotate-left"></i></button>
@@ -290,37 +301,89 @@
 </div>
 
 <script>
-// --- نظام تسجيل الدخول ---
-const ALLOWED_ACCOUNTS = [
-  { user: "mahmoud", pass: "toot2026" },
-  { user: "admin", pass: "eps2026" },
-  { user: "student", pass: "tactics101" }
-];
+// --- إعدادات الاتصال بـ Supabase ---
+const SUPABASE_URL = "https://tpldhmjbbhpzzlctrwcs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Chs3SrP6SCxQDWPrEG7k_g_AN8NgdTq";
+const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function checkAuthSession() {
-  if (sessionStorage.getItem("protactics_auth") === "true") {
-    document.getElementById("auth-overlay")?.classList.add("hidden");
-  }
+let authMode = "login";
+
+function switchAuthMode(mode) {
+  authMode = mode;
+  const isSignup = mode === "signup";
+  document.getElementById("name-field").classList.toggle("hidden", !isSignup);
+  document.getElementById("tab-login").className = !isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
+  document.getElementById("tab-signup").className = isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
+  document.getElementById("auth-submit-btn").textContent = isSignup ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
+  document.getElementById("auth-msg").classList.add("hidden");
 }
 
-function handleLogin(e) {
+function showUserOnBoard(user) {
+  document.getElementById("auth-overlay")?.classList.add("hidden");
+  const badge = document.getElementById("user-badge");
+  if (badge && user) {
+    const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "محلل";
+    badge.textContent = "👤 " + displayName;
+    badge.classList.remove("hidden");
+  }
+  setTimeout(resizeCanvas, 50);
+}
+
+async function handleSupabaseAuth(e) {
   e.preventDefault();
-  const u = document.getElementById("login-user").value.trim().toLowerCase();
-  const p = document.getElementById("login-pass").value.trim();
-  const valid = ALLOWED_ACCOUNTS.some(acc => acc.user.toLowerCase() === u && acc.pass === p);
-  if (valid) {
-    sessionStorage.setItem("protactics_auth", "true");
-    document.getElementById("auth-overlay").classList.add("hidden");
-    document.getElementById("login-error").classList.add("hidden");
-    showToast("مرحباً بك في غرفة التحليل التكتيكي!");
-    setTimeout(resizeCanvas, 50);
-  } else {
-    document.getElementById("login-error").classList.remove("hidden");
+  const email = document.getElementById("auth-email").value.trim();
+  const password = document.getElementById("auth-pass").value.trim();
+  const fullName = document.getElementById("auth-name").value.trim();
+  const btn = document.getElementById("auth-submit-btn");
+  const msgBox = document.getElementById("auth-msg");
+
+  btn.disabled = true;
+  btn.textContent = "جاري التحقق...";
+  msgBox.classList.add("hidden");
+
+  try {
+    let res;
+    if (authMode === "signup") {
+      res = await sbClient.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } }
+      });
+    } else {
+      res = await sbClient.auth.signInWithPassword({ email, password });
+    }
+
+    if (res.error) throw res.error;
+
+    if (res.data?.session) {
+      showUserOnBoard(res.data.user);
+      showToast("تم تسجيل الدخول بنجاح!");
+    } else {
+      msgBox.textContent = "تم إنشاء الحساب! يرجى مراجعة بريدك الإلكتروني لتأكيد التسجيل أو تسجيل الدخول.";
+      msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-1.5 text-center";
+    }
+  } catch (err) {
+    let errText = err.message;
+    if (errText.includes("Invalid login credentials")) errText = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+    if (errText.includes("User already registered")) errText = "هذا البريد مسجل بالفعل، انتقل لتبويب تسجيل الدخول";
+    msgBox.textContent = errText;
+    msgBox.className = "text-[11px] text-rose-400 bg-rose-950/60 border border-rose-800 rounded-lg px-2.5 py-1.5 text-center";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === "signup" ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
   }
 }
 
-function logoutSession() {
-  sessionStorage.removeItem("protactics_auth");
+async function checkAuthSession() {
+  const { data } = await sbClient.auth.getSession();
+  if (data?.session) {
+    showUserOnBoard(data.session.user);
+  }
+}
+
+async function logoutSession() {
+  await sbClient.auth.signOut();
+  document.getElementById("user-badge")?.classList.add("hidden");
   document.getElementById("auth-overlay").classList.remove("hidden");
 }
 checkAuthSession();
