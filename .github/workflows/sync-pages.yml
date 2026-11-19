@@ -3,6 +3,7 @@ name: Sync Streamlit HTML to GitHub Pages
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,15 +18,8 @@ jobs:
           python-version: '3.11'
       - name: Generate updated index.html from app.py
         run: |
-          python -c '
-          with open("app.py", "r", encoding="utf-8") as f:
-              code = f.read().split("components.html")[0]
-          ns = {}
-          exec(code, ns)
-          if "html_code" in ns:
-              with open("index.html", "w", encoding="utf-8") as out:
-                  out.write(ns["html_code"])
-          '
+          pip install streamlit
+          python -c "import re; code = open('app.py', encoding='utf-8').read().split('components.html')[0]; ns = {}; exec(code, ns); open('index.html', 'w', encoding='utf-8').write(ns['html_code'])"
       - name: Commit updated index.html
         run: |
           git config user.name "github-actions[bot]"
