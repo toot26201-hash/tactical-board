@@ -65,7 +65,8 @@
   <div class="flex items-center gap-1.5">
     <span class="text-sm font-extrabold text-white">⚽ ProTactics <span class="text-[10px] text-amber-300 bg-amber-950 border border-amber-700 px-1.5 py-0.5 rounded-full">3D PRO</span></span>
     <button onclick="openLineupModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-users-gear"></i> التشكيلات</button>
-    <button onclick="openCloudModal()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-[11px] px-2.5 py-1 rounded-lg font-extrabold"><i class="fa-solid fa-cloud"></i> خططي السحابية</button>
+    <button onclick="openCloudModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 text-[11px] px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-cloud"></i> خططي</button>
+    <button onclick="openUpgradeModal()" id="btn-upgrade-nav" class="bg-gradient-to-l from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-[11px] px-2.5 py-1 rounded-lg font-extrabold shadow">⭐ ترقية لـ PRO</button>
   </div>
 
   <div class="flex flex-wrap items-center gap-1">
@@ -233,11 +234,41 @@
   </aside>
 </div>
 
+<!-- نافذة ترقية الحساب إلى PRO -->
+<div id="upgrade-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+  <div class="bg-[#111827] border border-amber-500/50 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+      <h3 class="text-base font-extrabold text-amber-400">⭐ الترقية إلى باقة ProTactics PRO</h3>
+      <button onclick="closeUpgradeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1.5">
+        <div class="font-bold text-slate-300">الباقة المجانية (Free)</div>
+        <div class="text-[11px] text-slate-400">✔ السبورة التكتيكية 3D</div>
+        <div class="text-[11px] text-slate-400">✔ حفظ خطة واحدة فقط</div>
+        <div class="text-[11px] text-rose-400">✖ بدون تصدير فيديو</div>
+      </div>
+      <div class="bg-amber-950/30 border border-amber-500/60 rounded-xl p-3 space-y-1.5">
+        <div class="font-extrabold text-amber-400">باقة المحترفين (PRO)</div>
+        <div class="text-[11px] text-emerald-300">✔ حفظ سحابي غير محدود</div>
+        <div class="text-[11px] text-emerald-300">✔ تصدير فيديو عالي الجودة</div>
+        <div class="text-[11px] text-emerald-300">✔ دعم فني مباشر وتحديثات</div>
+      </div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center space-y-2">
+      <p class="text-xs text-slate-300 leading-relaxed">للاشتراك الشهري أو السنوي عبر <b>InstaPay / فودافون كاش / تحويل بنكي</b>، تواصل مع إدارة <b>TootScouting</b> لتفعيل حسابك فوراً:</p>
+      <button onclick="requestProViaWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+        <i class="fa-brands fa-whatsapp text-base"></i> طلب تفعيل PRO عبر واتساب
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- نافذة الحفظ والتحميل السحابي (Cloud Tactics) -->
 <div id="cloud-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3">
   <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
     <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3">
-      <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-cloud"></i> مكتبة خططي السحابية (Supabase)</h3>
+      <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-cloud"></i> مكتبة خططي السحابية <span id="cloud-limit-badge" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full"></span></h3>
       <button onclick="closeCloudModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
     </div>
     <div class="p-4 space-y-4 overflow-y-auto">
@@ -328,13 +359,19 @@
 </div>
 
 <script>
-// --- إعدادات الاتصال بـ Supabase ونظام صلاحيات الأدمن ---
+// --- إعدادات الاتصال بـ Supabase، نظام الباقات (Free/PRO)، وحماية الجلسة الواحدة ---
 const SUPABASE_URL = "https://tpldhmjbbhpzzlctrwcs.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Chs3SrP6SCxQDWPrEG7k_g_AN8NgdTq";
 const ADMIN_EMAIL = "toot26201@gmail.com";
+const WHATSAPP_ADMIN_PHONE = "201000000000"; // <-- ضع رقم واتساب الخاص بك هنا بصيغة دولية بدون +
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let authMode = "login", currentUser = null;
+let authMode = "login", currentUser = null, userPlan = "free", isAdminUser = false;
+let localSessionToken = null, sessionGuardTimer = null, cachedTacticsCount = 0;
+
+function generateDeviceToken() {
+  return "sess_" + Date.now() + "_" + Math.random().toString(36).substring(2, 12);
+}
 
 function switchAuthMode(mode) {
   authMode = mode;
@@ -346,25 +383,68 @@ function switchAuthMode(mode) {
   document.getElementById("auth-msg").classList.add("hidden");
 }
 
+function startSessionGuard(userId) {
+  if (sessionGuardTimer) clearInterval(sessionGuardTimer);
+  sessionGuardTimer = setInterval(async () => {
+    if (!currentUser || !localSessionToken || isAdminUser) return;
+    const { data } = await sbClient
+      .from("profiles")
+      .select("active_session_token, is_approved")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (data && data.active_session_token && data.active_session_token !== localSessionToken) {
+      clearInterval(sessionGuardTimer);
+      await sbClient.auth.signOut();
+      currentUser = null;
+      document.getElementById("user-badge")?.classList.add("hidden");
+      document.getElementById("auth-overlay").classList.remove("hidden");
+      const msgBox = document.getElementById("auth-msg");
+      msgBox.textContent = "⚠️ تم تسجيل الخروج تلقائياً لفتح الحساب من جهاز أو متصفح آخر (مسموح بجهاز واحد فقط).";
+      msgBox.className = "text-[11px] text-rose-400 bg-rose-950/70 border border-rose-800 rounded-lg px-2.5 py-2 text-center leading-relaxed";
+      msgBox.classList.remove("hidden");
+    }
+  }, 15000);
+}
+
+function applyPlanRestrictionsUI() {
+  const videoBtn = document.getElementById("btn-export-video");
+  const upgradeBtn = document.getElementById("btn-upgrade-nav");
+  if (userPlan === "pro" || isAdminUser) {
+    videoBtn.innerHTML = "فيديو";
+    videoBtn.classList.remove("opacity-75");
+    if (isAdminUser) upgradeBtn.classList.add("hidden");
+    else upgradeBtn.textContent = "⭐ باقة PRO مفعلة";
+  } else {
+    videoBtn.innerHTML = "فيديو 🔒";
+    videoBtn.classList.add("opacity-75");
+    upgradeBtn.classList.remove("hidden");
+    upgradeBtn.textContent = "⭐ ترقية لـ PRO";
+  }
+}
+
 async function showUserOnBoard(user) {
   if (!user) return;
   const msgBox = document.getElementById("auth-msg");
+  isAdminUser = (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
-  if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  if (isAdminUser) {
     currentUser = user;
+    userPlan = "pro";
     document.getElementById("auth-overlay")?.classList.add("hidden");
     const badge = document.getElementById("user-badge");
     if (badge) {
-      badge.innerHTML = `👑 أدمن <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`;
+      badge.innerHTML = `👑 أدمن PRO <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`;
       badge.classList.remove("hidden");
     }
+    applyPlanRestrictionsUI();
     setTimeout(resizeCanvas, 50);
     return;
   }
 
   const { data: profile, error } = await sbClient
     .from("profiles")
-    .select("is_approved, role, full_name")
+    .select("is_approved, full_name, plan, subscription_end")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -376,14 +456,28 @@ async function showUserOnBoard(user) {
     return;
   }
 
+  // التحقق من صلاحية الاشتراك (PRO vs Free)
+  let effectivePlan = (profile.plan || "free").toLowerCase();
+  if (effectivePlan === "pro" && profile.subscription_end) {
+    if (new Date(profile.subscription_end) < new Date()) effectivePlan = "free";
+  }
+  userPlan = effectivePlan;
+
+  // تسجيل بصمة الجلسة لمنع المشاركة على أكثر من جهاز
+  localSessionToken = generateDeviceToken();
+  await sbClient.from("profiles").update({ active_session_token: localSessionToken }).eq("id", user.id);
+  startSessionGuard(user.id);
+
   currentUser = user;
   document.getElementById("auth-overlay")?.classList.add("hidden");
   const badge = document.getElementById("user-badge");
   if (badge) {
     const displayName = profile.full_name || user.email.split("@")[0];
-    badge.innerHTML = `👤 ${displayName}`;
+    const planTag = userPlan === "pro" ? `<span class="text-amber-400 font-extrabold">⭐ PRO</span>` : `<span class="text-slate-400">Free</span>`;
+    badge.innerHTML = `👤 ${displayName} • ${planTag}`;
     badge.classList.remove("hidden");
   }
+  applyPlanRestrictionsUI();
   setTimeout(resizeCanvas, 50);
 }
 
@@ -433,12 +527,22 @@ async function checkAuthSession() {
 }
 
 async function logoutSession() {
+  if (sessionGuardTimer) clearInterval(sessionGuardTimer);
   await sbClient.auth.signOut();
   currentUser = null;
+  localSessionToken = null;
   document.getElementById("user-badge")?.classList.add("hidden");
   document.getElementById("auth-overlay").classList.remove("hidden");
 }
 checkAuthSession();
+
+function openUpgradeModal() { document.getElementById("upgrade-modal").classList.remove("hidden"); }
+function closeUpgradeModal() { document.getElementById("upgrade-modal").classList.add("hidden"); }
+function requestProViaWhatsApp() {
+  const email = currentUser?.email || "";
+  const msg = encodeURIComponent(`أهلاً إدارة TootScouting، أرغب في ترقية حسابي إلى باقة ProTactics 3D PRO.\nالبريد الإلكتروني: ${email}`);
+  window.open(`https://wa.me/${WHATSAPP_ADMIN_PHONE}?text=${msg}`, "_blank");
+}
 
 // --- الحفظ والتحميل السحابي (Cloud Tactics) ---
 function openCloudModal() {
@@ -446,12 +550,15 @@ function openCloudModal() {
   document.getElementById("cloud-modal").classList.remove("hidden");
   fetchCloudTactics();
 }
-function closeCloudModal() {
-  document.getElementById("cloud-modal").classList.add("hidden");
-}
+function closeCloudModal() { document.getElementById("cloud-modal").classList.add("hidden"); }
 
 async function saveTacticToCloud() {
   if (!currentUser) return;
+  if (userPlan !== "pro" && !isAdminUser && cachedTacticsCount >= 1) {
+    closeCloudModal();
+    openUpgradeModal();
+    return showToast("الباقة المجانية تسمح بحفظ خطة واحدة فقط ⭐");
+  }
   const titleInput = document.getElementById("cloud-tactic-title");
   const title = titleInput.value.trim() || `خطة تكتيكية ${new Date().toLocaleDateString("ar-EG")}`;
   const btn = document.getElementById("btn-save-cloud");
@@ -471,11 +578,17 @@ async function saveTacticToCloud() {
 
 async function fetchCloudTactics() {
   const listEl = document.getElementById("cloud-tactics-list");
+  const limitBadge = document.getElementById("cloud-limit-badge");
   listEl.innerHTML = `<div class="text-center text-slate-500 py-4">جاري تحميل خططك...</div>`;
   const { data, error } = await sbClient
     .from("saved_tactics")
     .select("id, title, created_at, data")
     .order("created_at", { ascending: false });
+
+  cachedTacticsCount = data ? data.length : 0;
+  if (limitBadge) {
+    limitBadge.textContent = (userPlan === "pro" || isAdminUser) ? `${cachedTacticsCount} خطة (PRO غير محدود)` : `${cachedTacticsCount} / 1 (باقة Free)`;
+  }
 
   if (error || !data || data.length === 0) {
     listEl.innerHTML = `<div class="text-center text-slate-500 py-4">لا توجد خطط محفوظة بعد في حسابك.</div>`;
@@ -602,7 +715,20 @@ function togglePlayAnimation(cb){
   animRaf=requestAnimationFrame(step);
 }
 function stopAnimation(){isPlaying=false;if(animRaf)cancelAnimationFrame(animRaf);document.getElementById("play-label").textContent="▶ تشغيل";}
-function exportVideo(){if(keyframes.length<2)return showToast("أضف إطارين على الأقل");if(isRecordingVideo||!canvas.captureStream||typeof MediaRecorder==="undefined")return;isRecordingVideo=true;const btn=document.getElementById("btn-export-video");btn.textContent="جاري التسجيل...";const rec=new MediaRecorder(canvas.captureStream(30),{mimeType:"video/webm"}),chunks=[];rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(chunks,{type:"video/webm"}));a.download=`TootScouting_Tactic_${Date.now()}.webm`;a.click();isRecordingVideo=false;btn.textContent="فيديو";};selectKeyframe(0);rec.start();setTimeout(()=>togglePlayAnimation(()=>setTimeout(()=>rec.stop(),350)),200);}
+
+function exportVideo(){
+  if (userPlan !== "pro" && !isAdminUser) {
+    openUpgradeModal();
+    return showToast("تصدير الفيديو متاح لمشتركي باقة PRO فقط ⭐");
+  }
+  if(keyframes.length<2)return showToast("أضف إطارين على الأقل");
+  if(isRecordingVideo||!canvas.captureStream||typeof MediaRecorder==="undefined")return;
+  isRecordingVideo=true;const btn=document.getElementById("btn-export-video");btn.textContent="جاري التسجيل...";
+  const rec=new MediaRecorder(canvas.captureStream(30),{mimeType:"video/webm"}),chunks=[];
+  rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+  rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(chunks,{type:"video/webm"}));a.download=`TootScouting_Tactic_${Date.now()}.webm`;a.click();isRecordingVideo=false;btn.textContent="فيديو";};
+  selectKeyframe(0);rec.start();setTimeout(()=>togglePlayAnimation(()=>setTimeout(()=>rec.stop(),350)),200);
+}
 
 function loadSetPiece(t){
   if(!t)return;saveHistory();drawings=[];links=[];
@@ -782,7 +908,7 @@ function populateLineupInputs(team,form,keep){const el=document.getElementById(t
 function applyBothTeamsLineups(){saveHistory();redTeamMeta.name=document.getElementById("input-red-team-name").value||"الفريق الأول";redTeamMeta.formation=document.getElementById("select-red-formation").value;blueTeamMeta.name=document.getElementById("input-blue-team-name").value||"الفريق الثاني";blueTeamMeta.formation=document.getElementById("select-blue-formation").value;pieces=pieces.filter(p=>p.type!=="red"&&p.type!=="blue");formationTemplates[redTeamMeta.formation].forEach((s,i)=>pieces.push({id:"red_"+i,type:"red",nx:s.nx,ny:s.ny,number:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));formationTemplates[blueTeamMeta.formation].forEach((s,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-s.nx,ny:s.ny,number:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));updateTeamBanner();syncCurrentFrame();closeLineupModal();render();}
 function exportPNG(){const a=document.createElement("a");a.download=`TootScouting_Tactic_${Date.now()}.png`;a.href=canvas.toDataURL("image/png",1.0);a.click();}
 function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
-let toastTimer=null;function showToast(m){const el=document.getElementById("toast-msg");el.textContent=m;el.classList.remove("opacity-0");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("opacity-0"),2200);}
+let toastTimer=null;function showToast(m){const el=document.getElementById("toast-msg");el.textContent=m;el.classList.remove("opacity-0");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("opacity-0"),2500);}
 
 setInterval(()=>{if((pieces.some(p=>p.spotlight)||linkSourceId)&&!isPlaying){pulsePhase+=0.25;render();}},60);
 window.addEventListener("resize",resizeCanvas);
