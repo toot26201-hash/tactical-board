@@ -10,13 +10,28 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        .block-container { padding: 0 !important; max-width: 100% !important; }
-        header, footer, #MainMenu { visibility: hidden; }
-        iframe { width: 100% !important; height: 100vh !important; border: none !important; display: block !important; }
+        html, body, [data-testid="stAppViewContainer"], .main {
+            overflow: hidden !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .block-container {
+            padding: 0 !important;
+            max-width: 100% !important;
+            height: 100vh !important;
+        }
+        header, footer, #MainMenu { visibility: hidden; display: none !important; }
+        iframe {
+            width: 100% !important;
+            height: 100vh !important;
+            border: none !important;
+            display: block !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
-components.html(html_code, height=2100, scrolling=True)
+components.html(html_code, height=900, scrolling=True)
