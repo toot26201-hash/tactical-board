@@ -23,7 +23,7 @@
 </head>
 <body class="w-full h-screen flex flex-col bg-[#0b0f19] overflow-hidden">
 
-<!-- شاشة تسجيل الدخول وإنشاء الحساب (Supabase Auth) -->
+<!-- شاشة تسجيل الدخول وإنشاء الحساب (Supabase Auth + Admin Approval) -->
 <div id="auth-overlay" class="fixed inset-0 z-[100] bg-[#070b14]/95 backdrop-blur-md flex items-center justify-center p-4">
   <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
     <div class="space-y-1">
@@ -51,7 +51,7 @@
         <input type="password" id="auth-pass" required minlength="6" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-en text-left" dir="ltr">
       </div>
 
-      <div id="auth-msg" class="hidden text-[11px] rounded-lg px-2.5 py-1.5 text-center"></div>
+      <div id="auth-msg" class="hidden text-[11px] rounded-lg px-2.5 py-2 text-center leading-relaxed"></div>
 
       <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl shadow-lg transition">
         دخول إلى غرفة التحليل 🔓
@@ -301,9 +301,10 @@
 </div>
 
 <script>
-// --- إعدادات الاتصال بـ Supabase ---
+// --- إعدادات الاتصال بـ Supabase ونظام صلاحيات الأدمن ---
 const SUPABASE_URL = "https://tpldhmjbbhpzzlctrwcs.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Chs3SrP6SCxQDWPrEG7k_g_AN8NgdTq";
+const ADMIN_EMAIL = "toot26201@gmail.com";
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let authMode = "login";
@@ -314,16 +315,49 @@ function switchAuthMode(mode) {
   document.getElementById("name-field").classList.toggle("hidden", !isSignup);
   document.getElementById("tab-login").className = !isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
   document.getElementById("tab-signup").className = isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
-  document.getElementById("auth-submit-btn").textContent = isSignup ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
+  document.getElementById("auth-submit-btn").textContent = isSignup ? "إرسال طلب تسجيل 🚀" : "دخول إلى غرفة التحليل 🔓";
   document.getElementById("auth-msg").classList.add("hidden");
 }
 
-function showUserOnBoard(user) {
+async function showUserOnBoard(user) {
+  if (!user) return;
+  const msgBox = document.getElementById("auth-msg");
+
+  // السماح الفوري لحساب السوبر أدمن
+  if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    document.getElementById("auth-overlay")?.classList.add("hidden");
+    const badge = document.getElementById("user-badge");
+    if (badge) {
+      badge.innerHTML = `👑 أدمن <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة المستخدمين)</a>`;
+      badge.classList.remove("hidden");
+    }
+    setTimeout(resizeCanvas, 50);
+    return;
+  }
+
+  // التحقق من موافقة الأدمن لباقي المستخدمين من جدول profiles
+  const { data: profile, error } = await sbClient
+    .from("profiles")
+    .select("is_approved, role, full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !profile || !profile.is_approved) {
+    await sbClient.auth.signOut();
+    msgBox.textContent = "⏳ تم استلام بياناتك بنجاح! حسابك قيد المراجعة والتفعيل من إدارة TootScouting.";
+    msgBox.className = "text-[11px] text-amber-300 bg-amber-950/60 border border-amber-700 rounded-lg px-2.5 py-2 text-center leading-relaxed";
+    msgBox.classList.remove("hidden");
+    return;
+  }
+
+  // الحساب مفعل -> افتح المنصة
   document.getElementById("auth-overlay")?.classList.add("hidden");
   const badge = document.getElementById("user-badge");
-  if (badge && user) {
-    const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "محلل";
-    badge.textContent = "👤 " + displayName;
+  if (badge) {
+    const displayName = profile.full_name || user.email.split("@")[0];
+    badge.innerHTML = profile.role === "admin"
+      ? `👑 ${displayName} <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`
+      : `👤 ${displayName}`;
     badge.classList.remove("hidden");
   }
   setTimeout(resizeCanvas, 50);
@@ -356,28 +390,29 @@ async function handleSupabaseAuth(e) {
     if (res.error) throw res.error;
 
     if (res.data?.session) {
-      showUserOnBoard(res.data.user);
-      showToast("تم تسجيل الدخول بنجاح!");
+      await showUserOnBoard(res.data.user);
     } else {
-      msgBox.textContent = "تم إنشاء الحساب! يرجى مراجعة بريدك الإلكتروني لتأكيد التسجيل أو تسجيل الدخول.";
-      msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-1.5 text-center";
+      msgBox.textContent = "تم تسجيل طلبك! يرجى انتظار تفعيل الحساب من الإدارة.";
+      msgBox.className = "text-[11px] text-amber-300 bg-amber-950/60 border border-amber-700 rounded-lg px-2.5 py-2 text-center";
+      msgBox.classList.remove("hidden");
     }
   } catch (err) {
     let errText = err.message;
     if (errText.includes("Invalid login credentials")) errText = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
     if (errText.includes("User already registered")) errText = "هذا البريد مسجل بالفعل، انتقل لتبويب تسجيل الدخول";
     msgBox.textContent = errText;
-    msgBox.className = "text-[11px] text-rose-400 bg-rose-950/60 border border-rose-800 rounded-lg px-2.5 py-1.5 text-center";
+    msgBox.className = "text-[11px] text-rose-400 bg-rose-950/60 border border-rose-800 rounded-lg px-2.5 py-2 text-center";
+    msgBox.classList.remove("hidden");
   } finally {
     btn.disabled = false;
-    btn.textContent = authMode === "signup" ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
+    btn.textContent = authMode === "signup" ? "إرسال طلب تسجيل 🚀" : "دخول إلى غرفة التحليل 🔓";
   }
 }
 
 async function checkAuthSession() {
   const { data } = await sbClient.auth.getSession();
   if (data?.session) {
-    showUserOnBoard(data.session.user);
+    await showUserOnBoard(data.session.user);
   }
 }
 
