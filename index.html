@@ -363,7 +363,7 @@
 const SUPABASE_URL = "https://tpldhmjbbhpzzlctrwcs.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Chs3SrP6SCxQDWPrEG7k_g_AN8NgdTq";
 const ADMIN_EMAIL = "toot26201@gmail.com";
-const WHATSAPP_ADMIN_PHONE = "201000000000"; // <-- ضع رقم واتساب الخاص بك هنا بصيغة دولية بدون +
+const WHATSAPP_ADMIN_PHONE = "201151763366";
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let authMode = "login", currentUser = null, userPlan = "free", isAdminUser = false;
@@ -456,14 +456,12 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  // التحقق من صلاحية الاشتراك (PRO vs Free)
   let effectivePlan = (profile.plan || "free").toLowerCase();
   if (effectivePlan === "pro" && profile.subscription_end) {
     if (new Date(profile.subscription_end) < new Date()) effectivePlan = "free";
   }
   userPlan = effectivePlan;
 
-  // تسجيل بصمة الجلسة لمنع المشاركة على أكثر من جهاز
   localSessionToken = generateDeviceToken();
   await sbClient.from("profiles").update({ active_session_token: localSessionToken }).eq("id", user.id);
   startSessionGuard(user.id);
