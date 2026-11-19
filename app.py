@@ -28,5 +28,29 @@ st.markdown("""
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
-# تعطيل السكرول الداخلي للـ iframe والاعتماد على سكرول واحد فقط للمتصفح
+# سكريبت ذكي لضبط ارتفاع الـ iframe تلقائياً: 1650px لصفحة الهبوط، و 100vh للسبورة بدون فراغ
+auto_height_script = """
+<script>
+(function() {
+    function syncIframeHeight() {
+        const iframe = window.frameElement;
+        if (!iframe) return;
+        const landing = document.getElementById("landing-page");
+        const isLandingVisible = landing && !landing.classList.contains("hidden");
+        if (isLandingVisible) {
+            iframe.style.height = "1650px";
+        } else {
+            iframe.style.height = "100vh";
+            if (typeof resizeCanvas === "function") resizeCanvas();
+        }
+    }
+    setInterval(syncIframeHeight, 300);
+    window.addEventListener("load", syncIframeHeight);
+})();
+</script>
+</body>
+"""
+
+html_code = html_code.replace("</body>", auto_height_script)
+
 components.html(html_code, height=1650, scrolling=False)
