@@ -10,21 +10,15 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        html, body, [data-testid="stAppViewContainer"], .main {
-            overflow: hidden !important;
-            height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
         .block-container {
             padding: 0 !important;
             max-width: 100% !important;
-            height: 100vh !important;
         }
-        header, footer, #MainMenu { visibility: hidden; display: none !important; }
+        header, footer, #MainMenu, [data-testid="stToolbar"], [data-testid="stDecoration"] {
+            display: none !important;
+        }
         iframe {
             width: 100% !important;
-            height: 100vh !important;
             border: none !important;
             display: block !important;
         }
@@ -34,4 +28,5 @@ st.markdown("""
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
-components.html(html_code, height=900, scrolling=True)
+# تعطيل السكرول الداخلي للـ iframe والاعتماد على سكرول واحد فقط للمتصفح
+components.html(html_code, height=1650, scrolling=False)
