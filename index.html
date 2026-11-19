@@ -23,7 +23,7 @@
 </head>
 <body class="w-full h-screen flex flex-col bg-[#0b0f19] overflow-hidden">
 
-<!-- شاشة تسجيل الدخول وإنشاء الحساب (Supabase Auth + Admin Approval) -->
+<!-- شاشة تسجيل الدخول وإنشاء الحساب -->
 <div id="auth-overlay" class="fixed inset-0 z-[100] bg-[#070b14]/95 backdrop-blur-md flex items-center justify-center p-4">
   <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
     <div class="space-y-1">
@@ -62,9 +62,10 @@
 
 <!-- الشريط العلوي -->
 <header class="bg-[#111827] border-b border-slate-800 px-3 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0">
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-1.5">
     <span class="text-sm font-extrabold text-white">⚽ ProTactics <span class="text-[10px] text-amber-300 bg-amber-950 border border-amber-700 px-1.5 py-0.5 rounded-full">3D PRO</span></span>
-    <button onclick="openLineupModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-users-gear"></i> الأسماء والتشكيلات</button>
+    <button onclick="openLineupModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-users-gear"></i> التشكيلات</button>
+    <button onclick="openCloudModal()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-[11px] px-2.5 py-1 rounded-lg font-extrabold"><i class="fa-solid fa-cloud"></i> خططي السحابية</button>
   </div>
 
   <div class="flex flex-wrap items-center gap-1">
@@ -101,8 +102,8 @@
 
   <div class="flex items-center gap-1">
     <span id="user-badge" class="hidden text-[10px] text-amber-300 bg-slate-800 border border-slate-700 px-2 py-1 rounded-lg font-semibold"></span>
-    <button onclick="exportJSON()" title="حفظ" class="bg-slate-800 text-sky-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-floppy-disk"></i></button>
-    <label title="فتح" class="bg-slate-800 text-purple-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg cursor-pointer"><i class="fa-solid fa-folder-open"></i><input type="file" accept=".json" onchange="importJSON(event)" class="hidden"></label>
+    <button onclick="exportJSON()" title="تصدير ملف JSON" class="bg-slate-800 text-sky-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-download"></i></button>
+    <label title="استيراد ملف JSON" class="bg-slate-800 text-purple-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg cursor-pointer"><i class="fa-solid fa-upload"></i><input type="file" accept=".json" onchange="importJSON(event)" class="hidden"></label>
     <button onclick="undoAction()" title="تراجع" class="bg-slate-800 text-slate-200 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-rotate-left"></i></button>
     <button onclick="clearDrawings()" title="مسح الخطوط" class="bg-slate-800 text-amber-300 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-eraser"></i></button>
     <button onclick="resetBoard()" title="إعادة ضبط" class="bg-slate-800 text-red-400 border border-slate-700 text-[11px] px-2 py-1 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
@@ -232,6 +233,32 @@
   </aside>
 </div>
 
+<!-- نافذة الحفظ والتحميل السحابي (Cloud Tactics) -->
+<div id="cloud-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+  <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+    <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3">
+      <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-cloud"></i> مكتبة خططي السحابية (Supabase)</h3>
+      <button onclick="closeCloudModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+    </div>
+    <div class="p-4 space-y-4 overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+        <label class="block text-xs font-bold text-slate-300">حفظ اللوحة الحالية في حسابك:</label>
+        <div class="flex gap-2">
+          <input type="text" id="cloud-tactic-title" placeholder="مثال: ضغط عالي أمام 4-3-3..." class="flex-1 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-1.5 text-xs text-white outline-none">
+          <button onclick="saveTacticToCloud()" id="btn-save-cloud" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg shrink-0">حفظ الآن</button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <div class="text-xs font-bold text-slate-400">الخطط المحفوظة سابقاً:</div>
+        <div id="cloud-tactics-list" class="space-y-1.5 max-h-60 overflow-y-auto text-xs text-slate-300">
+          <div class="text-center text-slate-500 py-4">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- نافذة إدارة التشكيلات -->
 <div id="lineup-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3">
   <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -307,7 +334,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_Chs3SrP6SCxQDWPrEG7k_g_AN8NgdTq";
 const ADMIN_EMAIL = "toot26201@gmail.com";
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let authMode = "login";
+let authMode = "login", currentUser = null;
 
 function switchAuthMode(mode) {
   authMode = mode;
@@ -315,7 +342,7 @@ function switchAuthMode(mode) {
   document.getElementById("name-field").classList.toggle("hidden", !isSignup);
   document.getElementById("tab-login").className = !isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
   document.getElementById("tab-signup").className = isSignup ? "bg-amber-500 text-slate-950 py-1.5 rounded-lg transition" : "text-slate-400 hover:text-white py-1.5 rounded-lg transition";
-  document.getElementById("auth-submit-btn").textContent = isSignup ? "إرسال طلب تسجيل 🚀" : "دخول إلى غرفة التحليل 🔓";
+  document.getElementById("auth-submit-btn").textContent = isSignup ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
   document.getElementById("auth-msg").classList.add("hidden");
 }
 
@@ -323,19 +350,18 @@ async function showUserOnBoard(user) {
   if (!user) return;
   const msgBox = document.getElementById("auth-msg");
 
-  // السماح الفوري لحساب السوبر أدمن
   if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    currentUser = user;
     document.getElementById("auth-overlay")?.classList.add("hidden");
     const badge = document.getElementById("user-badge");
     if (badge) {
-      badge.innerHTML = `👑 أدمن <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة المستخدمين)</a>`;
+      badge.innerHTML = `👑 أدمن <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`;
       badge.classList.remove("hidden");
     }
     setTimeout(resizeCanvas, 50);
     return;
   }
 
-  // التحقق من موافقة الأدمن لباقي المستخدمين من جدول profiles
   const { data: profile, error } = await sbClient
     .from("profiles")
     .select("is_approved, role, full_name")
@@ -350,14 +376,12 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  // الحساب مفعل -> افتح المنصة
+  currentUser = user;
   document.getElementById("auth-overlay")?.classList.add("hidden");
   const badge = document.getElementById("user-badge");
   if (badge) {
     const displayName = profile.full_name || user.email.split("@")[0];
-    badge.innerHTML = profile.role === "admin"
-      ? `👑 ${displayName} <a href="https://supabase.com/dashboard/project/tpldhmjbbhpzzlctrwcs/editor" target="_blank" class="underline text-amber-400 mr-1">(إدارة)</a>`
-      : `👤 ${displayName}`;
+    badge.innerHTML = `👤 ${displayName}`;
     badge.classList.remove("hidden");
   }
   setTimeout(resizeCanvas, 50);
@@ -378,22 +402,16 @@ async function handleSupabaseAuth(e) {
   try {
     let res;
     if (authMode === "signup") {
-      res = await sbClient.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } }
-      });
+      res = await sbClient.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
     } else {
       res = await sbClient.auth.signInWithPassword({ email, password });
     }
-
     if (res.error) throw res.error;
-
     if (res.data?.session) {
       await showUserOnBoard(res.data.user);
     } else {
-      msgBox.textContent = "تم تسجيل طلبك! يرجى انتظار تفعيل الحساب من الإدارة.";
-      msgBox.className = "text-[11px] text-amber-300 bg-amber-950/60 border border-amber-700 rounded-lg px-2.5 py-2 text-center";
+      msgBox.textContent = "تم تسجيل الحساب! يرجى تسجيل الدخول.";
+      msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-2 text-center";
       msgBox.classList.remove("hidden");
     }
   } catch (err) {
@@ -405,23 +423,99 @@ async function handleSupabaseAuth(e) {
     msgBox.classList.remove("hidden");
   } finally {
     btn.disabled = false;
-    btn.textContent = authMode === "signup" ? "إرسال طلب تسجيل 🚀" : "دخول إلى غرفة التحليل 🔓";
+    btn.textContent = authMode === "signup" ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
   }
 }
 
 async function checkAuthSession() {
   const { data } = await sbClient.auth.getSession();
-  if (data?.session) {
-    await showUserOnBoard(data.session.user);
-  }
+  if (data?.session) await showUserOnBoard(data.session.user);
 }
 
 async function logoutSession() {
   await sbClient.auth.signOut();
+  currentUser = null;
   document.getElementById("user-badge")?.classList.add("hidden");
   document.getElementById("auth-overlay").classList.remove("hidden");
 }
 checkAuthSession();
+
+// --- الحفظ والتحميل السحابي (Cloud Tactics) ---
+function openCloudModal() {
+  if (!currentUser) return showToast("يرجى تسجيل الدخول أولاً");
+  document.getElementById("cloud-modal").classList.remove("hidden");
+  fetchCloudTactics();
+}
+function closeCloudModal() {
+  document.getElementById("cloud-modal").classList.add("hidden");
+}
+
+async function saveTacticToCloud() {
+  if (!currentUser) return;
+  const titleInput = document.getElementById("cloud-tactic-title");
+  const title = titleInput.value.trim() || `خطة تكتيكية ${new Date().toLocaleDateString("ar-EG")}`;
+  const btn = document.getElementById("btn-save-cloud");
+  btn.disabled = true; btn.textContent = "جاري الحفظ...";
+  syncCurrentFrame();
+  const payload = { redTeamMeta, blueTeamMeta, pitchMode, pitchTheme, keyframes };
+  const { error } = await sbClient.from("saved_tactics").insert({ user_id: currentUser.id, title, data: payload });
+  btn.disabled = false; btn.textContent = "حفظ الآن";
+  if (error) {
+    showToast("خطأ في الحفظ السحابي");
+  } else {
+    titleInput.value = "";
+    showToast("تم حفظ الخطة في حسابك بنجاح ☁️");
+    fetchCloudTactics();
+  }
+}
+
+async function fetchCloudTactics() {
+  const listEl = document.getElementById("cloud-tactics-list");
+  listEl.innerHTML = `<div class="text-center text-slate-500 py-4">جاري تحميل خططك...</div>`;
+  const { data, error } = await sbClient
+    .from("saved_tactics")
+    .select("id, title, created_at, data")
+    .order("created_at", { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    listEl.innerHTML = `<div class="text-center text-slate-500 py-4">لا توجد خطط محفوظة بعد في حسابك.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = "";
+  data.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-3 py-2";
+    const dateStr = new Date(item.created_at).toLocaleDateString("ar-EG");
+    row.innerHTML = `
+      <div>
+        <div class="font-bold text-white">${item.title}</div>
+        <div class="text-[10px] text-slate-400">${dateStr} • ${item.data?.keyframes?.length || 1} إطارات</div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button class="load-btn bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded font-bold">فتح</button>
+        <button class="del-btn bg-red-950 hover:bg-red-900 text-red-300 px-2 py-1 rounded"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `;
+    row.querySelector(".load-btn").onclick = () => {
+      const d = item.data;
+      if (d.redTeamMeta) redTeamMeta = d.redTeamMeta;
+      if (d.blueTeamMeta) blueTeamMeta = d.blueTeamMeta;
+      if (d.pitchTheme) { pitchTheme = d.pitchTheme; document.getElementById("pitch-theme-select").value = pitchTheme; }
+      if (d.pitchMode) setPitchMode(d.pitchMode);
+      if (d.keyframes?.length) { keyframes = d.keyframes; selectKeyframe(0); }
+      updateTeamBanner(); renderFramesBar(); resizeCanvas();
+      closeCloudModal();
+      showToast(`تم تحميل: ${item.title}`);
+    };
+    row.querySelector(".del-btn").onclick = async () => {
+      await sbClient.from("saved_tactics").delete().eq("id", item.id);
+      fetchCloudTactics();
+      showToast("تم حذف الخطة");
+    };
+    listEl.appendChild(row);
+  });
+}
 
 // --- منطق السبورة التكتيكية ---
 const canvas=document.getElementById("tactical-canvas"),ctx=canvas.getContext("2d");
@@ -508,7 +602,7 @@ function togglePlayAnimation(cb){
   animRaf=requestAnimationFrame(step);
 }
 function stopAnimation(){isPlaying=false;if(animRaf)cancelAnimationFrame(animRaf);document.getElementById("play-label").textContent="▶ تشغيل";}
-function exportVideo(){if(keyframes.length<2)return showToast("أضف إطارين على الأقل");if(isRecordingVideo||!canvas.captureStream||typeof MediaRecorder==="undefined")return;isRecordingVideo=true;const btn=document.getElementById("btn-export-video");btn.textContent="جاري التسجيل...";const rec=new MediaRecorder(canvas.captureStream(30),{mimeType:"video/webm"}),chunks=[];rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(chunks,{type:"video/webm"}));a.download=`tactic_${Date.now()}.webm`;a.click();isRecordingVideo=false;btn.textContent="فيديو";};selectKeyframe(0);rec.start();setTimeout(()=>togglePlayAnimation(()=>setTimeout(()=>rec.stop(),350)),200);}
+function exportVideo(){if(keyframes.length<2)return showToast("أضف إطارين على الأقل");if(isRecordingVideo||!canvas.captureStream||typeof MediaRecorder==="undefined")return;isRecordingVideo=true;const btn=document.getElementById("btn-export-video");btn.textContent="جاري التسجيل...";const rec=new MediaRecorder(canvas.captureStream(30),{mimeType:"video/webm"}),chunks=[];rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(chunks,{type:"video/webm"}));a.download=`TootScouting_Tactic_${Date.now()}.webm`;a.click();isRecordingVideo=false;btn.textContent="فيديو";};selectKeyframe(0);rec.start();setTimeout(()=>togglePlayAnimation(()=>setTimeout(()=>rec.stop(),350)),200);}
 
 function loadSetPiece(t){
   if(!t)return;saveHistory();drawings=[];links=[];
@@ -555,6 +649,15 @@ function drawPitch(){
   if(showZones){ctx.save();ctx.strokeStyle="rgba(250,204,21,0.4)";ctx.setLineDash([5,5]);[penY,goalY,goalY+goalH,penY+penH].forEach(ny=>lineN(0,ny,1,ny));[1/3,2/3].forEach(nx=>lineN(nx,0,nx,1));ctx.restore();}
   if(pitchMode==="full"){lineN(0.5,0,0.5,1);rectN(1-penW,penY,penW,penH);rectN(1-goalW,goalY,goalW,goalH);const c=normToCanvas(0.5,0.5),rx=(9.15/len)*w*(is3D?0.86:1),ry=(9.15/68)*h*(is3D?0.75:1);ctx.beginPath();ctx.ellipse(c.x,c.y,rx,ry,0,0,Math.PI*2);ctx.stroke();}
   if(showOffside){ctx.save();ctx.strokeStyle="#f43f5e";ctx.setLineDash([7,5]);lineN(offsideNx,0,offsideNx,1);ctx.restore();}
+
+  // العلامة المائية الاحترافية TootScouting
+  ctx.save();
+  ctx.font="bold 11px Inter,sans-serif";
+  ctx.textAlign="right";
+  ctx.textBaseline="bottom";
+  ctx.fillStyle=pitchTheme==="opta"?"rgba(15,23,42,0.45)":"rgba(255,255,255,0.38)";
+  ctx.fillText("⚽ TootScouting • ProTactics 3D PRO",canvasW-16,canvasH-10);
+  ctx.restore();
 }
 
 function drawDynamicLinks(){ctx.save();links.forEach(lk=>{const pA=pieces.find(p=>p.id===lk.from),pB=pieces.find(p=>p.id===lk.to);if(!pA||!pB)return;const c1=normToCanvas(pA.nx,pA.ny),c2=normToCanvas(pB.nx,pB.ny);ctx.strokeStyle=lk.color||"#facc15";ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(c1.x,c1.y);ctx.lineTo(c2.x,c2.y);ctx.stroke();const dist=calculateMeters(pA,pB)+"m",mx=(c1.x+c2.x)/2,my=(c1.y+c2.y)/2;ctx.setLineDash([]);ctx.font="bold 10px Inter,sans-serif";const tw=ctx.measureText(dist).width+8;ctx.fillStyle="rgba(15,23,42,0.85)";ctx.fillRect(mx-tw/2,my-8,tw,16);ctx.fillStyle=lk.color||"#facc15";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(dist,mx,my);});ctx.restore();}
@@ -631,7 +734,7 @@ canvas.addEventListener("mousemove",e=>{const pos=getPointerPos(e);if(draggingOf
 window.addEventListener("mouseup",()=>{if(draggingOffside){draggingOffside=false;return;}if(draggingControlPoint){draggingControlPoint=null;syncCurrentFrame();render();return;}if(draggingPiece){draggingPiece=null;syncCurrentFrame();render();}else if(isDrawing&&currentDraft){isDrawing=false;if(Math.hypot(currentDraft.points[1].nx-currentDraft.points[0].nx,currentDraft.points[1].ny-currentDraft.points[0].ny)>0.015){saveHistory();currentDraft.cp=getCurveControlPoint(currentDraft);drawings.push(currentDraft);syncCurrentFrame();}currentDraft=null;render();}});
 canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;document.getElementById("edit-modal").classList.remove("hidden");}});
 
-function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,keyframes})],{type:"application/json"}));a.download=`tactic_${Date.now()}.json`;a.click();}
+function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,keyframes})],{type:"application/json"}));a.download=`TootScouting_Tactic_${Date.now()}.json`;a.click();}
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.redTeamMeta)redTeamMeta=d.redTeamMeta;if(d.blueTeamMeta)blueTeamMeta=d.blueTeamMeta;if(d.keyframes?.length){keyframes=d.keyframes;selectKeyframe(0);}updateTeamBanner();renderFramesBar();resizeCanvas();}catch{}};r.readAsText(f);}
 function setTool(t){currentTool=t;linkSourceId=null;document.querySelectorAll(".tool-btn").forEach(b=>b.classList.remove("active"));document.getElementById("tool-"+t)?.classList.add("active");render();}
 function setColor(hex){currentColor=hex;document.querySelectorAll(".color-btn").forEach(b=>b.classList.toggle("ring-2",b.dataset.color===hex));}
@@ -655,9 +758,9 @@ function openLineupModal(){document.getElementById("input-red-team-name").value=
 function closeLineupModal(){document.getElementById("lineup-modal").classList.add("hidden");}
 function populateLineupInputs(team,form,keep){const el=document.getElementById(team+"-players-list"),tpl=formationTemplates[form],cur=pieces.filter(p=>p.type===team);el.innerHTML="";tpl.forEach((s,i)=>{const num=keep&&cur[i]?cur[i].number:s.num,lbl=keep&&cur[i]?cur[i].label:s.label;el.innerHTML+=`<div class="flex gap-1.5 items-center"><input data-team="${team}" data-idx="${i}" data-f="num" value="${num}" class="w-11 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-xs text-center text-white font-en"><input data-team="${team}" data-idx="${i}" data-f="lbl" value="${lbl}" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white"></div>`;});}
 function applyBothTeamsLineups(){saveHistory();redTeamMeta.name=document.getElementById("input-red-team-name").value||"الفريق الأول";redTeamMeta.formation=document.getElementById("select-red-formation").value;blueTeamMeta.name=document.getElementById("input-blue-team-name").value||"الفريق الثاني";blueTeamMeta.formation=document.getElementById("select-blue-formation").value;pieces=pieces.filter(p=>p.type!=="red"&&p.type!=="blue");formationTemplates[redTeamMeta.formation].forEach((s,i)=>pieces.push({id:"red_"+i,type:"red",nx:s.nx,ny:s.ny,number:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));formationTemplates[blueTeamMeta.formation].forEach((s,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-s.nx,ny:s.ny,number:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));updateTeamBanner();syncCurrentFrame();closeLineupModal();render();}
-function exportPNG(){const a=document.createElement("a");a.download=`tactic_${Date.now()}.png`;a.href=canvas.toDataURL("image/png",1.0);a.click();}
+function exportPNG(){const a=document.createElement("a");a.download=`TootScouting_Tactic_${Date.now()}.png`;a.href=canvas.toDataURL("image/png",1.0);a.click();}
 function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
-let toastTimer=null;function showToast(m){const el=document.getElementById("toast-msg");el.textContent=m;el.classList.remove("opacity-0");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("opacity-0"),2000);}
+let toastTimer=null;function showToast(m){const el=document.getElementById("toast-msg");el.textContent=m;el.classList.remove("opacity-0");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("opacity-0"),2200);}
 
 setInterval(()=>{if((pieces.some(p=>p.spotlight)||linkSourceId)&&!isPlaying){pulsePhase+=0.25;render();}},60);
 window.addEventListener("resize",resizeCanvas);
