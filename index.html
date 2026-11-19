@@ -1217,22 +1217,11 @@ let toastTimer=null;function showToast(m){const el=document.getElementById("toas
   requestAnimationFrame(drawSim);
 })();
 
-function syncIframeHeight() {
-  const iframe = window.frameElement;
-  if (!iframe) return;
-  const landing = document.getElementById("landing-page");
-  const isLandingVisible = landing && !landing.classList.contains("hidden");
-  if (isLandingVisible) { iframe.style.height = (landing.scrollHeight + 40) + "px"; }
-  else { iframe.style.height = "100vh"; resizeCanvas(); }
-}
-
 setInterval(()=>{if((pieces.some(p=>p.spotlight)||linkSourceId)&&!isPlaying){pulsePhase+=0.25;render();}},60);
-setInterval(syncIframeHeight, 300);
 window.addEventListener("resize",resizeCanvas);
 initDefaultPieces();
 render();
-setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
+setTimeout(resizeCanvas,150);
 </script>
 </body>
 </html>
-</div>
