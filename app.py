@@ -28,7 +28,7 @@ st.markdown("""
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
-live_animation_script = """
+patch_script = """
 <style>
   @keyframes floatIcon {
     0%, 100% { transform: translateY(0px); }
@@ -47,6 +47,79 @@ live_animation_script = """
 
 <script>
 (function() {
+    // 1. تحديث رسم الملعب في السبورة لإضافة قوس منطقة الجزاء، نقطة الجزاء، وأقواس الركنيات بأبعاد الفيفا
+    function patchDrawPitch() {
+        if (typeof drawPitch !== "function" || drawPitch._patched) return;
+        const originalDrawPitch = drawPitch;
+
+        drawPitch = function() {
+            originalDrawPitch();
+            const { w, h } = pitchRect;
+            if (w <= 0 || h <= 0) return;
+
+            const th = pitchThemes[pitchTheme] || pitchThemes.green;
+            const len = pitchMode === "full" ? 105 : 52.5;
+            const penW = 16.5 / len;
+            const spotX = 11 / len;
+            const arcRx = 9.15 / len;
+            const arcRy = 9.15 / 68;
+            // زاوية تقاطع القوس مع خط الـ 16.5 متر: acos((16.5 - 11) / 9.15) = acos(5.5 / 9.15) ≈ 0.9259 rad
+            const theta = Math.acos(5.5 / 9.15);
+
+            ctx.save();
+            ctx.strokeStyle = th.lines;
+            ctx.fillStyle = th.lines;
+            ctx.lineWidth = 2;
+
+            function drawArcNorm(cxN, cyN, rxN, ryN, startAng, endAng, ccw) {
+                ctx.beginPath();
+                const steps = 28;
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const ang = startAng + (endAng - startAng) * t;
+                    const pt = normToCanvas(cxN + Math.cos(ang) * rxN, cyN + Math.sin(ang) * ryN);
+                    if (i === 0) ctx.moveTo(pt.x, pt.y);
+                    else ctx.lineTo(pt.x, pt.y);
+                }
+                ctx.stroke();
+            }
+
+            function drawSpotNorm(nx, ny) {
+                const pt = normToCanvas(nx, ny);
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 2.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // قوس ونقطة جزاء المرمى الأيسر
+            drawArcNorm(spotX, 0.5, arcRx, arcRy, -theta, theta);
+            drawSpotNorm(spotX, 0.5);
+
+            // أقواس الركنيات اليسرى
+            const cRx = 1.2 / len, cRy = 1.2 / 68;
+            drawArcNorm(0, 0, cRx, cRy, 0, Math.PI / 2);
+            drawArcNorm(0, 1, cRx, cRy, -Math.PI / 2, 0);
+
+            if (pitchMode === "full") {
+                // نقطة السنتر
+                drawSpotNorm(0.5, 0.5);
+
+                // قوس ونقطة جزاء المرمى الأيمن
+                drawArcNorm(1 - spotX, 0.5, arcRx, arcRy, Math.PI - theta, Math.PI + theta);
+                drawSpotNorm(1 - spotX, 0.5);
+
+                // أقواس الركنيات اليمنى
+                drawArcNorm(1, 0, cRx, cRy, Math.PI / 2, Math.PI);
+                drawArcNorm(1, 1, cRx, cRy, Math.PI, Math.PI * 1.5);
+            }
+
+            ctx.restore();
+        };
+        drawPitch._patched = true;
+        if (typeof render === "function") render();
+    }
+
+    // 2. المحاكاة الحية في صفحة الهبوط (مع إضافة قوس منطقة الجزاء فيها أيضاً)
     function initLiveHeroSimulation() {
         const landing = document.getElementById("landing-page");
         if (!landing) return;
@@ -74,7 +147,6 @@ live_animation_script = """
         const hCtx = hCanvas.getContext("2d");
         const phaseLbl = document.getElementById("sim-phase-label");
 
-        // مراحل الجملة التكتيكية المتحركة
         const states = [
             {
                 label: "Phase 1: Build-up • جذب الضغط وبناء اللعب",
@@ -139,10 +211,9 @@ live_animation_script = """
         ];
 
         let startTime = performance.now();
-        const segDuration = 2600; // مدة كل مرحلة بالمللي ثانية
-
-        function lerp(a, b, t) { return a + (b - a) * t; }
-        function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+        const segDuration = 2600;
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const easeInOut = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
         function drawSim(now) {
             if (landing.classList.contains("hidden")) {
@@ -153,33 +224,34 @@ live_animation_script = """
             const elapsed = (now - startTime) % totalCycle;
             const segIdx = Math.floor(elapsed / segDuration);
             const rawT = (elapsed % segDuration) / segDuration;
-            // ثبات بسيط في نهاية كل حركة ثم انتقال سلس للمرحلة التالية
             const moveT = rawT < 0.7 ? easeInOut(rawT / 0.7) : 1;
 
             const sA = states[segIdx];
             const sB = states[(segIdx + 1) % states.length];
-            if (phaseLbl && phaseLbl.textContent !== sB.label) {
-                phaseLbl.textContent = sB.label;
-            }
+            if (phaseLbl && phaseLbl.textContent !== sB.label) phaseLbl.textContent = sB.label;
 
             const W = hCanvas.width, H = hCanvas.height;
-            // رسم أرضية الملعب
             hCtx.fillStyle = "#133824";
             hCtx.fillRect(0, 0, W, H);
             for (let i = 0; i < 12; i += 2) {
                 hCtx.fillStyle = "rgba(255,255,255,0.03)";
                 hCtx.fillRect((W / 12) * i, 0, W / 12, H);
             }
-            // خطوط الملعب
             hCtx.strokeStyle = "rgba(255,255,255,0.45)";
+            hCtx.fillStyle = "rgba(255,255,255,0.45)";
             hCtx.lineWidth = 2;
             hCtx.strokeRect(14, 14, W - 28, H - 28);
             hCtx.beginPath(); hCtx.moveTo(W / 2, 14); hCtx.lineTo(W / 2, H - 14); hCtx.stroke();
             hCtx.beginPath(); hCtx.arc(W / 2, H / 2, 42, 0, Math.PI * 2); hCtx.stroke();
+            // منطقة الجزاء والـ 6 ياردة وقوس منطقة الجزاء
             hCtx.strokeRect(14, H * 0.24, 95, H * 0.52);
-            hCtx.strokeRect(W - 109, H * 0.24, 95, H * 0.52);
+            hCtx.strokeRect(14, H * 0.37, 34, H * 0.26);
+            hCtx.beginPath(); hCtx.arc(14 + 64, H / 2, 42, -0.92, 0.92); hCtx.stroke();
 
-            // خطوط المساحات النصفية (Half-Spaces)
+            hCtx.strokeRect(W - 109, H * 0.24, 95, H * 0.52);
+            hCtx.strokeRect(W - 48, H * 0.37, 34, H * 0.26);
+            hCtx.beginPath(); hCtx.arc(W - 14 - 64, H / 2, 42, Math.PI - 0.92, Math.PI + 0.92); hCtx.stroke();
+
             hCtx.save();
             hCtx.strokeStyle = "rgba(250, 204, 21, 0.18)";
             hCtx.setLineDash([5, 5]);
@@ -188,7 +260,6 @@ live_animation_script = """
             });
             hCtx.restore();
 
-            // حساب مواقع اللاعبين والكرة
             const curRed = sA.red.map((p, i) => ({
                 ...p,
                 x: lerp(p.x, sB.red[i].x, moveT),
@@ -205,7 +276,6 @@ live_animation_script = """
                 y: lerp(sA.ball.y, sB.ball.y, moveT)
             };
 
-            // رسم خط ربط تكتيكي ديناميكي بين الارتكاز وصانع اللعب
             const p6 = curRed[3], p10 = curRed[4], p7 = curRed[5];
             hCtx.save();
             hCtx.strokeStyle = "rgba(250, 204, 21, 0.75)";
@@ -218,7 +288,6 @@ live_animation_script = """
             hCtx.stroke();
             hCtx.restore();
 
-            // مسار الكرة المنحني
             hCtx.save();
             hCtx.strokeStyle = "#facc15";
             hCtx.lineWidth = 2.5;
@@ -228,7 +297,6 @@ live_animation_script = """
             hCtx.stroke();
             hCtx.restore();
 
-            // رسم الفريق الأزرق
             curBlue.forEach(p => {
                 const px = p.x * W, py = p.y * H;
                 hCtx.beginPath(); hCtx.arc(px, py, 14, 0, Math.PI * 2);
@@ -239,7 +307,6 @@ live_animation_script = """
                 hCtx.fillText(p.num, px, py);
             });
 
-            // رسم الفريق الأحمر مع نبض التمييز
             const pulse = Math.sin(now / 180) * 3.5;
             curRed.forEach(p => {
                 const px = p.x * W, py = p.y * H;
@@ -265,7 +332,6 @@ live_animation_script = """
                 }
             });
 
-            // رسم الكرة
             const bx = curBall.x * W, by = curBall.y * H;
             hCtx.beginPath(); hCtx.arc(bx, by, 7, 0, Math.PI * 2);
             hCtx.fillStyle = "#ffffff"; hCtx.fill();
@@ -291,10 +357,12 @@ live_animation_script = """
     }
 
     window.addEventListener("load", () => {
+        patchDrawPitch();
         initLiveHeroSimulation();
         syncIframeHeight();
     });
     setInterval(() => {
+        patchDrawPitch();
         initLiveHeroSimulation();
         syncIframeHeight();
     }, 300);
@@ -303,6 +371,6 @@ live_animation_script = """
 </body>
 """
 
-html_code = html_code.replace("</body>", live_animation_script)
+html_code = html_code.replace("</body>", patch_script)
 
 components.html(html_code, height=1750, scrolling=False)
