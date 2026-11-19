@@ -169,7 +169,9 @@
   <footer class="border-t border-slate-800/80 py-6 px-4 text-center text-xs text-slate-500">
     جميع الحقوق محفوظة © <span class="text-amber-400 font-en font-bold">TootScouting</span> — تطوير وتصميم لمحللي الأداء في كرة القدم
   </footer>
-  <!-- ================= 2. شاشة تسجيل الدخول وإنشاء الحساب ================= -->
+</div>
+
+<!-- ================= 2. شاشة تسجيل الدخول وإنشاء الحساب ================= -->
 <div id="auth-overlay" class="hidden fixed inset-0 z-[100] bg-[#070b14]/95 backdrop-blur-md flex items-center justify-center p-4">
   <div class="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4 relative">
     <button onclick="backToLanding()" class="text-[11px] text-slate-400 hover:text-amber-400 flex items-center gap-1 transition">
@@ -329,16 +331,14 @@
     <div class="w-full max-w-5xl flex flex-wrap items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-3 py-1 gap-2 shrink-0">
       <div class="flex items-center gap-1.5">
         <img id="banner-red-logo" src="" class="hidden w-5 h-5 object-contain rounded">
-        <input type="color" id="quick-red-primary" value="#dc2626" onchange="quickKitUpdate('red')" title="اللون الأساسي للطقم" class="w-5 h-5 cursor-pointer bg-transparent">
-        <input type="color" id="quick-red-secondary" value="#ffffff" onchange="quickKitUpdate('red')" title="اللون الثانوي للطقم" class="w-5 h-5 cursor-pointer bg-transparent">
-        <label title="لون أرقام الفريق الأول" class="flex items-center bg-slate-800 border border-slate-700 rounded px-1 cursor-pointer text-[10px] text-slate-300 font-en">#<input type="color" id="quick-red-numcolor" value="#ffffff" onchange="quickTeamTextColor('red','num',this.value)" class="w-3.5 h-4 cursor-pointer bg-transparent border-0 p-0"></label>
-        <label title="لون أسماء الفريق الأول" class="flex items-center bg-slate-800 border border-slate-700 rounded px-1 cursor-pointer text-[10px] text-slate-300 font-en">A<input type="color" id="quick-red-lblcolor" value="#f8fafc" onchange="quickTeamTextColor('red','label',this.value)" class="w-3.5 h-4 cursor-pointer bg-transparent border-0 p-0"></label>
+        <input type="color" id="quick-red-primary" value="#dc2626" onchange="quickKitUpdate('red')" class="w-5 h-5 cursor-pointer bg-transparent">
+        <input type="color" id="quick-red-secondary" value="#ffffff" onchange="quickKitUpdate('red')" class="w-5 h-5 cursor-pointer bg-transparent">
         <select id="quick-red-pattern" onchange="quickKitUpdate('red')" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-200 px-1 py-0.5 rounded">
           <option value="solid">سادة</option><option value="striped">مقلم</option><option value="halves">نصفين</option>
         </select>
         <span id="display-red-name" class="text-xs font-bold text-white">الفريق الأول</span>
         <select id="quick-red-form" onchange="instantFormationChange('red', this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-[11px] font-en font-bold px-1.5 py-0.5 rounded">
-          <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+          <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
         </select>
         <span id="metrics-red" class="hidden text-[10px] font-en bg-red-950 border border-red-800 text-red-200 px-2 py-0.5 rounded"></span>
       </div>
@@ -348,16 +348,14 @@
       <div class="flex items-center gap-1.5">
         <span id="metrics-blue" class="hidden text-[10px] font-en bg-sky-950 border border-sky-800 text-sky-200 px-2 py-0.5 rounded"></span>
         <select id="quick-blue-form" onchange="instantFormationChange('blue', this.value)" class="bg-slate-800 border border-slate-700 text-sky-300 text-[11px] font-en font-bold px-1.5 py-0.5 rounded">
-          <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+          <option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
         </select>
         <span id="display-blue-name" class="text-xs font-bold text-white">الفريق الثاني</span>
         <select id="quick-blue-pattern" onchange="quickKitUpdate('blue')" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-200 px-1 py-0.5 rounded">
           <option value="solid">سادة</option><option value="striped">مقلم</option><option value="halves">نصفين</option>
         </select>
-        <label title="لون أرقام الفريق الثاني" class="flex items-center bg-slate-800 border border-slate-700 rounded px-1 cursor-pointer text-[10px] text-slate-300 font-en">#<input type="color" id="quick-blue-numcolor" value="#ffffff" onchange="quickTeamTextColor('blue','num',this.value)" class="w-3.5 h-4 cursor-pointer bg-transparent border-0 p-0"></label>
-        <label title="لون أسماء الفريق الثاني" class="flex items-center bg-slate-800 border border-slate-700 rounded px-1 cursor-pointer text-[10px] text-slate-300 font-en">A<input type="color" id="quick-blue-lblcolor" value="#f8fafc" onchange="quickTeamTextColor('blue','label',this.value)" class="w-3.5 h-4 cursor-pointer bg-transparent border-0 p-0"></label>
-        <input type="color" id="quick-blue-primary" value="#0284c7" onchange="quickKitUpdate('blue')" title="اللون الأساسي للطقم" class="w-5 h-5 cursor-pointer bg-transparent">
-        <input type="color" id="quick-blue-secondary" value="#ffffff" onchange="quickKitUpdate('blue')" title="اللون الثانوي للطقم" class="w-5 h-5 cursor-pointer bg-transparent">
+        <input type="color" id="quick-blue-primary" value="#0284c7" onchange="quickKitUpdate('blue')" class="w-5 h-5 cursor-pointer bg-transparent">
+        <input type="color" id="quick-blue-secondary" value="#ffffff" onchange="quickKitUpdate('blue')" class="w-5 h-5 cursor-pointer bg-transparent">
         <img id="banner-blue-logo" src="" class="hidden w-5 h-5 object-contain rounded">
       </div>
     </div>
@@ -430,7 +428,8 @@
     </div>
   </div>
 </div>
-  <!-- نافذة الحفظ والتحميل السحابي (Cloud Tactics) -->
+
+<!-- نافذة الحفظ والتحميل السحابي (Cloud Tactics) -->
 <div id="cloud-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3">
   <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
     <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3">
@@ -468,7 +467,7 @@
         <div class="grid grid-cols-2 gap-2">
           <input id="input-red-team-name" value="الفريق الأول" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
           <select id="select-red-formation" onchange="populateLineupInputs('red',this.value,false)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
-            <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+            <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
           </select>
         </div>
         <input type="file" accept="image/*" onchange="handleLogoUpload('red',event)" class="text-[10px]">
@@ -478,7 +477,7 @@
         <div class="grid grid-cols-2 gap-2">
           <input id="input-blue-team-name" value="الفريق الثاني" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
           <select id="select-blue-formation" onchange="populateLineupInputs('blue',this.value,false)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
-            <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+            <option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
           </select>
         </div>
         <input type="file" accept="image/*" onchange="handleLogoUpload('blue',event)" class="text-[10px]">
@@ -495,22 +494,12 @@
 <!-- نافذة تعديل لاعب فردي -->
 <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
   <div class="bg-[#111827] border border-slate-700 rounded-xl w-72 p-4 space-y-2">
-    <div class="text-xs font-bold text-white">تعديل بيانات وألوان اللاعب</div>
+    <div class="text-xs font-bold text-white">تعديل بيانات ولون اللاعب</div>
     <input id="edit-number" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white" placeholder="الرقم">
     <input id="edit-label" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white" placeholder="الاسم">
     <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
-      <label class="text-xs text-slate-300 flex items-center gap-1.5"><input type="checkbox" id="edit-use-custom-color"> لون القميص</label>
+      <label class="text-xs text-slate-300 flex items-center gap-1.5"><input type="checkbox" id="edit-use-custom-color"> لون مخصص</label>
       <input type="color" id="edit-custom-color" value="#eab308" class="w-6 h-5 cursor-pointer bg-transparent">
-    </div>
-    <div class="grid grid-cols-2 gap-1.5">
-      <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
-        <span class="text-[11px] text-slate-300">لون الرقم</span>
-        <input type="color" id="edit-num-color" value="#ffffff" class="w-5 h-5 cursor-pointer bg-transparent">
-      </div>
-      <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
-        <span class="text-[11px] text-slate-300">لون الاسم</span>
-        <input type="color" id="edit-label-color" value="#f8fafc" class="w-5 h-5 cursor-pointer bg-transparent">
-      </div>
     </div>
     <label class="flex items-center gap-1.5 text-xs text-amber-300"><input type="checkbox" id="edit-spotlight"> حلقة تمييز</label>
     <div class="flex justify-between pt-2">
@@ -837,8 +826,8 @@ async function fetchCloudTactics() {
 
 const canvas=document.getElementById("tactical-canvas"),ctx=canvas.getContext("2d");
 let pitchMode="full",is3D=false,showZones=false,showOffside=false,offsideNx=0.72,showCompactness=false,showTrails=true,draggingOffside=false,pitchTheme="green",currentTool="select",currentColor="#facc15",currentStrokeWidth=3,pitchRect={x:18,y:18,w:864,h:544,canvasW:900,canvasH:580};
-let redTeamMeta={name:"الفريق الأول",formation:"5-4-1",primary:"#dc2626",secondary:"#ffffff",pattern:"solid",numColor:"#ffffff",labelColor:"#f8fafc",logoData:null};
-let blueTeamMeta={name:"الفريق الثاني",formation:"4-3-3",primary:"#0284c7",secondary:"#ffffff",pattern:"solid",numColor:"#ffffff",labelColor:"#f8fafc",logoData:null};
+let redTeamMeta={name:"الفريق الأول",formation:"5-4-1",primary:"#dc2626",secondary:"#ffffff",pattern:"solid",logoData:null};
+let blueTeamMeta={name:"الفريق الثاني",formation:"4-3-3",primary:"#0284c7",secondary:"#ffffff",pattern:"solid",logoData:null};
 let redLogoImg=null,blueLogoImg=null,tempRedLogo=null,tempBlueLogo=null;
 let pieces=[],drawings=[],links=[],linkSourceId=null,historyStack=[],keyframes=[],currentFrameIdx=0,isPlaying=false,isLooping=false,animRaf=null,isRecordingVideo=false;
 let draggingPiece=null,draggingControlPoint=null,dragOffset={x:0,y:0},isDrawing=false,currentDraft=null,polygonPoints=[],editingPieceId=null,pendingTextPos=null,pulsePhase=0;
@@ -847,7 +836,6 @@ const pitchThemes={green:{outer:"#0d2618",inner:"#133824",lines:"rgba(255,255,25
 const formationTemplates={
   "5-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.12,num:"3",label:"LWB"},{nx:0.20,ny:0.31,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.69,num:"6",label:"RCB"},{nx:0.22,ny:0.88,num:"2",label:"RWB"},{nx:0.34,ny:0.20,num:"11",label:"LM"},{nx:0.33,ny:0.41,num:"8",label:"CM"},{nx:0.33,ny:0.59,num:"14",label:"CM"},{nx:0.34,ny:0.80,num:"7",label:"RM"},{nx:0.47,ny:0.5,num:"9",label:"ST"}],
   "4-3-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.33,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.30,num:"8",label:"CM"},{nx:0.39,ny:0.70,num:"10",label:"CM"},{nx:0.46,ny:0.16,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.84,num:"7",label:"RW"}],
-  "4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],
   "4-2-3-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.32,ny:0.38,num:"6",label:"CDM"},{nx:0.32,ny:0.62,num:"8",label:"CDM"},{nx:0.41,ny:0.18,num:"11",label:"LW"},{nx:0.42,ny:0.5,num:"10",label:"CAM"},{nx:0.41,ny:0.82,num:"7",label:"RW"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],
   "3-5-2":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.20,ny:0.28,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.72,num:"6",label:"RCB"},{nx:0.34,ny:0.10,num:"3",label:"LWB"},{nx:0.31,ny:0.5,num:"14",label:"DM"},{nx:0.36,ny:0.34,num:"8",label:"CM"},{nx:0.36,ny:0.66,num:"10",label:"CM"},{nx:0.34,ny:0.90,num:"2",label:"RWB"},{nx:0.47,ny:0.38,num:"9",label:"ST"},{nx:0.47,ny:0.62,num:"11",label:"ST"}],
   "3-4-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.20,ny:0.26,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.74,num:"6",label:"RCB"},{nx:0.34,ny:0.12,num:"3",label:"LM"},{nx:0.33,ny:0.38,num:"8",label:"CM"},{nx:0.33,ny:0.62,num:"14",label:"CM"},{nx:0.34,ny:0.88,num:"2",label:"RM"},{nx:0.46,ny:0.18,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.82,num:"7",label:"RW"}],
@@ -865,7 +853,6 @@ function canvasToNorm(cx,cy){
   return{nx:Math.max(0,Math.min(1,0.5+(cx-centerX)/(pitchRect.w*scale))),ny};
 }
 function toggle3D(){is3D=!is3D;document.getElementById("btn-toggle-3d").classList.toggle("active",is3D);render();}
-function quickTeamTextColor(t,k,c){saveHistory();const m=t==="red"?redTeamMeta:blueTeamMeta;if(k==="num")m.numColor=c;else m.labelColor=c;pieces.forEach(p=>{if(p.type===t){if(k==="num")p.numColor=c;else p.labelColor=c;}});syncCurrentFrame();render();}
 function quickKitUpdate(t){const m=t==="red"?redTeamMeta:blueTeamMeta;m.primary=document.getElementById(`quick-${t}-primary`).value;m.secondary=document.getElementById(`quick-${t}-secondary`).value;m.pattern=document.getElementById(`quick-${t}-pattern`).value;render();}
 function setStrokeWidth(w){currentStrokeWidth=w;document.querySelectorAll(".stroke-btn").forEach(b=>b.classList.remove("active"));document.getElementById("sw-"+w)?.classList.add("active");}
 function loadLogoImage(t,u){if(!u){if(t==="red")redLogoImg=null;else blueLogoImg=null;render();return;}const i=new Image();i.onload=()=>{if(t==="red")redLogoImg=i;else blueLogoImg=i;render();};i.src=u;}
@@ -873,8 +860,8 @@ function handleLogoUpload(t,e){const f=e.target.files[0];if(!f)return;const r=ne
 
 function initDefaultPieces(){
   pieces=[];links=[];
-  formationTemplates["5-4-1"].forEach((p,i)=>pieces.push({id:"red_"+i,type:"red",nx:p.nx,ny:p.ny,number:p.num,label:p.label,spotlight:false,numColor:redTeamMeta.numColor,labelColor:redTeamMeta.labelColor}));
-  formationTemplates["4-3-3"].forEach((p,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-p.nx,ny:p.ny,number:p.num,label:p.label,spotlight:false,numColor:blueTeamMeta.numColor,labelColor:blueTeamMeta.labelColor}));
+  formationTemplates["5-4-1"].forEach((p,i)=>pieces.push({id:"red_"+i,type:"red",nx:p.nx,ny:p.ny,number:p.num,label:p.label,spotlight:false}));
+  formationTemplates["4-3-3"].forEach((p,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-p.nx,ny:p.ny,number:p.num,label:p.label,spotlight:false}));
   pieces.push({id:"ball_1",type:"ball",nx:0.5,ny:0.5,number:"",label:""});
   keyframes=[{pieces:JSON.parse(JSON.stringify(pieces)),drawings:[],links:[],title:"",notes:""}];
   currentFrameIdx=0;loadFrameNotesToUI();updateTeamBanner();renderFramesBar();
@@ -882,10 +869,9 @@ function initDefaultPieces(){
 
 function instantFormationChange(team,form){
   saveHistory();const tpl=formationTemplates[form];if(!tpl)return;
-  const meta=team==="red"?redTeamMeta:blueTeamMeta;
-  meta.formation=form;
+  if(team==="red")redTeamMeta.formation=form;else blueTeamMeta.formation=form;
   const ex=pieces.filter(p=>p.type===team),oth=pieces.filter(p=>p.type!==team);
-  pieces=[...oth,...tpl.map((s,i)=>({id:team+"_"+i,type:team,nx:team==="red"?s.nx:(1-s.nx),ny:s.ny,number:ex[i]?ex[i].number:s.num,label:ex[i]?ex[i].label:s.label,spotlight:ex[i]?ex[i].spotlight:false,customColor:ex[i]?ex[i].customColor:null,numColor:ex[i]?.numColor||meta.numColor||"#ffffff",labelColor:ex[i]?.labelColor||meta.labelColor||"#f8fafc"}))];
+  pieces=[...oth,...tpl.map((s,i)=>({id:team+"_"+i,type:team,nx:team==="red"?s.nx:(1-s.nx),ny:s.ny,number:ex[i]?ex[i].number:s.num,label:ex[i]?ex[i].label:s.label,spotlight:ex[i]?ex[i].spotlight:false,customColor:ex[i]?ex[i].customColor:null}))];
   syncCurrentFrame();render();
 }
 
@@ -983,6 +969,7 @@ function drawPitch(){
   const len=pitchMode==="full"?105:52.5,penW=16.5/len,penH=40.32/68,penY=(1-penH)/2,goalW=5.5/len,goalH=18.32/68,goalY=(1-goalH)/2;
   const spotX=11/len,arcRx=9.15/len,arcRy=9.15/68,theta=Math.acos(5.5/9.15),cRx=1.2/len,cRy=1.2/68;
 
+  // منطقة الجزاء، الـ 6 ياردة، قوس منطقة الجزاء، نقطة الجزاء، وأقواس الركنيات اليسرى
   rectN(0,penY,penW,penH);rectN(0,goalY,goalW,goalH);
   arcN(spotX,0.5,arcRx,arcRy,-theta,theta);
   spotN(spotX,0.5);
@@ -1073,17 +1060,8 @@ function drawPieces(){
       if(!p.customColor&&meta.pattern==="striped"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x-r*0.48,pos.y-r,r*0.32,r*2);ctx.fillRect(pos.x+r*0.16,pos.y-r,r*0.32,r*2);}
       else if(!p.customColor&&meta.pattern==="halves"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x,pos.y-r,r,r*2);}
       ctx.restore();ctx.save();ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.strokeStyle=pitchTheme==="opta"?"#0f172a":"#fff";ctx.lineWidth=2;ctx.stroke();
-      ctx.font=`bold ${r*0.72}px Inter,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillStyle=p.numColor||meta.numColor||"#ffffff";
-      ctx.fillText(p.number||"",pos.x,pos.y);
-      if(p.label){
-        ctx.font="bold 10px Cairo,sans-serif";
-        const lw=ctx.measureText(p.label).width+8;
-        ctx.fillStyle="rgba(15,23,42,0.88)";
-        ctx.fillRect(pos.x-lw/2,pos.y+r+3,lw,14);
-        ctx.fillStyle=p.labelColor||meta.labelColor||"#f8fafc";
-        ctx.fillText(p.label,pos.x,pos.y+r+10);
-      }
+      ctx.font=`bold ${r*0.72}px Inter,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(p.number||"",pos.x,pos.y);
+      if(p.label){ctx.font="bold 10px Cairo,sans-serif";const lw=ctx.measureText(p.label).width+8;ctx.fillStyle="rgba(15,23,42,0.88)";ctx.fillRect(pos.x-lw/2,pos.y+r+3,lw,14);ctx.fillStyle="#f8fafc";ctx.fillText(p.label,pos.x,pos.y+r+10);}
     }else if(p.type==="ball"){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(pos.x,pos.y,r*0.62,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#0f172a";ctx.lineWidth=2;ctx.stroke();}
     else if(p.type==="cone"){const cr=r*0.65;ctx.fillStyle="#f97316";ctx.beginPath();ctx.moveTo(pos.x,pos.y-cr);ctx.lineTo(pos.x+cr,pos.y+cr*0.8);ctx.lineTo(pos.x-cr,pos.y+cr*0.8);ctx.closePath();ctx.fill();}
     else if(p.type==="mannequin"){ctx.fillStyle="#a855f7";ctx.fillRect(pos.x-r*0.36,pos.y-r*0.5,r*0.72,r*1.1);}
@@ -1114,21 +1092,7 @@ canvas.addEventListener("mousedown",e=>{
 });
 canvas.addEventListener("mousemove",e=>{const pos=getPointerPos(e);if(draggingOffside){offsideNx=canvasToNorm(pos.x,pos.y).nx;render();return;}if(draggingControlPoint){draggingControlPoint.cp=canvasToNorm(pos.x,pos.y);render();return;}if(draggingPiece){const n=canvasToNorm(pos.x-dragOffset.x,pos.y-dragOffset.y);draggingPiece.nx=n.nx;draggingPiece.ny=n.ny;render();}else if(isDrawing&&currentDraft){currentDraft.points[1]=canvasToNorm(pos.x,pos.y);currentDraft.cp=getCurveControlPoint(currentDraft);render();}});
 window.addEventListener("mouseup",()=>{if(draggingOffside){draggingOffside=false;return;}if(draggingControlPoint){draggingControlPoint=null;syncCurrentFrame();render();return;}if(draggingPiece){draggingPiece=null;syncCurrentFrame();render();}else if(isDrawing&&currentDraft){isDrawing=false;if(Math.hypot(currentDraft.points[1].nx-currentDraft.points[0].nx,currentDraft.points[1].ny-currentDraft.points[0].ny)>0.015){saveHistory();currentDraft.cp=getCurveControlPoint(currentDraft);drawings.push(currentDraft);syncCurrentFrame();}currentDraft=null;render();}});
-canvas.addEventListener("dblclick",e=>{
-  const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});
-  if(hit){
-    editingPieceId=hit.id;
-    const m=hit.type==="red"?redTeamMeta:blueTeamMeta;
-    document.getElementById("edit-number").value=hit.number||"";
-    document.getElementById("edit-label").value=hit.label||"";
-    document.getElementById("edit-use-custom-color").checked=!!hit.customColor;
-    document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";
-    document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";
-    document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";
-    document.getElementById("edit-spotlight").checked=!!hit.spotlight;
-    document.getElementById("edit-modal").classList.remove("hidden");
-  }
-});
+canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;document.getElementById("edit-modal").classList.remove("hidden");}});
 
 function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,keyframes})],{type:"application/json"}));a.download=`TootScouting_Tactic_${Date.now()}.json`;a.click();}
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.redTeamMeta)redTeamMeta=d.redTeamMeta;if(d.blueTeamMeta)blueTeamMeta=d.blueTeamMeta;if(d.keyframes?.length){keyframes=d.keyframes;selectKeyframe(0);}updateTeamBanner();renderFramesBar();resizeCanvas();}catch{}};r.readAsText(f);}
@@ -1142,32 +1106,18 @@ function saveHistory(){historyStack.push({pieces:JSON.parse(JSON.stringify(piece
 function undoAction(){if(!historyStack.length)return;const prev=historyStack.pop();pieces=prev.pieces;drawings=prev.drawings;links=prev.links||[];syncCurrentFrame();render();}
 function clearDrawings(){saveHistory();drawings=[];links=[];polygonPoints=[];syncCurrentFrame();render();}
 function resetBoard(){saveHistory();drawings=[];links=[];initDefaultPieces();render();}
-function addPiece(type){saveHistory();const m=type==="red"?redTeamMeta:blueTeamMeta;pieces.push({id:type+Date.now(),type,nx:0.5,ny:0.5,number:type==="red"||type==="blue"?"12":"",label:"",spotlight:false,numColor:m?.numColor||"#ffffff",labelColor:m?.labelColor||"#f8fafc"});syncCurrentFrame();render();}
+function addPiece(type){saveHistory();pieces.push({id:type+Date.now(),type,nx:0.5,ny:0.5,number:type==="red"||type==="blue"?"12":"",label:"",spotlight:false});syncCurrentFrame();render();}
 function finishPolygon(){if(polygonPoints.length>=3){saveHistory();drawings.push({type:"polygon",points:[...polygonPoints],color:currentColor,width:currentStrokeWidth});syncCurrentFrame();}cancelPolygon();}
 function cancelPolygon(){polygonPoints=[];document.getElementById("polygon-controls").classList.add("hidden");render();}
 function closeTextModal(){document.getElementById("text-modal").classList.add("hidden");}
 function confirmTextAnnotation(){const v=document.getElementById("annotation-input").value.trim();if(v&&pendingTextPos){saveHistory();drawings.push({type:"text",points:[pendingTextPos],color:currentColor,text:v});syncCurrentFrame();render();}closeTextModal();}
 function closeEditModal(){document.getElementById("edit-modal").classList.add("hidden");}
-function saveEditModal(){
-  const p=pieces.find(x=>x.id===editingPieceId);
-  if(p){
-    saveHistory();
-    p.number=document.getElementById("edit-number").value;
-    p.label=document.getElementById("edit-label").value;
-    p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;
-    p.numColor=document.getElementById("edit-num-color").value;
-    p.labelColor=document.getElementById("edit-label-color").value;
-    p.spotlight=document.getElementById("edit-spotlight").checked;
-    syncCurrentFrame();
-    render();
-  }
-  closeEditModal();
-}
+function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}
 function deleteSelectedPiece(){saveHistory();pieces=pieces.filter(x=>x.id!==editingPieceId);links=links.filter(l=>l.from!==editingPieceId&&l.to!==editingPieceId);syncCurrentFrame();closeEditModal();render();}
 function openLineupModal(){document.getElementById("input-red-team-name").value=redTeamMeta.name;document.getElementById("select-red-formation").value=redTeamMeta.formation;document.getElementById("input-blue-team-name").value=blueTeamMeta.name;document.getElementById("select-blue-formation").value=blueTeamMeta.formation;populateLineupInputs("red",redTeamMeta.formation,true);populateLineupInputs("blue",blueTeamMeta.formation,true);document.getElementById("lineup-modal").classList.remove("hidden");}
 function closeLineupModal(){document.getElementById("lineup-modal").classList.add("hidden");}
 function populateLineupInputs(team,form,keep){const el=document.getElementById(team+"-players-list"),tpl=formationTemplates[form],cur=pieces.filter(p=>p.type===team);el.innerHTML="";tpl.forEach((s,i)=>{const num=keep&&cur[i]?cur[i].number:s.num,lbl=keep&&cur[i]?cur[i].label:s.label;el.innerHTML+=`<div class="flex gap-1.5 items-center"><input data-team="${team}" data-idx="${i}" data-f="num" value="${num}" class="w-11 bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-xs text-center text-white font-en"><input data-team="${team}" data-idx="${i}" data-f="lbl" value="${lbl}" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white"></div>`;});}
-function applyBothTeamsLineups(){saveHistory();redTeamMeta.name=document.getElementById("input-red-team-name").value||"الفريق الأول";redTeamMeta.formation=document.getElementById("select-red-formation").value;blueTeamMeta.name=document.getElementById("input-blue-team-name").value||"الفريق الثاني";blueTeamMeta.formation=document.getElementById("select-blue-formation").value;pieces=pieces.filter(p=>p.type!=="red"&&p.type!=="blue");formationTemplates[redTeamMeta.formation].forEach((s,i)=>pieces.push({id:"red_"+i,type:"red",nx:s.nx,ny:s.ny,number:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false,numColor:redTeamMeta.numColor,labelColor:redTeamMeta.labelColor}));formationTemplates[blueTeamMeta.formation].forEach((s,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-s.nx,ny:s.ny,number:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false,numColor:blueTeamMeta.numColor,labelColor:blueTeamMeta.labelColor}));updateTeamBanner();syncCurrentFrame();closeLineupModal();render();}
+function applyBothTeamsLineups(){saveHistory();redTeamMeta.name=document.getElementById("input-red-team-name").value||"الفريق الأول";redTeamMeta.formation=document.getElementById("select-red-formation").value;blueTeamMeta.name=document.getElementById("input-blue-team-name").value||"الفريق الثاني";blueTeamMeta.formation=document.getElementById("select-blue-formation").value;pieces=pieces.filter(p=>p.type!=="red"&&p.type!=="blue");formationTemplates[redTeamMeta.formation].forEach((s,i)=>pieces.push({id:"red_"+i,type:"red",nx:s.nx,ny:s.ny,number:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="red"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));formationTemplates[blueTeamMeta.formation].forEach((s,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-s.nx,ny:s.ny,number:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="num"]`).value,label:document.querySelector(`input[data-team="blue"][data-idx="${i}"][data-f="lbl"]`).value,spotlight:false}));updateTeamBanner();syncCurrentFrame();closeLineupModal();render();}
 function exportPNG(){const a=document.createElement("a");a.download=`TootScouting_Tactic_${Date.now()}.png`;a.href=canvas.toDataURL("image/png",1.0);a.click();}
 function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
 let toastTimer=null;function showToast(m){const el=document.getElementById("toast-msg");el.textContent=m;el.classList.remove("opacity-0");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("opacity-0"),2500);}
@@ -1217,11 +1167,21 @@ let toastTimer=null;function showToast(m){const el=document.getElementById("toas
   requestAnimationFrame(drawSim);
 })();
 
+function syncIframeHeight() {
+  const iframe = window.frameElement;
+  if (!iframe) return;
+  const landing = document.getElementById("landing-page");
+  const isLandingVisible = landing && !landing.classList.contains("hidden");
+  if (isLandingVisible) { iframe.style.height = (landing.scrollHeight + 40) + "px"; }
+  else { iframe.style.height = "100vh"; resizeCanvas(); }
+}
+
 setInterval(()=>{if((pieces.some(p=>p.spotlight)||linkSourceId)&&!isPlaying){pulsePhase+=0.25;render();}},60);
+setInterval(syncIframeHeight, 300);
 window.addEventListener("resize",resizeCanvas);
 initDefaultPieces();
 render();
-setTimeout(resizeCanvas,150);
+setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
 </script>
 </body>
 </html>
