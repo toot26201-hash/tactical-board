@@ -64,13 +64,13 @@ if 'id="edit-num-color"' not in html_code:
     ''' + target_modal_end
     html_code = html_code.replace(target_modal_end, color_inputs_html)
 
-# 4. إصلاح بلوك dblclick التالف بالكامل وإعادة بنائه بشكل نظيف
-clean_dblclick = '''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)nc.value=hit.numColor||(m&&m.numColor)||"#ffffff";if(lc)lc.value=hit.labelColor||(m&&m.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
+# 4. إصلاح بلوك dblclick بالكامل بصيغة مرنة
+clean_dblclick = r'''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)nc.value=hit.numColor||(m&&m.numColor)||"#ffffff";if(lc)lc.value=hit.labelColor||(m&&m.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
 html_code = re.sub(
-    r'canvas\.addEventListener\("dblclick",e=>\{.*?document\.getElementById\("edit-modal"\)\.classList\.remove\("hidden"\);\}\);',
+    r'canvas\.addEventListener\(\s*["\']dblclick["\']\s*,[\s\S]*?edit-modal[\s\S]*?\}\);',
     clean_dblclick,
     html_code,
-    flags=re.DOTALL
+    count=1
 )
 
 # 5. دالة التحديث الجماعي للفريق
