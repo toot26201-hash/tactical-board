@@ -20,6 +20,9 @@ st.markdown("""
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
+# تنظيف أي بقايا سابقة من _m_dupnst
+html_code = re.sub(r'\b_m_dupnst\b', 'm', html_code)
+
 # 1. إضافة تشكيلة 4-1-4-1
 if '<option value="4-1-4-1">4-1-4-1</option>' not in html_code:
     html_code = html_code.replace(
@@ -121,12 +124,13 @@ if 'function activateTrainingPitch(' not in html_code:
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 8. منع خطأ تكرار تعريف المتغير m في الـ JavaScript
-m_matches = list(re.finditer(r'\b(const|let|var)\s+m\b', html_code))
-if len(m_matches) > 1:
-    for match in m_matches[1:]:
-        start, end = match.span(0)
-        kw = match.group(1)
-        html_code = html_code[:start] + f"{kw} _m_dup" + html_code[end:]
+# 8. منع تكرار تعريف المتغير m بشكل نظيف
+decl_pattern = re.compile(r'(\b(?:const|let|var)\s+)m\b')
+matches = list(decl_pattern.finditer(html_code))
+if len(matches) > 1:
+    for idx, match in enumerate(matches[1:], start=2):
+        start, end = match.span()
+        replacement = f"{match.group(1)}_m{idx}"
+        html_code = html_code[:start] + replacement + html_code[end:]
 
 components.html(html_code, height=1750, scrolling=False)
