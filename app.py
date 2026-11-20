@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -82,7 +83,7 @@ if 'function quickTeamTextColor(' not in html_code:
 function quickKitUpdate('''
     html_code = html_code.replace('function quickKitUpdate(', team_color_fn)
 
-# 5. تحديث دالة saveEditModal بأمان بدون أي تضارب متغيرات
+# 5. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
 new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)p.numColor=nc.value;if(lc)p.labelColor=lc.value;syncCurrentFrame();render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
@@ -119,5 +120,13 @@ if 'function activateTrainingPitch(' not in html_code:
 }
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
+
+# 8. منع خطأ تكرار تعريف المتغير m في الـ JavaScript
+m_matches = list(re.finditer(r'\b(const|let|var)\s+m\b', html_code))
+if len(m_matches) > 1:
+    for match in m_matches[1:]:
+        start, end = match.span(0)
+        kw = match.group(1)
+        html_code = html_code[:start] + f"{kw} _m_dup" + html_code[end:]
 
 components.html(html_code, height=1750, scrolling=False)
