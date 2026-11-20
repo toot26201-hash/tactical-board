@@ -20,6 +20,14 @@ st.markdown("""
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
+# إزالة أي تكرار لزر "تدريب"
+training_btn_html = '<button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>'
+html_code = re.sub(
+    r'(<button onclick="activateTrainingPitch\(\)" id="btn-pitch-training"[^>]*>تدريب</button>)+',
+    training_btn_html,
+    html_code
+)
+
 # 1. إضافة تشكيلة 4-1-4-1
 if '<option value="4-1-4-1">4-1-4-1</option>' not in html_code:
     html_code = html_code.replace(
@@ -110,7 +118,7 @@ html_code = html_code.replace(old_save_edit, new_save_edit)
 if 'id="btn-pitch-training"' not in html_code:
     html_code = html_code.replace(
         '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
-        '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>'
+        '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>' + training_btn_html
     )
 
 if 'function activateTrainingPitch(' not in html_code:
@@ -123,13 +131,14 @@ if 'function activateTrainingPitch(' not in html_code:
   const tBtn = document.getElementById("btn-pitch-training");
   if (tBtn) tBtn.classList.add("bg-slate-700", "text-white");
   syncCurrentFrame();
-  render();
+  if (typeof resizeCanvas === "function") resizeCanvas();
+  if (typeof render === "function") render();
   showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
 }
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 9. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
+# 9. ضمان فتح نافذة تسجيل الدخول وإجبار رسم الكانفاس عند التحميل
 fallback_auth = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
@@ -142,9 +151,20 @@ window.openAuthModal = window.openAuthModal || function(mode = 'login') {
 window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
   window.openAuthModal(mode);
 };
+function __forceBoardDraw() {
+  try {
+    if (typeof resizeCanvas === "function") resizeCanvas();
+    if (typeof render === "function") render();
+  } catch (e) {}
+}
+window.addEventListener("load", () => {
+  setTimeout(__forceBoardDraw, 150);
+  setTimeout(__forceBoardDraw, 600);
+});
+setTimeout(__forceBoardDraw, 300);
 </script>
 """
-if "window.openAuthFromLanding" not in html_code:
+if "__forceBoardDraw" not in html_code:
     html_code = html_code + fallback_auth
 
 components.html(html_code, height=1750, scrolling=False)
