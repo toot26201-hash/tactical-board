@@ -256,7 +256,7 @@
 
     <div class="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[11px]">
       <button onclick="setPitchMode('full')" id="btn-pitch-full" class="pitch-mode-btn bg-slate-700 text-white px-2 py-0.5 rounded">كامل</button>
-      <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>
+      <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>
     </div>
 
     <button onclick="toggleZones()" id="btn-toggle-zones" class="tool-btn bg-slate-800 border border-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded-lg">الممرات</button>
@@ -1297,4 +1297,28 @@ window.openAuthModal = window.openAuthModal || function(mode = 'login') {
 window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
   window.openAuthModal(mode);
 };
+</script>
+
+<script>
+window.openAuthModal = window.openAuthModal || function(mode = 'login') {
+  const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+};
+window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
+  window.openAuthModal(mode);
+};
+function __forceBoardDraw() {
+  try {
+    if (typeof resizeCanvas === "function") resizeCanvas();
+    if (typeof render === "function") render();
+  } catch (e) {}
+}
+window.addEventListener("load", () => {
+  setTimeout(__forceBoardDraw, 150);
+  setTimeout(__forceBoardDraw, 600);
+});
+setTimeout(__forceBoardDraw, 300);
 </script>
