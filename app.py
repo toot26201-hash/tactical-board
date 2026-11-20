@@ -104,15 +104,14 @@ if 'function quickTeamTextColor(' not in html_code:
     }
   });
   syncCurrentFrame();
-  render();
-  if (typeof __renderGuaranteedPitch === "function") __renderGuaranteedPitch();
+  if (typeof render === "function") render();
 }
 function quickKitUpdate('''
     html_code = html_code.replace('function quickKitUpdate(', team_color_fn)
 
 # 7. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
-new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();render();if(typeof __renderGuaranteedPitch==="function")__renderGuaranteedPitch();}closeEditModal();}'
+new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();if(typeof render==="function")render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
 
 # 8. إضافة وضع "تدريب"
@@ -134,14 +133,13 @@ if 'function activateTrainingPitch(' not in html_code:
   syncCurrentFrame();
   if (typeof resizeCanvas === "function") resizeCanvas();
   if (typeof render === "function") render();
-  if (typeof __renderGuaranteedPitch === "function") __renderGuaranteedPitch();
   showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
 }
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 9. طبقة رسم مضمونة للملعب واللاعبين والكورة داخل مساحة السبورة
-guaranteed_layer = """
+# 9. ضمان عمل نافذة تسجيل الدخول وتنشيط رسم الملعب الأصلي فقط
+clean_script = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
   const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
@@ -153,153 +151,17 @@ window.openAuthModal = window.openAuthModal || function(mode = 'login') {
 window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
   window.openAuthModal(mode);
 };
-
-function __findBoardHost() {
-  const canvases = Array.from(document.querySelectorAll("canvas"));
-  let bestCvs = null;
-  let bestArea = 0;
-  canvases.forEach(c => {
-    const r = c.getBoundingClientRect();
-    const area = Math.max(0, r.width) * Math.max(0, r.height);
-    if (area > bestArea) {
-      bestArea = area;
-      bestCvs = c;
-    }
-  });
-  if (bestCvs && bestCvs.parentElement) {
-    return { host: bestCvs.parentElement, rect: bestCvs.parentElement.getBoundingClientRect() };
-  }
-  const mainEl = document.querySelector("main") || document.body;
-  return { host: mainEl, rect: mainEl.getBoundingClientRect() };
-}
-
-function __renderGuaranteedPitch() {
-  try {
-    const { host, rect } = __findBoardHost();
-    if (!host) return;
-    let overlay = document.getElementById("toot-guaranteed-pitch");
-    if (!overlay) {
-      overlay = document.createElement("canvas");
-      overlay.id = "toot-guaranteed-pitch";
-      overlay.style.position = "absolute";
-      overlay.style.inset = "0";
-      overlay.style.width = "100%";
-      overlay.style.height = "100%";
-      overlay.style.pointerEvents = "none";
-      overlay.style.zIndex = "5";
-      overlay.style.borderRadius = "12px";
-      const computedPos = getComputedStyle(host).position;
-      if (computedPos === "static") host.style.position = "relative";
-      host.appendChild(overlay);
-    }
-
-    const w = Math.max(500, Math.floor(rect.width || host.clientWidth || 860));
-    const h = Math.max(320, Math.floor(rect.height || host.clientHeight || 480));
-    if (overlay.width !== w || overlay.height !== h) {
-      overlay.width = w;
-      overlay.height = h;
-    }
-
-    const c = overlay.getContext("2d");
-    if (!c) return;
-    c.clearRect(0, 0, w, h);
-
-    // عشب الملعب بخطوط طولية خفيفة
-    const stripeCount = 12;
-    const stripeW = w / stripeCount;
-    for (let i = 0; i < stripeCount; i++) {
-      c.fillStyle = i % 2 === 0 ? "#15803d" : "#166534";
-      c.fillRect(i * stripeW, 0, stripeW + 1, h);
-    }
-
-    const padX = Math.round(w * 0.05);
-    const padY = Math.round(h * 0.06);
-    const pw = w - padX * 2;
-    const ph = h - padY * 2;
-
-    c.strokeStyle = "rgba(255,255,255,0.9)";
-    c.lineWidth = 2.5;
-    c.strokeRect(padX, padY, pw, ph);
-
-    // خط المنتصف ودائرة المنتصف
-    c.beginPath();
-    c.moveTo(w / 2, padY);
-    c.lineTo(w / 2, padY + ph);
-    c.stroke();
-
-    c.beginPath();
-    c.arc(w / 2, padY + ph / 2, Math.min(pw, ph) * 0.13, 0, Math.PI * 2);
-    c.stroke();
-
-    c.beginPath();
-    c.arc(w / 2, padY + ph / 2, 4, 0, Math.PI * 2);
-    c.fillStyle = "#ffffff";
-    c.fill();
-
-    // منطقتا الجزاء ومنطقتا المرمى
-    const penW = pw * 0.16;
-    const penH = ph * 0.62;
-    c.strokeRect(padX, padY + (ph - penH) / 2, penW, penH);
-    c.strokeRect(padX + pw - penW, padY + (ph - penH) / 2, penW, penH);
-
-    const gW = pw * 0.06;
-    const gH = ph * 0.3;
-    c.strokeRect(padX, padY + (ph - gH) / 2, gW, gH);
-    c.strokeRect(padX + pw - gW, padY + (ph - gH) / 2, gW, gH);
-
-    // رسم اللاعبين والكورة إن وجدوا
-    if (typeof pieces !== "undefined" && Array.isArray(pieces) && pieces.length > 0) {
-      pieces.forEach(p => {
-        const px = padX + ((typeof p.nx === "number" ? p.nx : 0.5) * pw);
-        const py = padY + ((typeof p.ny === "number" ? p.ny : 0.5) * ph);
-        if (p.type === "ball") {
-          c.fillStyle = "#ffffff";
-          c.beginPath();
-          c.arc(px, py, 7, 0, Math.PI * 2);
-          c.fill();
-          c.strokeStyle = "#0f172a";
-          c.lineWidth = 1.5;
-          c.stroke();
-        } else {
-          const fillCol = p.customColor || (p.type === "red" ? "#ef4444" : "#3b82f6");
-          c.fillStyle = fillCol;
-          c.beginPath();
-          c.arc(px, py, 14, 0, Math.PI * 2);
-          c.fill();
-          c.strokeStyle = "#ffffff";
-          c.lineWidth = 2;
-          c.stroke();
-
-          if (p.number) {
-            c.fillStyle = p.numColor || "#ffffff";
-            c.font = "bold 11px sans-serif";
-            c.textAlign = "center";
-            c.textBaseline = "middle";
-            c.fillText(String(p.number), px, py);
-          }
-          if (p.label) {
-            c.fillStyle = p.labelColor || "#f8fafc";
-            c.font = "bold 10px sans-serif";
-            c.textAlign = "center";
-            c.textBaseline = "top";
-            c.fillText(String(p.label), px, py + 17);
-          }
-        }
-      });
-    }
-  } catch (e) {}
-}
-
 window.addEventListener("load", () => {
-  setTimeout(__renderGuaranteedPitch, 200);
-  setTimeout(__renderGuaranteedPitch, 700);
-  setTimeout(__renderGuaranteedPitch, 1500);
+  setTimeout(() => {
+    try {
+      if (typeof resizeCanvas === "function") resizeCanvas();
+      if (typeof render === "function") render();
+    } catch (e) {}
+  }, 200);
 });
-window.addEventListener("resize", () => setTimeout(__renderGuaranteedPitch, 120));
-setTimeout(__renderGuaranteedPitch, 350);
 </script>
 """
-if "__renderGuaranteedPitch" not in html_code:
-    html_code = html_code + guaranteed_layer
+if "window.openAuthFromLanding" not in html_code:
+    html_code = html_code + clean_script
 
 components.html(html_code, height=1750, scrolling=False)
