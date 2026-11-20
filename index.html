@@ -1285,3 +1285,16 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
 </script>
 </body>
 </html>
+
+<script>
+window.openAuthModal = window.openAuthModal || function(mode = 'login') {
+  const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+};
+window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
+  window.openAuthModal(mode);
+};
+</script>
