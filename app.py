@@ -133,12 +133,13 @@ if 'function activateTrainingPitch(' not in html_code:
   syncCurrentFrame();
   if (typeof resizeCanvas === "function") resizeCanvas();
   if (typeof render === "function") render();
+  if (typeof __fallbackPitchDraw === "function") __fallbackPitchDraw();
   showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
 }
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 9. ضمان فتح نافذة تسجيل الدخول وإجبار رسم الكانفاس عند التحميل
+# 9. تشخيص ورسم احتياطي للملعب لو لم يظهر تلقائياً
 fallback_auth = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
@@ -151,20 +152,106 @@ window.openAuthModal = window.openAuthModal || function(mode = 'login') {
 window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
   window.openAuthModal(mode);
 };
-function __forceBoardDraw() {
+
+function __fallbackPitchDraw() {
   try {
-    if (typeof resizeCanvas === "function") resizeCanvas();
-    if (typeof render === "function") render();
+    const cvs = document.querySelector("canvas");
+    if (!cvs) return;
+    const rect = cvs.parentElement ? cvs.parentElement.getBoundingClientRect() : cvs.getBoundingClientRect();
+    const w = Math.max(600, Math.floor(rect.width || cvs.clientWidth || 900));
+    const h = Math.max(360, Math.floor(rect.height || cvs.clientHeight || 520));
+    if (cvs.width < 50 || cvs.height < 50) {
+      cvs.width = w;
+      cvs.height = h;
+    }
+    const c = cvs.getContext("2d");
+    if (!c) return;
+    const imgData = c.getImageData(0, 0, Math.min(cvs.width, 40), Math.min(cvs.height, 40)).data;
+    let nonZero = 0;
+    for (let i = 0; i < imgData.length; i += 16) {
+      if (imgData[i] > 28 || imgData[i+1] > 55 || imgData[i+2] > 28) nonZero++;
+    }
+    if (nonZero > 4) return;
+
+    const cw = cvs.width, ch = cvs.height;
+    const padX = Math.round(cw * 0.05), padY = Math.round(ch * 0.06);
+    const pw = cw - padX * 2, ph = ch - padY * 2;
+
+    c.fillStyle = "#14532d";
+    c.fillRect(0, 0, cw, ch);
+
+    c.strokeStyle = "rgba(255,255,255,0.75)";
+    c.lineWidth = 2;
+    c.strokeRect(padX, padY, pw, ph);
+
+    c.beginPath();
+    c.moveTo(cw / 2, padY);
+    c.lineTo(cw / 2, padY + ph);
+    c.stroke();
+
+    c.beginPath();
+    c.arc(cw / 2, padY + ph / 2, Math.min(pw, ph) * 0.13, 0, Math.PI * 2);
+    c.stroke();
+
+    const penW = pw * 0.16, penH = ph * 0.62;
+    c.strokeRect(padX, padY + (ph - penH) / 2, penW, penH);
+    c.strokeRect(padX + pw - penW, padY + (ph - penH) / 2, penW, penH);
+
+    const gW = pw * 0.06, gH = ph * 0.3;
+    c.strokeRect(padX, padY + (ph - gH) / 2, gW, gH);
+    c.strokeRect(padX + pw - gW, padY + (ph - gH) / 2, gW, gH);
+
+    if (typeof pieces !== "undefined" && Array.isArray(pieces) && pieces.length) {
+      pieces.forEach(p => {
+        const px = padX + (p.nx ?? 0.5) * pw;
+        const py = padY + (p.ny ?? 0.5) * ph;
+        if (p.type === "ball") {
+          c.fillStyle = "#ffffff";
+          c.beginPath();
+          c.arc(px, py, 7, 0, Math.PI * 2);
+          c.fill();
+          c.strokeStyle = "#0f172a";
+          c.stroke();
+        } else {
+          c.fillStyle = p.customColor || (p.type === "red" ? "#dc2626" : "#2563eb");
+          c.beginPath();
+          c.arc(px, py, 14, 0, Math.PI * 2);
+          c.fill();
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 2;
+          c.stroke();
+          if (p.number) {
+            c.fillStyle = "#ffffff";
+            c.font = "bold 11px sans-serif";
+            c.textAlign = "center";
+            c.textBaseline = "middle";
+            c.fillText(p.number, px, py);
+          }
+        }
+      });
+    }
   } catch (e) {}
 }
+
+function __forceBoardDraw() {
+  try {
+    console.log("ProTactics check -> render:", typeof render, "resizeCanvas:", typeof resizeCanvas, "canvasCount:", document.querySelectorAll("canvas").length);
+    if (typeof resizeCanvas === "function") resizeCanvas();
+    if (typeof render === "function") render();
+    setTimeout(__fallbackPitchDraw, 120);
+  } catch (e) {
+    __fallbackPitchDraw();
+  }
+}
+
 window.addEventListener("load", () => {
-  setTimeout(__forceBoardDraw, 150);
-  setTimeout(__forceBoardDraw, 600);
+  setTimeout(__forceBoardDraw, 200);
+  setTimeout(__forceBoardDraw, 800);
 });
-setTimeout(__forceBoardDraw, 300);
+setTimeout(__forceBoardDraw, 400);
 </script>
 """
-if "__forceBoardDraw" not in html_code:
+if "__fallbackPitchDraw" not in html_code:
     html_code = html_code + fallback_auth
 
 components.html(html_code, height=1750, scrolling=False)
