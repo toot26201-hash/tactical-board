@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -63,7 +64,16 @@ if 'id="edit-num-color"' not in html_code:
     ''' + target_modal_end
     html_code = html_code.replace(target_modal_end, color_inputs_html)
 
-# 4. دالة التحديث الجماعي للفريق
+# 4. إصلاح بلوك dblclick التالف بالكامل وإعادة بنائه بشكل نظيف
+clean_dblclick = '''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)nc.value=hit.numColor||(m&&m.numColor)||"#ffffff";if(lc)lc.value=hit.labelColor||(m&&m.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
+html_code = re.sub(
+    r'canvas\.addEventListener\("dblclick",e=>\{.*?document\.getElementById\("edit-modal"\)\.classList\.remove\("hidden"\);\}\);',
+    clean_dblclick,
+    html_code,
+    flags=re.DOTALL
+)
+
+# 5. دالة التحديث الجماعي للفريق
 if 'function quickTeamTextColor(' not in html_code:
     team_color_fn = '''function quickTeamTextColor(team, target, color) {
   saveHistory();
@@ -82,12 +92,12 @@ if 'function quickTeamTextColor(' not in html_code:
 function quickKitUpdate('''
     html_code = html_code.replace('function quickKitUpdate(', team_color_fn)
 
-# 5. تحديث دالة saveEditModal بأمان
+# 6. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
 new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
 
-# 6. إضافة وضع "تدريب"
+# 7. إضافة وضع "تدريب"
 if 'id="btn-pitch-training"' not in html_code:
     html_code = html_code.replace(
         '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
@@ -110,7 +120,7 @@ if 'function activateTrainingPitch(' not in html_code:
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 7. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
+# 8. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
 fallback_auth = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
