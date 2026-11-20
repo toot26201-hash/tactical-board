@@ -133,4 +133,22 @@ if len(matches) > 1:
         replacement = f"{match.group(1)}_m{idx}"
         html_code = html_code[:start] + replacement + html_code[end:]
 
+# 9. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
+fallback_auth = """
+<script>
+window.openAuthModal = window.openAuthModal || function(mode = 'login') {
+  const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+};
+window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
+  window.openAuthModal(mode);
+};
+</script>
+"""
+if "window.openAuthFromLanding" not in html_code:
+    html_code = html_code + fallback_auth
+
 components.html(html_code, height=1750, scrolling=False)
