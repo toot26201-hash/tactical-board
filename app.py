@@ -1,4 +1,3 @@
-import re
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -19,9 +18,6 @@ st.markdown("""
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
-
-# تنظيف أي بقايا سابقة من _m_dupnst
-html_code = re.sub(r'\b_m_dupnst\b', 'm', html_code)
 
 # 1. إضافة تشكيلة 4-1-4-1
 if '<option value="4-1-4-1">4-1-4-1</option>' not in html_code:
@@ -71,9 +67,9 @@ if 'id="edit-num-color"' not in html_code:
 if 'function quickTeamTextColor(' not in html_code:
     team_color_fn = '''function quickTeamTextColor(team, target, color) {
   saveHistory();
-  const _meta = team === "red" ? redTeamMeta : blueTeamMeta;
-  if (target === "num") _meta.numColor = color;
-  else _meta.labelColor = color;
+  const __teamMeta = team === "red" ? redTeamMeta : blueTeamMeta;
+  if (target === "num") __teamMeta.numColor = color;
+  else __teamMeta.labelColor = color;
   pieces.forEach(p => {
     if (p.type === team) {
       if (target === "num") p.numColor = color;
@@ -88,20 +84,10 @@ function quickKitUpdate('''
 
 # 5. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
-new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)p.numColor=nc.value;if(lc)p.labelColor=lc.value;syncCurrentFrame();render();}closeEditModal();}'
+new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
 
-# 6. تطبيق ألوان الرقم والاسم أثناء رسم اللاعبين على الملعب
-html_code = html_code.replace(
-    'ctx.fillStyle="#fff";ctx.fillText(p.number||"",pos.x,pos.y);',
-    'ctx.fillStyle=p.numColor||meta.numColor||"#ffffff";ctx.fillText(p.number||"",pos.x,pos.y);'
-)
-html_code = html_code.replace(
-    'ctx.fillStyle="#f8fafc";ctx.fillText(p.label,pos.x,pos.y+r+10);',
-    'ctx.fillStyle=p.labelColor||meta.labelColor||"#f8fafc";ctx.fillText(p.label,pos.x,pos.y+r+10);'
-)
-
-# 7. إضافة وضع "تدريب"
+# 6. إضافة وضع "تدريب"
 if 'id="btn-pitch-training"' not in html_code:
     html_code = html_code.replace(
         '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
@@ -124,16 +110,7 @@ if 'function activateTrainingPitch(' not in html_code:
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 8. منع تكرار تعريف المتغير m بشكل نظيف
-decl_pattern = re.compile(r'(\b(?:const|let|var)\s+)m\b')
-matches = list(decl_pattern.finditer(html_code))
-if len(matches) > 1:
-    for idx, match in enumerate(matches[1:], start=2):
-        start, end = match.span()
-        replacement = f"{match.group(1)}_m{idx}"
-        html_code = html_code[:start] + replacement + html_code[end:]
-
-# 9. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
+# 7. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
 fallback_auth = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
