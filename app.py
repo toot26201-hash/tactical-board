@@ -64,10 +64,10 @@ if 'id="edit-num-color"' not in html_code:
     ''' + target_modal_end
     html_code = html_code.replace(target_modal_end, color_inputs_html)
 
-# 4. إصلاح بلوك dblclick بالكامل بصيغة مرنة
-clean_dblclick = r'''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;const nc=document.getElementById("edit-num-color");const lc=document.getElementById("edit-label-color");if(nc)nc.value=hit.numColor||(m&&m.numColor)||"#ffffff";if(lc)lc.value=hit.labelColor||(m&&m.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
+# 4. إصلاح بلوك dblclick التالف أياً كان شكله في index.html
+clean_dblclick = '''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const __tm=hit.type==="red"?redTeamMeta:blueTeamMeta;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)__nc.value=hit.numColor||(__tm&&__tm.numColor)||"#ffffff";if(__lc)__lc.value=hit.labelColor||(__tm&&__tm.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
 html_code = re.sub(
-    r'canvas\.addEventListener\(\s*["\']dblclick["\']\s*,[\s\S]*?edit-modal[\s\S]*?\}\);',
+    r'canvas\.addEventListener\(\s*["\']dblclick["\'][\s\S]*?edit-modal[\s\S]*?\}\s*\)\s*;',
     clean_dblclick,
     html_code,
     count=1
@@ -120,9 +120,12 @@ if 'function activateTrainingPitch(' not in html_code:
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 8. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
+# 8. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي وتفادي ReferenceError لـ m
 fallback_auth = """
 <script>
+if (typeof window.m === "undefined") {
+  window.m = {};
+}
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
   const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
   if (modal) {
