@@ -73,7 +73,16 @@ html_code = re.sub(
     count=1
 )
 
-# 5. دالة التحديث الجماعي للفريق
+# 5. تفادي ReferenceError الخاص بـ m داخل resizeCanvas
+if 'window.__safe_m' not in html_code:
+    html_code = re.sub(
+        r'(function\s+resizeCanvas\s*\([^)]*\)\s*\{)',
+        r'\1const m=window.__safe_m||(window.__safe_m={});',
+        html_code,
+        count=1
+    )
+
+# 6. دالة التحديث الجماعي للفريق
 if 'function quickTeamTextColor(' not in html_code:
     team_color_fn = '''function quickTeamTextColor(team, target, color) {
   saveHistory();
@@ -92,12 +101,12 @@ if 'function quickTeamTextColor(' not in html_code:
 function quickKitUpdate('''
     html_code = html_code.replace('function quickKitUpdate(', team_color_fn)
 
-# 6. تحديث دالة saveEditModal بأمان
+# 7. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
 new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
 
-# 7. إضافة وضع "تدريب"
+# 8. إضافة وضع "تدريب"
 if 'id="btn-pitch-training"' not in html_code:
     html_code = html_code.replace(
         '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
@@ -120,12 +129,9 @@ if 'function activateTrainingPitch(' not in html_code:
 function setPitchMode('''
     html_code = html_code.replace('function setPitchMode(', training_fn)
 
-# 8. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي وتفادي ReferenceError لـ m
+# 9. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
 fallback_auth = """
 <script>
-if (typeof window.m === "undefined") {
-  window.m = {};
-}
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
   const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
   if (modal) {
