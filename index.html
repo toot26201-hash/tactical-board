@@ -1010,7 +1010,7 @@ function loadSetPiece(t){
   syncCurrentFrame();render();
 }
 
-function resizeCanvas(){
+function resizeCanvas(){const m=window.__safe_m||(window.__safe_m={});
   const w=document.getElementById("pitch-wrapper");
   const rect=w?w.getBoundingClientRect():{width:920,height:600};
   const aW=Math.max(520,(rect.width>100?rect.width:920)-20);
