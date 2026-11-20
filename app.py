@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -18,6 +19,18 @@ st.markdown("""
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
+
+# إزالة أي بقايا سابقة لزر "تدريب" أو الطبقات المؤقتة
+html_code = re.sub(
+    r'<button onclick="activateTrainingPitch\(\)" id="btn-pitch-training"[^>]*>تدريب</button>',
+    '',
+    html_code
+)
+html_code = re.sub(
+    r'<script>[\s\S]*?__renderGuaranteedPitch[\s\S]*?</script>',
+    '',
+    html_code
+)
 
 # 1. إضافة تشكيلة 4-1-4-1
 if '<option value="4-1-4-1">4-1-4-1</option>' not in html_code:
@@ -63,7 +76,25 @@ if 'id="edit-num-color"' not in html_code:
     ''' + target_modal_end
     html_code = html_code.replace(target_modal_end, color_inputs_html)
 
-# 4. دالة التحديث الجماعي للفريق
+# 4. إصلاح بلوك dblclick التالف في index.html
+clean_dblclick = '''canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const __tm=hit.type==="red"?redTeamMeta:blueTeamMeta;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)__nc.value=hit.numColor||(__tm&&__tm.numColor)||"#ffffff";if(__lc)__lc.value=hit.labelColor||(__tm&&__tm.labelColor)||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});'''
+html_code = re.sub(
+    r'canvas\.addEventListener\(\s*["\']dblclick["\'][\s\S]*?edit-modal[\s\S]*?\}\s*\)\s*;',
+    clean_dblclick,
+    html_code,
+    count=1
+)
+
+# 5. تفادي ReferenceError الخاص بـ m داخل resizeCanvas
+if 'window.__safe_m' not in html_code:
+    html_code = re.sub(
+        r'(function\s+resizeCanvas\s*\([^)]*\)\s*\{)',
+        r'\1const m=window.__safe_m||(window.__safe_m={});',
+        html_code,
+        count=1
+    )
+
+# 6. دالة التحديث الجماعي للفريق
 if 'function quickTeamTextColor(' not in html_code:
     team_color_fn = '''function quickTeamTextColor(team, target, color) {
   saveHistory();
@@ -77,41 +108,18 @@ if 'function quickTeamTextColor(' not in html_code:
     }
   });
   syncCurrentFrame();
-  render();
+  if (typeof render === "function") render();
 }
 function quickKitUpdate('''
     html_code = html_code.replace('function quickKitUpdate(', team_color_fn)
 
-# 5. تحديث دالة saveEditModal بأمان
+# 7. تحديث دالة saveEditModal بأمان
 old_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;syncCurrentFrame();render();}closeEditModal();}'
-new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();render();}closeEditModal();}'
+new_save_edit = 'function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;const __nc=document.getElementById("edit-num-color");const __lc=document.getElementById("edit-label-color");if(__nc)p.numColor=__nc.value;if(__lc)p.labelColor=__lc.value;syncCurrentFrame();if(typeof render==="function")render();}closeEditModal();}'
 html_code = html_code.replace(old_save_edit, new_save_edit)
 
-# 6. إضافة وضع "تدريب"
-if 'id="btn-pitch-training"' not in html_code:
-    html_code = html_code.replace(
-        '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
-        '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>'
-    )
-
-if 'function activateTrainingPitch(' not in html_code:
-    training_fn = '''function activateTrainingPitch() {
-  saveHistory();
-  drawings = [];
-  links = [];
-  pieces = [{ id: "ball_1", type: "ball", nx: 0.5, ny: 0.5, number: "", label: "" }];
-  document.querySelectorAll(".pitch-mode-btn").forEach(b => b.classList.remove("bg-slate-700", "text-white"));
-  const tBtn = document.getElementById("btn-pitch-training");
-  if (tBtn) tBtn.classList.add("bg-slate-700", "text-white");
-  syncCurrentFrame();
-  render();
-  showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
-}
-function setPitchMode('''
-    html_code = html_code.replace('function setPitchMode(', training_fn)
-
-# 7. ضمان عمل فتح نافذة تسجيل الدخول كبديل احتياطي
-fallback_auth = """
+# 8. ضمان عمل نافذة تسجيل الدخول وتنشيط رسم الملعب
+clean_script = """
 <script>
 window.openAuthModal = window.openAuthModal || function(mode = 'login') {
   const modal = document.getElementById('auth-modal') || document.querySelector('[id*="auth"][class*="fixed"], [id*="login-modal"]');
@@ -123,9 +131,17 @@ window.openAuthModal = window.openAuthModal || function(mode = 'login') {
 window.openAuthFromLanding = window.openAuthFromLanding || function(mode = 'login') {
   window.openAuthModal(mode);
 };
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    try {
+      if (typeof resizeCanvas === "function") resizeCanvas();
+      if (typeof render === "function") render();
+    } catch (e) {}
+  }, 200);
+});
 </script>
 """
 if "window.openAuthFromLanding" not in html_code:
-    html_code = html_code + fallback_auth
+    html_code = html_code + clean_script
 
 components.html(html_code, height=1750, scrolling=False)
