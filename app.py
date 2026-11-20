@@ -27,7 +27,7 @@ html_code = html_code.replace(
 tpl_4141 = '"4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],'
 html_code = html_code.replace('"4-3-3":[', tpl_4141 + '"4-3-3":[')
 
-# 2. إضافة أزرار تغيير لون الأرقام (#) ولون الأسماء (A) لكل فريق في الشريط العلوي
+# 2. إضافة أزرار تغيير لون الأرقام (#) والأسماء (A) لكل فريق في الشريط العلوي
 html_code = html_code.replace(
     '<input type="color" id="quick-red-secondary" value="#ffffff" onchange="quickKitUpdate(\'red\')" class="w-5 h-5 cursor-pointer bg-transparent">',
     '''<input type="color" id="quick-red-secondary" value="#ffffff" onchange="quickKitUpdate('red')" title="اللون الثانوي للطقم" class="w-5 h-5 cursor-pointer bg-transparent">
@@ -100,5 +100,26 @@ html_code = html_code.replace(
     'ctx.fillStyle="#f8fafc";ctx.fillText(p.label,pos.x,pos.y+r+10);',
     'ctx.fillStyle=p.labelColor||meta.labelColor||"#f8fafc";ctx.fillText(p.label,pos.x,pos.y+r+10);'
 )
+
+# 7. إضافة وضع "تدريب" لبدء الدريلات والتمارين بملعب جاهز للترتيب
+html_code = html_code.replace(
+    '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button>',
+    '<button onclick="setPitchMode(\'half\')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>'
+)
+
+training_fn = '''function activateTrainingPitch() {
+  saveHistory();
+  drawings = [];
+  links = [];
+  pieces = [{ id: "ball_1", type: "ball", nx: 0.5, ny: 0.5, number: "", label: "" }];
+  document.querySelectorAll(".pitch-mode-btn").forEach(b => b.classList.remove("bg-slate-700", "text-white"));
+  const tBtn = document.getElementById("btn-pitch-training");
+  if (tBtn) tBtn.classList.add("bg-slate-700", "text-white");
+  syncCurrentFrame();
+  render();
+  showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
+}
+function setPitchMode('''
+html_code = html_code.replace('function setPitchMode(', training_fn)
 
 components.html(html_code, height=1750, scrolling=False)
