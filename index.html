@@ -256,7 +256,7 @@
 
     <div class="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[11px]">
       <button onclick="setPitchMode('full')" id="btn-pitch-full" class="pitch-mode-btn bg-slate-700 text-white px-2 py-0.5 rounded">كامل</button>
-      <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>
+      <button onclick="setPitchMode('half')" id="btn-pitch-half" class="pitch-mode-btn text-slate-400 px-2 py-0.5 rounded">نصف</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button><button onclick="activateTrainingPitch()" id="btn-pitch-training" class="pitch-mode-btn text-emerald-300 px-2 py-0.5 rounded">تدريب</button>
     </div>
 
     <button onclick="toggleZones()" id="btn-toggle-zones" class="tool-btn bg-slate-800 border border-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded-lg">الممرات</button>
@@ -340,7 +340,7 @@
         </select>
         <span id="display-red-name" class="text-xs font-bold text-white">الفريق الأول</span>
         <select id="quick-red-form" onchange="instantFormationChange('red', this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-[11px] font-en font-bold px-1.5 py-0.5 rounded">
-          <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+          <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
         </select>
         <span id="metrics-red" class="hidden text-[10px] font-en bg-red-950 border border-red-800 text-red-200 px-2 py-0.5 rounded"></span>
       </div>
@@ -350,7 +350,7 @@
       <div class="flex items-center gap-1.5">
         <span id="metrics-blue" class="hidden text-[10px] font-en bg-sky-950 border border-sky-800 text-sky-200 px-2 py-0.5 rounded"></span>
         <select id="quick-blue-form" onchange="instantFormationChange('blue', this.value)" class="bg-slate-800 border border-slate-700 text-sky-300 text-[11px] font-en font-bold px-1.5 py-0.5 rounded">
-          <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+          <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
         </select>
         <span id="display-blue-name" class="text-xs font-bold text-white">الفريق الثاني</span>
         <select id="quick-blue-pattern" onchange="quickKitUpdate('blue')" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-200 px-1 py-0.5 rounded">
@@ -471,7 +471,7 @@
         <div class="grid grid-cols-2 gap-2">
           <input id="input-red-team-name" value="الفريق الأول" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
           <select id="select-red-formation" onchange="populateLineupInputs('red',this.value,false)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
-            <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+            <option value="5-4-1">5-4-1</option><option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
           </select>
         </div>
         <input type="file" accept="image/*" onchange="handleLogoUpload('red',event)" class="text-[10px]">
@@ -481,7 +481,7 @@
         <div class="grid grid-cols-2 gap-2">
           <input id="input-blue-team-name" value="الفريق الثاني" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
           <select id="select-blue-formation" onchange="populateLineupInputs('blue',this.value,false)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
-            <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
+            <option value="4-3-3">4-3-3</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-1-4-1">4-1-4-1</option><option value="4-2-3-1">4-2-3-1</option><option value="5-4-1">5-4-1</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="4-4-2">4-4-2</option>
           </select>
         </div>
         <input type="file" accept="image/*" onchange="handleLogoUpload('blue',event)" class="text-[10px]">
@@ -504,6 +504,16 @@
     <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
       <label class="text-xs text-slate-300 flex items-center gap-1.5"><input type="checkbox" id="edit-use-custom-color"> لون مخصص</label>
       <input type="color" id="edit-custom-color" value="#eab308" class="w-6 h-5 cursor-pointer bg-transparent">
+    </div>
+    <div class="grid grid-cols-2 gap-1.5">
+      <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
+        <span class="text-[11px] text-slate-300">لون الرقم</span>
+        <input type="color" id="edit-num-color" value="#ffffff" class="w-5 h-5 cursor-pointer bg-transparent">
+      </div>
+      <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
+        <span class="text-[11px] text-slate-300">لون الاسم</span>
+        <input type="color" id="edit-label-color" value="#f8fafc" class="w-5 h-5 cursor-pointer bg-transparent">
+      </div>
     </div>
     <div class="grid grid-cols-2 gap-1.5">
       <div class="flex items-center justify-between bg-slate-900 border border-slate-700 rounded px-2 py-1">
@@ -859,7 +869,7 @@ let draggingPiece=null,draggingControlPoint=null,dragOffset={x:0,y:0},isDrawing=
 const pitchThemes={green:{outer:"#0d2618",inner:"#133824",lines:"rgba(255,255,255,0.68)",stripes:true,stripeColor:"rgba(255,255,255,0.03)"},classic:{outer:"#14532d",inner:"#166534",lines:"rgba(255,255,255,0.85)",stripes:true,stripeColor:"rgba(255,255,255,0.05)"},navy:{outer:"#0f172a",inner:"#122c3d",lines:"rgba(148,163,184,0.65)",stripes:false},midnight:{outer:"#09090b",inner:"#1a1a1a",lines:"rgba(212,175,55,0.65)",stripes:false},opta:{outer:"#e2e8f0",inner:"#ffffff",lines:"rgba(30,41,59,0.55)",stripes:false}};
 const formationTemplates={
   "5-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.12,num:"3",label:"LWB"},{nx:0.20,ny:0.31,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.69,num:"6",label:"RCB"},{nx:0.22,ny:0.88,num:"2",label:"RWB"},{nx:0.34,ny:0.20,num:"11",label:"LM"},{nx:0.33,ny:0.41,num:"8",label:"CM"},{nx:0.33,ny:0.59,num:"14",label:"CM"},{nx:0.34,ny:0.80,num:"7",label:"RM"},{nx:0.47,ny:0.5,num:"9",label:"ST"}],
-  "4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],"4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],"4-3-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.33,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.30,num:"8",label:"CM"},{nx:0.39,ny:0.70,num:"10",label:"CM"},{nx:0.46,ny:0.16,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.84,num:"7",label:"RW"}],
+  "4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],"4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],"4-1-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.21,ny:0.15,num:"3",label:"LB"},{nx:0.19,ny:0.38,num:"4",label:"CB"},{nx:0.19,ny:0.62,num:"5",label:"CB"},{nx:0.21,ny:0.85,num:"2",label:"RB"},{nx:0.29,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.15,num:"11",label:"LM"},{nx:0.38,ny:0.38,num:"8",label:"CM"},{nx:0.38,ny:0.62,num:"10",label:"CM"},{nx:0.39,ny:0.85,num:"7",label:"RM"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],"4-3-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.33,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.30,num:"8",label:"CM"},{nx:0.39,ny:0.70,num:"10",label:"CM"},{nx:0.46,ny:0.16,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.84,num:"7",label:"RW"}],
   "4-2-3-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.32,ny:0.38,num:"6",label:"CDM"},{nx:0.32,ny:0.62,num:"8",label:"CDM"},{nx:0.41,ny:0.18,num:"11",label:"LW"},{nx:0.42,ny:0.5,num:"10",label:"CAM"},{nx:0.41,ny:0.82,num:"7",label:"RW"},{nx:0.48,ny:0.5,num:"9",label:"ST"}],
   "3-5-2":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.20,ny:0.28,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.72,num:"6",label:"RCB"},{nx:0.34,ny:0.10,num:"3",label:"LWB"},{nx:0.31,ny:0.5,num:"14",label:"DM"},{nx:0.36,ny:0.34,num:"8",label:"CM"},{nx:0.36,ny:0.66,num:"10",label:"CM"},{nx:0.34,ny:0.90,num:"2",label:"RWB"},{nx:0.47,ny:0.38,num:"9",label:"ST"},{nx:0.47,ny:0.62,num:"11",label:"ST"}],
   "3-4-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.20,ny:0.26,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.74,num:"6",label:"RCB"},{nx:0.34,ny:0.12,num:"3",label:"LM"},{nx:0.33,ny:0.38,num:"8",label:"CM"},{nx:0.33,ny:0.62,num:"14",label:"CM"},{nx:0.34,ny:0.88,num:"2",label:"RM"},{nx:0.46,ny:0.18,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.82,num:"7",label:"RW"}],
@@ -877,6 +887,20 @@ function canvasToNorm(cx,cy){
   return{nx:Math.max(0,Math.min(1,0.5+(cx-centerX)/(pitchRect.w*scale))),ny};
 }
 function toggle3D(){is3D=!is3D;document.getElementById("btn-toggle-3d").classList.toggle("active",is3D);render();}
+function quickTeamTextColor(team, target, color) {
+  saveHistory();
+  const meta = team === "red" ? redTeamMeta : blueTeamMeta;
+  if (target === "num") meta.numColor = color;
+  else meta.labelColor = color;
+  pieces.forEach(p => {
+    if (p.type === team) {
+      if (target === "num") p.numColor = color;
+      else p.labelColor = color;
+    }
+  });
+  syncCurrentFrame();
+  render();
+}
 function quickTeamTextColor(team, target, color) {
   saveHistory();
   const meta = team === "red" ? redTeamMeta : blueTeamMeta;
@@ -923,7 +947,7 @@ function instantFormationChange(team,form){
   saveHistory();const tpl=formationTemplates[form];if(!tpl)return;
   if(team==="red")redTeamMeta.formation=form;else blueTeamMeta.formation=form;
   const ex=pieces.filter(p=>p.type===team),oth=pieces.filter(p=>p.type!==team);
-  pieces=[...oth,...tpl.map((s,i)=>({id:team+"_"+i,type:team,nx:team==="red"?s.nx:(1-s.nx),ny:s.ny,number:ex[i]?ex[i].number:s.num,label:ex[i]?ex[i].label:s.label,spotlight:ex[i]?ex[i].spotlight:false,customColor:ex[i]?ex[i].customColor:null,numColor:ex[i]?.numColor||(team==="red"?redTeamMeta.numColor:blueTeamMeta.numColor)||"#ffffff",labelColor:ex[i]?.labelColor||(team==="red"?redTeamMeta.labelColor:blueTeamMeta.labelColor)||"#f8fafc",numColor:ex[i]?.numColor||(team==="red"?redTeamMeta.numColor:blueTeamMeta.numColor)||"#ffffff",labelColor:ex[i]?.labelColor||(team==="red"?redTeamMeta.labelColor:blueTeamMeta.labelColor)||"#f8fafc"}))];
+  pieces=[...oth,...tpl.map((s,i)=>({id:team+"_"+i,type:team,nx:team==="red"?s.nx:(1-s.nx),ny:s.ny,number:ex[i]?ex[i].number:s.num,label:ex[i]?ex[i].label:s.label,spotlight:ex[i]?ex[i].spotlight:false,customColor:ex[i]?ex[i].customColor:null,numColor:ex[i]?.numColor||(team==="red"?redTeamMeta.numColor:blueTeamMeta.numColor)||"#ffffff",labelColor:ex[i]?.labelColor||(team==="red"?redTeamMeta.labelColor:blueTeamMeta.labelColor)||"#f8fafc",numColor:ex[i]?.numColor||(team==="red"?redTeamMeta.numColor:blueTeamMeta.numColor)||"#ffffff",labelColor:ex[i]?.labelColor||(team==="red"?redTeamMeta.labelColor:blueTeamMeta.labelColor)||"#f8fafc",numColor:ex[i]?.numColor||(team==="red"?redTeamMeta.numColor:blueTeamMeta.numColor)||"#ffffff",labelColor:ex[i]?.labelColor||(team==="red"?redTeamMeta.labelColor:blueTeamMeta.labelColor)||"#f8fafc"}))];
   syncCurrentFrame();render();
 }
 
@@ -1144,12 +1168,24 @@ canvas.addEventListener("mousedown",e=>{
 });
 canvas.addEventListener("mousemove",e=>{const pos=getPointerPos(e);if(draggingOffside){offsideNx=canvasToNorm(pos.x,pos.y).nx;render();return;}if(draggingControlPoint){draggingControlPoint.cp=canvasToNorm(pos.x,pos.y);render();return;}if(draggingPiece){const n=canvasToNorm(pos.x-dragOffset.x,pos.y-dragOffset.y);draggingPiece.nx=n.nx;draggingPiece.ny=n.ny;render();}else if(isDrawing&&currentDraft){currentDraft.points[1]=canvasToNorm(pos.x,pos.y);currentDraft.cp=getCurveControlPoint(currentDraft);render();}});
 window.addEventListener("mouseup",()=>{if(draggingOffside){draggingOffside=false;return;}if(draggingControlPoint){draggingControlPoint=null;syncCurrentFrame();render();return;}if(draggingPiece){draggingPiece=null;syncCurrentFrame();render();}else if(isDrawing&&currentDraft){isDrawing=false;if(Math.hypot(currentDraft.points[1].nx-currentDraft.points[0].nx,currentDraft.points[1].ny-currentDraft.points[0].ny)>0.015){saveHistory();currentDraft.cp=getCurveControlPoint(currentDraft);drawings.push(currentDraft);syncCurrentFrame();}currentDraft=null;render();}});
-canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";const m=hit.type==="red"?redTeamMeta:blueTeamMeta;document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});
+canvas.addEventListener("dblclick",e=>{const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){editingPieceId=hit.id;document.getElementById("edit-number").value=hit.number||"";document.getElementById("edit-label").value=hit.label||"";document.getElementById("edit-use-custom-color").checked=!!hit.customColor;document.getElementById("edit-custom-color").value=hit.customColor||"#eab308";document.getElementById("edit-spotlight").checked=!!hit.spotlight;const m=hit.type==="red"?redTeamMeta:blueTeamMeta;document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";const m=hit.type==="red"?redTeamMeta:blueTeamMeta;document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";const m=hit.type==="red"?redTeamMeta:blueTeamMeta;document.getElementById("edit-num-color").value=hit.numColor||m.numColor||"#ffffff";document.getElementById("edit-label-color").value=hit.labelColor||m.labelColor||"#f8fafc";document.getElementById("edit-modal").classList.remove("hidden");}});
 
 function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,keyframes})],{type:"application/json"}));a.download=`TootScouting_Tactic_${Date.now()}.json`;a.click();}
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.redTeamMeta)redTeamMeta=d.redTeamMeta;if(d.blueTeamMeta)blueTeamMeta=d.blueTeamMeta;if(d.keyframes?.length){keyframes=d.keyframes;selectKeyframe(0);}updateTeamBanner();renderFramesBar();resizeCanvas();}catch{}};r.readAsText(f);}
 function setTool(t){currentTool=t;linkSourceId=null;document.querySelectorAll(".tool-btn").forEach(b=>b.classList.remove("active"));document.getElementById("tool-"+t)?.classList.add("active");render();}
 function setColor(hex){currentColor=hex;document.querySelectorAll(".color-btn").forEach(b=>b.classList.toggle("ring-2",b.dataset.color===hex));}
+function activateTrainingPitch() {
+  saveHistory();
+  drawings = [];
+  links = [];
+  pieces = [{ id: "ball_1", type: "ball", nx: 0.5, ny: 0.5, number: "", label: "" }];
+  document.querySelectorAll(".pitch-mode-btn").forEach(b => b.classList.remove("bg-slate-700", "text-white"));
+  const tBtn = document.getElementById("btn-pitch-training");
+  if (tBtn) tBtn.classList.add("bg-slate-700", "text-white");
+  syncCurrentFrame();
+  render();
+  showToast("تم تجهيز ملعب التدريب — أضف الأقماع واللاعبين حسب الدريل");
+}
 function activateTrainingPitch() {
   saveHistory();
   drawings = [];
@@ -1176,7 +1212,7 @@ function cancelPolygon(){polygonPoints=[];document.getElementById("polygon-contr
 function closeTextModal(){document.getElementById("text-modal").classList.add("hidden");}
 function confirmTextAnnotation(){const v=document.getElementById("annotation-input").value.trim();if(v&&pendingTextPos){saveHistory();drawings.push({type:"text",points:[pendingTextPos],color:currentColor,text:v});syncCurrentFrame();render();}closeTextModal();}
 function closeEditModal(){document.getElementById("edit-modal").classList.add("hidden");}
-function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;p.numColor=document.getElementById("edit-num-color").value;p.labelColor=document.getElementById("edit-label-color").value;p.numColor=document.getElementById("edit-num-color").value;p.labelColor=document.getElementById("edit-label-color").value;syncCurrentFrame();render();}closeEditModal();}
+function saveEditModal(){const p=pieces.find(x=>x.id===editingPieceId);if(p){saveHistory();p.number=document.getElementById("edit-number").value;p.label=document.getElementById("edit-label").value;p.customColor=document.getElementById("edit-use-custom-color").checked?document.getElementById("edit-custom-color").value:null;p.spotlight=document.getElementById("edit-spotlight").checked;p.numColor=document.getElementById("edit-num-color").value;p.labelColor=document.getElementById("edit-label-color").value;p.numColor=document.getElementById("edit-num-color").value;p.labelColor=document.getElementById("edit-label-color").value;p.numColor=document.getElementById("edit-num-color").value;p.labelColor=document.getElementById("edit-label-color").value;syncCurrentFrame();render();}closeEditModal();}
 function deleteSelectedPiece(){saveHistory();pieces=pieces.filter(x=>x.id!==editingPieceId);links=links.filter(l=>l.from!==editingPieceId&&l.to!==editingPieceId);syncCurrentFrame();closeEditModal();render();}
 function openLineupModal(){document.getElementById("input-red-team-name").value=redTeamMeta.name;document.getElementById("select-red-formation").value=redTeamMeta.formation;document.getElementById("input-blue-team-name").value=blueTeamMeta.name;document.getElementById("select-blue-formation").value=blueTeamMeta.formation;populateLineupInputs("red",redTeamMeta.formation,true);populateLineupInputs("blue",blueTeamMeta.formation,true);document.getElementById("lineup-modal").classList.remove("hidden");}
 function closeLineupModal(){document.getElementById("lineup-modal").classList.add("hidden");}
