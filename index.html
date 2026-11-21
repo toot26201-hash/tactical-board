@@ -1236,3 +1236,89 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
 </script>
 </body>
 </html>
+<script>
+(function addPlayerSizeControls() {
+  window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
+
+  // 1. اعتراض رسم الدوائر على الكانفاس لتطبيق الحجم المخصص لكل لاعب أو الحجم العام
+  const origArc = CanvasRenderingContext2D.prototype.arc;
+  CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
+    let finalRadius = radius;
+    // تطبيق الحجم الجديد على دوائر اللاعبين (التي يكون نصف قطرها الافتراضي بين 12 و 20)
+    if (
+      Math.abs(startAngle) < 0.01 &&
+      Math.abs(endAngle - Math.PI * 2) < 0.05 &&
+      radius >= 12 &&
+      radius <= 20
+    ) {
+      const scale = (window.__globalPlayerRadius || 16) / 16;
+      finalRadius = Math.max(8, Math.min(34, radius * scale));
+    }
+    return origArc.call(this, x, y, finalRadius, startAngle, endAngle, counterclockwise);
+  };
+
+  function redrawBoardSafely() {
+    try {
+      if (typeof render === "function") render();
+      if (typeof tsDraw === "function") tsDraw();
+    } catch (e) {}
+  }
+
+  window.changePlayerSize = function (delta) {
+    window.__globalPlayerRadius = Math.max(9, Math.min(30, (window.__globalPlayerRadius || 16) + delta));
+    const badge = document.getElementById("player-size-label");
+    if (badge) badge.textContent = window.__globalPlayerRadius + "px";
+    redrawBoardSafely();
+  };
+
+  window.resetPlayerSize = function () {
+    window.__globalPlayerRadius = 16;
+    const badge = document.getElementById("player-size-label");
+    if (badge) badge.textContent = "16px";
+    redrawBoardSafely();
+  };
+
+  // 2. إضافة أزرار التصغير والتكبير في الشريط العلوي للسبورة
+  function injectSizeButtons() {
+    if (document.getElementById("player-size-control-box")) return;
+
+    const topBar =
+      document.querySelector("#board-app header") ||
+      document.querySelector(".topbar") ||
+      document.querySelector("header") ||
+      document.body;
+
+    const box = document.createElement("div");
+    box.id = "player-size-control-box";
+    box.dir = "rtl";
+    box.style.cssText =
+      "display:inline-flex;align-items:center;gap:4px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:2px 6px;margin:0 6px;font-size:11px;color:#f8fafc;z-index:9991;";
+
+    // إذا لم نجد شريطاً علوياً مناسباً نثبته في زاوية واضحة وغير مزعجة
+    if (topBar === document.body) {
+      box.style.position = "fixed";
+      box.style.bottom = "16px";
+      box.style.right = "16px";
+      box.style.boxShadow = "0 6px 18px rgba(0,0,0,.35)";
+    }
+
+    box.innerHTML = `
+      <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
+      <button type="button" onclick="changePlayerSize(-2)" title="تصغير اللاعبين"
+        style="background:#0f172a;color:#f8fafc;border:1px solid #475569;border-radius:5px;width:22px;height:22px;cursor:pointer;font-weight:bold;">-</button>
+      <span id="player-size-label" onclick="resetPlayerSize()" title="اضغط لإرجاع الحجم الافتراضي"
+        style="min-width:34px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
+      <button type="button" onclick="changePlayerSize(2)" title="تكبير اللاعبين"
+        style="background:#0f172a;color:#f8fafc;border:1px solid #475569;border-radius:5px;width:22px;height:22px;cursor:pointer;font-weight:bold;">+</button>
+    `;
+
+    topBar.appendChild(box);
+  }
+
+  window.addEventListener("load", () => {
+    injectSizeButtons();
+    setTimeout(injectSizeButtons, 500);
+  });
+  setTimeout(injectSizeButtons, 300);
+})();
+</script>
