@@ -108,7 +108,7 @@ player_size_addon = """
 
 if "addPlayerAndBallSizeControls" not in html_code:
     html_code = html_code + player_size_addon
-   top3d_camera_addon = """
+ top3d_camera_addon = """
 <script>
 (function addTopDown3DCamera() {
   window.__cam3dAngle = 0; // 0 = 2D عادي, 28 = 3D علوي خفيف, 42 = 3D علوي عميق
