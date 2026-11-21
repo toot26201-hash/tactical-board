@@ -1427,3 +1427,80 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
   setTimeout(injectSizeButtons, 300);
 })();
 </script>
+
+<script>
+(function addTopDown3DCamera() {
+  window.__cam3dAngle = 0;
+
+  function apply3DTransform() {
+    const targets = [
+      document.getElementById("ts-canvas"),
+      ...Array.from(document.querySelectorAll("canvas"))
+    ].filter(Boolean);
+
+    targets.forEach(cvs => {
+      if (cvs.parentElement) {
+        cvs.parentElement.style.perspective = "1400px";
+        cvs.parentElement.style.transformStyle = "preserve-3d";
+      }
+      cvs.style.transition = "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease";
+      if (window.__cam3dAngle > 0) {
+        cvs.style.transform = `rotateX(${window.__cam3dAngle}deg) scale(0.96)`;
+        cvs.style.boxShadow = "0 28px 50px rgba(0, 0, 0, 0.65)";
+      } else {
+        cvs.style.transform = "rotateX(0deg) scale(1)";
+        cvs.style.boxShadow = "";
+      }
+    });
+
+    const btn = document.getElementById("btn-top3d-cam");
+    if (btn) {
+      if (window.__cam3dAngle === 0) {
+        btn.textContent = "🎥 3D علوي: إيقاف";
+        btn.style.background = "#0f172a";
+        btn.style.color = "#e2e8f0";
+      } else {
+        btn.textContent = `🎥 3D علوي (${window.__cam3dAngle}°)`;
+        btn.style.background = "#059669";
+        btn.style.color = "#ffffff";
+      }
+    }
+  }
+
+  window.cycleTop3DCamera = function () {
+    if (window.__cam3dAngle === 0) window.__cam3dAngle = 28;
+    else if (window.__cam3dAngle === 28) window.__cam3dAngle = 42;
+    else window.__cam3dAngle = 0;
+    apply3DTransform();
+  };
+
+  function inject3DCameraButton() {
+    if (document.getElementById("btn-top3d-cam")) return;
+    const sizeBox = document.getElementById("player-size-control-box");
+    const btn = document.createElement("button");
+    btn.id = "btn-top3d-cam";
+    btn.type = "button";
+    btn.textContent = "🎥 3D علوي: إيقاف";
+    btn.onclick = cycleTop3DCamera;
+    btn.style.cssText =
+      "background:#0f172a;color:#e2e8f0;border:1px solid #64748b;border-radius:7px;padding:3px 8px;margin-right:6px;font-size:11px;font-weight:700;cursor:pointer;";
+
+    if (sizeBox) {
+      sizeBox.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.bottom = "56px";
+      btn.style.right = "16px";
+      btn.style.zIndex = "99999";
+      document.body.appendChild(btn);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", inject3DCameraButton);
+  } else {
+    inject3DCameraButton();
+  }
+  setTimeout(inject3DCameraButton, 700);
+})();
+</script>
