@@ -189,7 +189,8 @@ top3d_camera_addon = """
 
 if "addTopDown3DCamera" not in html_code:
     html_code = html_code + top3d_camera_addon
-    hd_video_export_addon = """
+ if "upgradeVideoExportTo1080p" not in html_code:
+    html_code += """
 <script>
 (function upgradeVideoExportTo1080p() {
   window.exportBoardOrStudio1080p = function () {
@@ -218,7 +219,6 @@ if "addTopDown3DCamera" not in html_code:
     const origH = cvs.height;
     const scaleFactor = Math.max(1, 1920 / Math.max(1, origW));
 
-    // رفع دقة الكانفاس مؤقتاً إلى Full HD 1080p
     cvs.width = Math.round(origW * scaleFactor);
     cvs.height = Math.round(origH * scaleFactor);
     const ctx = cvs.getContext("2d");
@@ -248,7 +248,6 @@ if "addTopDown3DCamera" not in html_code:
     };
 
     recorder.onstop = () => {
-      // إرجاع أبعاد الكانفاس الأصلية
       cvs.width = origW;
       cvs.height = origH;
       redraw();
@@ -267,7 +266,6 @@ if "addTopDown3DCamera" not in html_code:
       }
     };
 
-    // تشغيل الأنيميشن تلقائياً أثناء التسجيل
     let durationMs = 4000;
     if (isStudioOpen && typeof tsState !== "undefined") {
       tsState.currentFrame = 0;
@@ -318,7 +316,4 @@ if "addTopDown3DCamera" not in html_code:
 })();
 </script>
 """
-
-if "upgradeVideoExportTo1080p" not in html_code:
-    html_code = html_code + hd_video_export_addon
 components.html(html_code, height=1750, scrolling=False)
