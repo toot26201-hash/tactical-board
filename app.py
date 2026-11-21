@@ -189,7 +189,7 @@ top3d_camera_addon = """
 
 if "addTopDown3DCamera" not in html_code:
     html_code = html_code + top3d_camera_addon
- if "upgradeVideoExportTo1080p" not in html_code:
+if "upgradeVideoExportTo1080p" not in html_code:
     html_code += """
 <script>
 (function upgradeVideoExportTo1080p() {
