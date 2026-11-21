@@ -1438,3 +1438,25 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
   setTimeout(injectCleanTopBar, 400);
 })();
 </script>
+
+<script>
+(function silentProUpgrades() {
+  // حذف أي شريط عائم قديم تماماً
+  ["clean-pro-bottom-bar", "pro-tactics-master-dock", "custom-equip-dock", "player-size-control-box", "btn-export-1080p-global", "btn-top3d-cam"].forEach(id => {
+    document.querySelectorAll("#" + id).forEach(el => el.remove());
+  });
+
+  // رفع جودة تسجيل MediaRecorder تلقائياً إلى 12 Mbps (Full HD) عند استخدام زرار "فيديو" الأصلي في الموقع
+  if (typeof MediaRecorder !== "undefined") {
+    const OrigMediaRecorder = window.MediaRecorder;
+    window.MediaRecorder = function (stream, options) {
+      const upgradedOptions = Object.assign({}, options || {}, {
+        videoBitsPerSecond: 12000000
+      });
+      return new OrigMediaRecorder(stream, upgradedOptions);
+    };
+    window.MediaRecorder.prototype = OrigMediaRecorder.prototype;
+    window.MediaRecorder.isTypeSupported = OrigMediaRecorder.isTypeSupported.bind(OrigMediaRecorder);
+  }
+})();
+</script>
