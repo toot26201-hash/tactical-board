@@ -18,15 +18,59 @@ st.markdown("""
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
-player_size_addon = """
-<script>
-(function addPlayerAndBallSizeControls() {
-  window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
 
+pro_tactics_unified_addon = """
+<script>
+(function initUnifiedProTacticsTools() {
+  // 1. تحميل أيقونات المعدات المخصصة
+  const ICON_SOURCES = {
+    cone: "traffic-cone.png",
+    hurdle: "hurdle.png",
+    ladder: "agility.png",
+    wallRed: "training (1).png",
+    wallBlue: "training.png",
+    ball: "soccer.png"
+  };
+
+  const loadedIcons = {};
+  Object.keys(ICON_SOURCES).forEach(key => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = ICON_SOURCES[key];
+    loadedIcons[key] = img;
+  });
+
+  window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
+  window.__cam3dAngle = 0;
+  window.__customEquipItems = [];
+  let draggingEquip = null;
+
+  function getActiveCanvas() {
+    const studio = document.getElementById("toot-training-studio");
+    if (studio && studio.classList.contains("active")) {
+      return document.getElementById("ts-canvas");
+    }
+    return document.querySelector("canvas");
+  }
+
+  function redrawBoardSafely() {
+    try {
+      if (typeof render === "function") render();
+      if (typeof tsDraw === "function") tsDraw();
+    } catch (e) {}
+  }
+
+  // 2. تكبير وتصغير اللاعبين واستبدال شكل الكرة الافتراضية
   const origArc = CanvasRenderingContext2D.prototype.arc;
   CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
-    let finalRadius = radius;
     const isFullCircle = Math.abs(startAngle) < 0.01 && Math.abs(endAngle - Math.PI * 2) < 0.05;
+    if (isFullCircle && radius >= 5 && radius <= 9 && loadedIcons.ball && loadedIcons.ball.complete) {
+      const scale = (window.__globalPlayerRadius || 16) / 16;
+      const size = radius * 2.5 * scale;
+      this.drawImage(loadedIcons.ball, x - size / 2, y - size / 2, size, size);
+      return;
+    }
+    let finalRadius = radius;
     if (isFullCircle && radius >= 5 && radius <= 22) {
       const scale = (window.__globalPlayerRadius || 16) / 16;
       finalRadius = Math.max(4, Math.min(36, radius * scale));
@@ -55,13 +99,6 @@ player_size_addon = """
     });
   }
 
-  function redrawBoardSafely() {
-    try {
-      if (typeof render === "function") render();
-      if (typeof tsDraw === "function") tsDraw();
-    } catch (e) {}
-  }
-
   window.changePlayerSize = function (delta) {
     window.__globalPlayerRadius = Math.max(9, Math.min(30, (window.__globalPlayerRadius || 16) + delta));
     const badge = document.getElementById("player-size-label");
@@ -76,44 +113,12 @@ player_size_addon = """
     redrawBoardSafely();
   };
 
-  function injectSizeButtons() {
-    if (document.getElementById("player-size-control-box")) return;
-    const box = document.createElement("div");
-    box.id = "player-size-control-box";
-    box.dir = "rtl";
-    box.style.cssText =
-      "position:fixed;bottom:16px;right:16px;display:inline-flex;align-items:center;gap:5px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:5px 10px;font-size:12px;color:#f8fafc;z-index:99999;box-shadow:0 8px 20px rgba(0,0,0,.45);";
+  // 3. الكاميرا العلوية 3D
+  window.cycleTop3DCamera = function () {
+    if (window.__cam3dAngle === 0) window.__cam3dAngle = 28;
+    else if (window.__cam3dAngle === 28) window.__cam3dAngle = 42;
+    else window.__cam3dAngle = 0;
 
-    box.innerHTML = `
-      <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
-      <button type="button" onclick="changePlayerSize(-2)"
-        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">-</button>
-      <span id="player-size-label" onclick="resetPlayerSize()"
-        style="min-width:36px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
-      <button type="button" onclick="changePlayerSize(2)"
-        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">+</button>
-    `;
-    document.body.appendChild(box);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectSizeButtons);
-  } else {
-    injectSizeButtons();
-  }
-  setTimeout(injectSizeButtons, 500);
-})();
-</script>
-"""
-
-if "addPlayerAndBallSizeControls" not in html_code:
-    html_code = html_code + player_size_addon
-top3d_camera_addon = """
-<script>
-(function addTopDown3DCamera() {
-  window.__cam3dAngle = 0;
-
-  function apply3DTransform() {
     const targets = [
       document.getElementById("ts-canvas"),
       ...Array.from(document.querySelectorAll("canvas"))
@@ -146,103 +151,97 @@ top3d_camera_addon = """
         btn.style.color = "#ffffff";
       }
     }
-  }
-
-  window.cycleTop3DCamera = function () {
-    if (window.__cam3dAngle === 0) window.__cam3dAngle = 28;
-    else if (window.__cam3dAngle === 28) window.__cam3dAngle = 42;
-    else window.__cam3dAngle = 0;
-    apply3DTransform();
   };
 
-  function inject3DCameraButton() {
-    if (document.getElementById("btn-top3d-cam")) return;
-    const sizeBox = document.getElementById("player-size-control-box");
-    const btn = document.createElement("button");
-    btn.id = "btn-top3d-cam";
-    btn.type = "button";
-    btn.textContent = "🎥 3D علوي: إيقاف";
-    btn.onclick = cycleTop3DCamera;
-    btn.style.cssText =
-      "background:#0f172a;color:#e2e8f0;border:1px solid #64748b;border-radius:7px;padding:3px 8px;margin-right:6px;font-size:11px;font-weight:700;cursor:pointer;";
-
-    if (sizeBox) {
-      sizeBox.appendChild(btn);
-    } else {
-      btn.style.position = "fixed";
-      btn.style.bottom = "56px";
-      btn.style.right = "16px";
-      btn.style.zIndex = "99999";
-      document.body.appendChild(btn);
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", inject3DCameraButton);
-  } else {
-    inject3DCameraButton();
-  }
-  setTimeout(inject3DCameraButton, 700);
-})();
-</script>
-"""
-
-if "addTopDown3DCamera" not in html_code:
-    html_code = html_code + top3d_camera_addon
-custom_equipment_addon = """
-<script>
-(function addCustomEquipmentIcons() {
-  const ICON_SOURCES = {
-    cone: "traffic-cone.png",
-    hurdle: "hurdle.png",
-    ladder: "agility.png",
-    wallRed: "training (1).png",
-    wallBlue: "training.png",
-    ball: "soccer.png"
-  };
-
-  const loadedIcons = {};
-  Object.keys(ICON_SOURCES).forEach(key => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = ICON_SOURCES[key];
-    loadedIcons[key] = img;
-  });
-
-  // قائمة أدوات المعدات الاحترافية الجاهزة للسحب والإفلات على السبورة
-  window.__customEquipItems = [];
-  let draggingEquip = null;
-
-  function getActiveCanvas() {
+  // 4. تصدير الفيديو 1080p 60fps
+  window.exportBoardOrStudio1080p = function () {
     const studio = document.getElementById("toot-training-studio");
-    if (studio && studio.classList.contains("active")) {
-      return document.getElementById("ts-canvas");
-    }
-    return document.querySelector("canvas");
-  }
+    const isStudioOpen = studio && studio.classList.contains("active");
+    const cvs = getActiveCanvas();
 
-  function redrawCanvas() {
-    try {
-      if (typeof render === "function") render();
-      if (typeof tsDraw === "function") tsDraw();
-    } catch (e) {}
-  }
-
-  // اعتراض رسم الكرة الافتراضية لاستبدالها بأيقونة soccer.png
-  const origArc = CanvasRenderingContext2D.prototype.arc;
-  CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
-    const isFullCircle = Math.abs(startAngle) < 0.01 && Math.abs(endAngle - Math.PI * 2) < 0.05;
-    if (isFullCircle && radius >= 5 && radius <= 9 && loadedIcons.ball && loadedIcons.ball.complete) {
-      const size = radius * 2.5;
-      this.drawImage(loadedIcons.ball, x - size / 2, y - size / 2, size, size);
+    if (!cvs) {
+      alert("افتح السبورة أو وضع التدريب أولاً لتسجيل الفيديو.");
       return;
     }
-    return origArc.call(this, x, y, radius, startAngle, endAngle, counterclockwise);
+    if (typeof MediaRecorder === "undefined") {
+      alert("المتصفح الحالي لا يدعم تسجيل الفيديو المباشر.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-export-1080p-global");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "⏳ جاري التسجيل 1080p...";
+    }
+
+    const origW = cvs.width;
+    const origH = cvs.height;
+    const scaleFactor = Math.max(1, 1920 / Math.max(1, origW));
+
+    cvs.width = Math.round(origW * scaleFactor);
+    cvs.height = Math.round(origH * scaleFactor);
+    const ctx = cvs.getContext("2d");
+    if (ctx) ctx.scale(scaleFactor, scaleFactor);
+    redrawBoardSafely();
+
+    const stream = cvs.captureStream(60);
+    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+      ? "video/webm;codecs=vp9"
+      : "video/webm";
+
+    const recorder = new MediaRecorder(stream, {
+      mimeType: mime,
+      videoBitsPerSecond: 12000000
+    });
+
+    const chunks = [];
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      cvs.width = origW;
+      cvs.height = origH;
+      redrawBoardSafely();
+
+      const blob = new Blob(chunks, { type: "video/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "TootScouting-ProTactics-1080p60.webm";
+      a.click();
+      URL.revokeObjectURL(url);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "🎬 فيديو 1080p";
+      }
+    };
+
+    let durationMs = 4000;
+    if (isStudioOpen && typeof tsState !== "undefined") {
+      tsState.currentFrame = 0;
+      if (!tsState.playing && typeof tsTogglePlay === "function") tsTogglePlay();
+      durationMs = Math.max(3200, (tsState.keyframes?.length || 2) * 1400);
+    } else if (typeof playAnimation === "function") {
+      try { playAnimation(); } catch (e) {}
+    }
+
+    recorder.start();
+
+    setTimeout(() => {
+      recorder.stop();
+      if (isStudioOpen && typeof tsState !== "undefined" && tsState.playing && typeof tsTogglePlay === "function") {
+        tsTogglePlay();
+      }
+    }, durationMs);
   };
 
-  // رسم المعدات المضافة فوق الملعب في كل إطار رسم
-  function drawCustomEquipmentsOnCanvas(ctx, cvs) {
-    if (!ctx || !cvs || window.__customEquipItems.length === 0) return;
+  // 5. رسم المعدات المضافة فوق الملعب + السحب بالماوس
+  function drawCustomEquipmentsOnCanvas() {
+    const cvs = getActiveCanvas();
+    if (!cvs || window.__customEquipItems.length === 0) return;
+    const ctx = cvs.getContext("2d");
     const scale = (window.__globalPlayerRadius || 16) / 16;
     window.__customEquipItems.forEach(item => {
       const img = loadedIcons[item.type];
@@ -260,70 +259,8 @@ custom_equipment_addon = """
       ctx.restore();
     });
   }
+  setInterval(drawCustomEquipmentsOnCanvas, 50);
 
-  // ربط الرسم التلقائي بعد render و tsDraw
-  setInterval(() => {
-    const cvs = getActiveCanvas();
-    if (!cvs) return;
-    const ctx = cvs.getContext("2d");
-    drawCustomEquipmentsOnCanvas(ctx, cvs);
-  }, 50);
-
-  // إضافة شريط اختيار المعدات الجديدة
-  function injectEquipmentDock() {
-    if (document.getElementById("custom-equip-dock")) return;
-    const dock = document.createElement("div");
-    dock.id = "custom-equip-dock";
-    dock.dir = "rtl";
-    dock.style.cssText =
-      "position:fixed;bottom:64px;right:16px;display:inline-flex;align-items:center;gap:6px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:5px 9px;font-size:11px;color:#f8fafc;z-index:99998;box-shadow:0 8px 20px rgba(0,0,0,.45);";
-
-    const items = [
-      { key: "cone", label: "قمع", src: "traffic-cone.png" },
-      { key: "hurdle", label: "حواجز", src: "hurdle.png" },
-      { key: "ladder", label: "سلم رشاقة", src: "agility.png" },
-      { key: "wallRed", label: "حائط أحمر", src: "training (1).png" },
-      { key: "wallBlue", label: "حائط أزرق", src: "training.png" },
-      { key: "ball", label: "كرة", src: "soccer.png" }
-    ];
-
-    dock.innerHTML = `<span style="color:#94a3b8;font-weight:700;">معدات:</span>`;
-    items.forEach(it => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.title = "إضافة " + it.label;
-      btn.style.cssText =
-        "background:#0f172a;border:1px solid #475569;border-radius:7px;padding:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;width:30px;height:30px;";
-      btn.innerHTML = `<img src="${it.src}" style="width:22px;height:22px;object-fit:contain;" />`;
-      btn.onclick = () => {
-        const offset = (window.__customEquipItems.length % 5) * 0.03;
-        window.__customEquipItems.push({
-          id: Date.now() + Math.random(),
-          type: it.key,
-          nx: 0.45 + offset,
-          ny: 0.45 + offset
-        });
-        redrawCanvas();
-      };
-      dock.appendChild(btn);
-    });
-
-    const clearBtn = document.createElement("button");
-    clearBtn.type = "button";
-    clearBtn.textContent = "مسح";
-    clearBtn.title = "مسح المعدات المضافة";
-    clearBtn.style.cssText =
-      "background:#7f1d1d;color:#fecaca;border:none;border-radius:6px;padding:4px 7px;font-size:10px;font-weight:700;cursor:pointer;";
-    clearBtn.onclick = () => {
-      window.__customEquipItems = [];
-      redrawCanvas();
-    };
-    dock.appendChild(clearBtn);
-
-    document.body.appendChild(dock);
-  }
-
-  // تمكين سحب المعدات بالماوس فوق الكانفاس
   document.addEventListener("mousedown", (e) => {
     const cvs = getActiveCanvas();
     if (!cvs || e.target !== cvs) return;
@@ -352,16 +289,97 @@ custom_equipment_addon = """
     draggingEquip = null;
   });
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectEquipmentDock);
-  } else {
-    injectEquipmentDock();
+  // 6. بناء لوحة التحكم الموحدة في صفين مرتبين بدون أي تراكب
+  function injectUnifiedDashboard() {
+    if (document.getElementById("pro-tactics-master-dock")) return;
+
+    const master = document.createElement("div");
+    master.id = "pro-tactics-master-dock";
+    master.dir = "rtl";
+    master.style.cssText =
+      "position:fixed;bottom:14px;right:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:99999;";
+
+    // الصف العلوي: المعدات
+    const equipRow = document.createElement("div");
+    equipRow.style.cssText =
+      "display:inline-flex;align-items:center;gap:6px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:5px 10px;font-size:11px;color:#f8fafc;box-shadow:0 8px 20px rgba(0,0,0,.45);";
+    equipRow.innerHTML = `<span style="color:#94a3b8;font-weight:700;">معدات:</span>`;
+
+    const items = [
+      { key: "cone", label: "قمع", src: "traffic-cone.png" },
+      { key: "hurdle", label: "حواجز", src: "hurdle.png" },
+      { key: "ladder", label: "سلم رشاقة", src: "agility.png" },
+      { key: "wallRed", label: "حائط أحمر", src: "training (1).png" },
+      { key: "wallBlue", label: "حائط أزرق", src: "training.png" },
+      { key: "ball", label: "كرة", src: "soccer.png" }
+    ];
+
+    items.forEach(it => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.title = "إضافة " + it.label;
+      btn.style.cssText =
+        "background:#0f172a;border:1px solid #475569;border-radius:7px;padding:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;width:30px;height:30px;";
+      btn.innerHTML = `<img src="${it.src}" style="width:22px;height:22px;object-fit:contain;" />`;
+      btn.onclick = () => {
+        const offset = (window.__customEquipItems.length % 5) * 0.03;
+        window.__customEquipItems.push({
+          id: Date.now() + Math.random(),
+          type: it.key,
+          nx: 0.45 + offset,
+          ny: 0.45 + offset
+        });
+        redrawBoardSafely();
+      };
+      equipRow.appendChild(btn);
+    });
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "مسح";
+    clearBtn.style.cssText =
+      "background:#7f1d1d;color:#fecaca;border:none;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:700;cursor:pointer;";
+    clearBtn.onclick = () => {
+      window.__customEquipItems = [];
+      redrawBoardSafely();
+    };
+    equipRow.appendChild(clearBtn);
+
+    // الصف السفلي: حجم اللاعب + 3D علوي + فيديو 1080p
+    const controlsRow = document.createElement("div");
+    controlsRow.style.cssText =
+      "display:inline-flex;align-items:center;gap:6px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:6px 10px;font-size:12px;color:#f8fafc;box-shadow:0 8px 20px rgba(0,0,0,.45);";
+
+    controlsRow.innerHTML = `
+      <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
+      <button type="button" onclick="changePlayerSize(-2)"
+        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">-</button>
+      <span id="player-size-label" onclick="resetPlayerSize()"
+        style="min-width:36px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
+      <button type="button" onclick="changePlayerSize(2)"
+        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">+</button>
+      <button id="btn-top3d-cam" type="button" onclick="cycleTop3DCamera()"
+        style="background:#0f172a;color:#e2e8f0;border:1px solid #64748b;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;">🎥 3D علوي: إيقاف</button>
+      <button id="btn-export-1080p-global" type="button" onclick="exportBoardOrStudio1080p()"
+        style="background:#7c3aed;color:#ffffff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">🎬 فيديو 1080p</button>
+    `;
+
+    master.appendChild(equipRow);
+    master.appendChild(controlsRow);
+    document.body.appendChild(master);
   }
-  setTimeout(injectEquipmentDock, 900);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectUnifiedDashboard);
+  } else {
+    injectUnifiedDashboard();
+  }
+  setTimeout(injectUnifiedDashboard, 500);
 })();
 </script>
 """
 
-if "addCustomEquipmentIcons" not in html_code:
-    html_code = html_code + custom_equipment_addon
+if "initUnifiedProTacticsTools" not in html_code:
+    html_code = html_code + pro_tactics_unified_addon
+
 components.html(html_code, height=1750, scrolling=False)
