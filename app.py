@@ -20,8 +20,36 @@ with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
 
 clean_pro_addon = """
+<style>
+  #pro-tactics-master-dock,
+  #custom-equip-dock,
+  #player-size-control-box,
+  #btn-export-1080p-global,
+  #btn-top3d-cam {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
+
 <script>
 (function initCleanProTactics() {
+  // مسح أي شريط قديم موجود جوه index.html أو اتضاف قبل كده
+  function purgeOldDocks() {
+    ["pro-tactics-master-dock", "custom-equip-dock", "player-size-control-box", "btn-export-1080p-global", "btn-top3d-cam"].forEach(id => {
+      document.querySelectorAll("#" + id).forEach(el => el.remove());
+    });
+    // مسح أي عنصر عائم على اليمين فيه كلمة "معدات:"
+    document.querySelectorAll("div").forEach(div => {
+      if (div.id !== "clean-pro-bottom-bar" && div.textContent && div.textContent.includes("معدات:") && div.textContent.includes("مسح")) {
+        div.remove();
+      }
+    });
+  }
+  purgeOldDocks();
+  setInterval(purgeOldDocks, 500);
+
   window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
   window.__cam3dAngle = 0;
 
@@ -105,7 +133,7 @@ clean_pro_addon = """
       }
     });
 
-    const btn = document.getElementById("btn-top3d-cam");
+    const btn = document.getElementById("btn-clean-top3d");
     if (btn) {
       if (window.__cam3dAngle === 0) {
         btn.textContent = "🎥 3D علوي: إيقاف";
@@ -124,7 +152,7 @@ clean_pro_addon = """
     const cvs = isStudioOpen ? document.getElementById("ts-canvas") : document.querySelector("canvas");
     if (!cvs || typeof MediaRecorder === "undefined") return;
 
-    const btn = document.getElementById("btn-export-1080p-global");
+    const btn = document.getElementById("btn-clean-1080p");
     if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التسجيل..."; }
 
     const origW = cvs.width, origH = cvs.height;
@@ -165,32 +193,32 @@ clean_pro_addon = """
     }, durationMs);
   };
 
-  // شريط واحد رفيع تحت الملعب بعيد عن القائمة الجانبية تماماً
-  function injectCleanBottomBar() {
+  // شريط واحد نظيف في أعلى يسار الملعب بعيد عن كل الأزرار السفلية والجانبية
+  function injectCleanTopBar() {
     if (document.getElementById("clean-pro-bottom-bar")) return;
     const bar = document.createElement("div");
     bar.id = "clean-pro-bottom-bar";
     bar.dir = "rtl";
     bar.style.cssText =
-      "position:fixed;bottom:14px;left:35%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);border:1px solid #334155;border-radius:10px;padding:5px 10px;font-size:12px;color:#f8fafc;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.5);";
+      "position:fixed;top:12px;left:16px;display:inline-flex;align-items:center;gap:6px;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);border:1px solid #334155;border-radius:10px;padding:5px 10px;font-size:12px;color:#f8fafc;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.5);";
 
     bar.innerHTML = `
       <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
       <button type="button" onclick="changePlayerSize(-2)" style="background:#1e293b;color:#f8fafc;border:1px solid #475569;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">-</button>
       <span id="player-size-label" onclick="resetPlayerSize()" style="min-width:34px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
       <button type="button" onclick="changePlayerSize(2)" style="background:#1e293b;color:#f8fafc;border:1px solid #475569;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">+</button>
-      <button id="btn-top3d-cam" type="button" onclick="cycleTop3DCamera()" style="background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;">🎥 3D علوي: إيقاف</button>
-      <button id="btn-export-1080p-global" type="button" onclick="exportBoardOrStudio1080p()" style="background:#7c3aed;color:#ffffff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">🎬 فيديو 1080p</button>
+      <button id="btn-clean-top3d" type="button" onclick="cycleTop3DCamera()" style="background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;">🎥 3D علوي: إيقاف</button>
+      <button id="btn-clean-1080p" type="button" onclick="exportBoardOrStudio1080p()" style="background:#7c3aed;color:#ffffff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">🎬 فيديو 1080p</button>
     `;
     document.body.appendChild(bar);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectCleanBottomBar);
+    document.addEventListener("DOMContentLoaded", injectCleanTopBar);
   } else {
-    injectCleanBottomBar();
+    injectCleanTopBar();
   }
-  setTimeout(injectCleanBottomBar, 400);
+  setTimeout(injectCleanTopBar, 400);
 })();
 </script>
 """
