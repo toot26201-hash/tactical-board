@@ -1629,3 +1629,174 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
   setTimeout(inject1080pButton, 800);
 })();
 </script>
+
+<script>
+(function addCustomEquipmentIcons() {
+  const ICON_SOURCES = {
+    cone: "traffic-cone.png",
+    hurdle: "hurdle.png",
+    ladder: "agility.png",
+    wallRed: "training (1).png",
+    wallBlue: "training.png",
+    ball: "soccer.png"
+  };
+
+  const loadedIcons = {};
+  Object.keys(ICON_SOURCES).forEach(key => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = ICON_SOURCES[key];
+    loadedIcons[key] = img;
+  });
+
+  // قائمة أدوات المعدات الاحترافية الجاهزة للسحب والإفلات على السبورة
+  window.__customEquipItems = [];
+  let draggingEquip = null;
+
+  function getActiveCanvas() {
+    const studio = document.getElementById("toot-training-studio");
+    if (studio && studio.classList.contains("active")) {
+      return document.getElementById("ts-canvas");
+    }
+    return document.querySelector("canvas");
+  }
+
+  function redrawCanvas() {
+    try {
+      if (typeof render === "function") render();
+      if (typeof tsDraw === "function") tsDraw();
+    } catch (e) {}
+  }
+
+  // اعتراض رسم الكرة الافتراضية لاستبدالها بأيقونة soccer.png
+  const origArc = CanvasRenderingContext2D.prototype.arc;
+  CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
+    const isFullCircle = Math.abs(startAngle) < 0.01 && Math.abs(endAngle - Math.PI * 2) < 0.05;
+    if (isFullCircle && radius >= 5 && radius <= 9 && loadedIcons.ball && loadedIcons.ball.complete) {
+      const size = radius * 2.5;
+      this.drawImage(loadedIcons.ball, x - size / 2, y - size / 2, size, size);
+      return;
+    }
+    return origArc.call(this, x, y, radius, startAngle, endAngle, counterclockwise);
+  };
+
+  // رسم المعدات المضافة فوق الملعب في كل إطار رسم
+  function drawCustomEquipmentsOnCanvas(ctx, cvs) {
+    if (!ctx || !cvs || window.__customEquipItems.length === 0) return;
+    const scale = (window.__globalPlayerRadius || 16) / 16;
+    window.__customEquipItems.forEach(item => {
+      const img = loadedIcons[item.type];
+      if (!img || !img.complete) return;
+      const px = item.nx * cvs.width;
+      const py = item.ny * cvs.height;
+      const baseSize = item.type === "cone" ? 26 : (item.type === "ball" ? 22 : 44);
+      const w = baseSize * scale;
+      const h = baseSize * scale;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 3;
+      ctx.drawImage(img, px - w / 2, py - h / 2, w, h);
+      ctx.restore();
+    });
+  }
+
+  // ربط الرسم التلقائي بعد render و tsDraw
+  setInterval(() => {
+    const cvs = getActiveCanvas();
+    if (!cvs) return;
+    const ctx = cvs.getContext("2d");
+    drawCustomEquipmentsOnCanvas(ctx, cvs);
+  }, 50);
+
+  // إضافة شريط اختيار المعدات الجديدة
+  function injectEquipmentDock() {
+    if (document.getElementById("custom-equip-dock")) return;
+    const dock = document.createElement("div");
+    dock.id = "custom-equip-dock";
+    dock.dir = "rtl";
+    dock.style.cssText =
+      "position:fixed;bottom:64px;right:16px;display:inline-flex;align-items:center;gap:6px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:5px 9px;font-size:11px;color:#f8fafc;z-index:99998;box-shadow:0 8px 20px rgba(0,0,0,.45);";
+
+    const items = [
+      { key: "cone", label: "قمع", src: "traffic-cone.png" },
+      { key: "hurdle", label: "حواجز", src: "hurdle.png" },
+      { key: "ladder", label: "سلم رشاقة", src: "agility.png" },
+      { key: "wallRed", label: "حائط أحمر", src: "training (1).png" },
+      { key: "wallBlue", label: "حائط أزرق", src: "training.png" },
+      { key: "ball", label: "كرة", src: "soccer.png" }
+    ];
+
+    dock.innerHTML = `<span style="color:#94a3b8;font-weight:700;">معدات:</span>`;
+    items.forEach(it => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.title = "إضافة " + it.label;
+      btn.style.cssText =
+        "background:#0f172a;border:1px solid #475569;border-radius:7px;padding:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;width:30px;height:30px;";
+      btn.innerHTML = `<img src="${it.src}" style="width:22px;height:22px;object-fit:contain;" />`;
+      btn.onclick = () => {
+        const offset = (window.__customEquipItems.length % 5) * 0.03;
+        window.__customEquipItems.push({
+          id: Date.now() + Math.random(),
+          type: it.key,
+          nx: 0.45 + offset,
+          ny: 0.45 + offset
+        });
+        redrawCanvas();
+      };
+      dock.appendChild(btn);
+    });
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "مسح";
+    clearBtn.title = "مسح المعدات المضافة";
+    clearBtn.style.cssText =
+      "background:#7f1d1d;color:#fecaca;border:none;border-radius:6px;padding:4px 7px;font-size:10px;font-weight:700;cursor:pointer;";
+    clearBtn.onclick = () => {
+      window.__customEquipItems = [];
+      redrawCanvas();
+    };
+    dock.appendChild(clearBtn);
+
+    document.body.appendChild(dock);
+  }
+
+  // تمكين سحب المعدات بالماوس فوق الكانفاس
+  document.addEventListener("mousedown", (e) => {
+    const cvs = getActiveCanvas();
+    if (!cvs || e.target !== cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top) / rect.height;
+    for (let i = window.__customEquipItems.length - 1; i >= 0; i--) {
+      const it = window.__customEquipItems[i];
+      if (Math.hypot(it.nx - nx, it.ny - ny) < 0.04) {
+        draggingEquip = it;
+        break;
+      }
+    }
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!draggingEquip) return;
+    const cvs = getActiveCanvas();
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    draggingEquip.nx = Math.max(0.03, Math.min(0.97, (e.clientX - rect.left) / rect.width));
+    draggingEquip.ny = Math.max(0.03, Math.min(0.97, (e.clientY - rect.top) / rect.height));
+  });
+
+  document.addEventListener("mouseup", () => {
+    draggingEquip = null;
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectEquipmentDock);
+  } else {
+    injectEquipmentDock();
+  }
+  setTimeout(injectEquipmentDock, 900);
+})();
+</script>
