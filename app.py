@@ -18,11 +18,21 @@ st.markdown("""
 
 with open("index.html", "r", encoding="utf-8") as f:
     html_code = f.read()
-player_size_addon = """
-<script>
-(function addPlayerAndBallSizeControls() {
-  window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
 
+clean_pro_addon = """
+<script>
+(function initCleanProTactics() {
+  window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
+  window.__cam3dAngle = 0;
+
+  function redrawBoardSafely() {
+    try {
+      if (typeof render === "function") render();
+      if (typeof tsDraw === "function") tsDraw();
+    } catch (e) {}
+  }
+
+  // التحكم في حجم اللاعبين والكرات
   const origArc = CanvasRenderingContext2D.prototype.arc;
   CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
     let finalRadius = radius;
@@ -55,13 +65,6 @@ player_size_addon = """
     });
   }
 
-  function redrawBoardSafely() {
-    try {
-      if (typeof render === "function") render();
-      if (typeof tsDraw === "function") tsDraw();
-    } catch (e) {}
-  }
-
   window.changePlayerSize = function (delta) {
     window.__globalPlayerRadius = Math.max(9, Math.min(30, (window.__globalPlayerRadius || 16) + delta));
     const badge = document.getElementById("player-size-label");
@@ -76,44 +79,12 @@ player_size_addon = """
     redrawBoardSafely();
   };
 
-  function injectSizeButtons() {
-    if (document.getElementById("player-size-control-box")) return;
-    const box = document.createElement("div");
-    box.id = "player-size-control-box";
-    box.dir = "rtl";
-    box.style.cssText =
-      "position:fixed;bottom:16px;right:16px;display:inline-flex;align-items:center;gap:5px;background:#1e293b;border:1px solid #475569;border-radius:10px;padding:5px 10px;font-size:12px;color:#f8fafc;z-index:99999;box-shadow:0 8px 20px rgba(0,0,0,.45);";
+  // الكاميرا العلوية 3D
+  window.cycleTop3DCamera = function () {
+    if (window.__cam3dAngle === 0) window.__cam3dAngle = 28;
+    else if (window.__cam3dAngle === 28) window.__cam3dAngle = 42;
+    else window.__cam3dAngle = 0;
 
-    box.innerHTML = `
-      <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
-      <button type="button" onclick="changePlayerSize(-2)"
-        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">-</button>
-      <span id="player-size-label" onclick="resetPlayerSize()"
-        style="min-width:36px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
-      <button type="button" onclick="changePlayerSize(2)"
-        style="background:#0f172a;color:#f8fafc;border:1px solid #64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">+</button>
-    `;
-    document.body.appendChild(box);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectSizeButtons);
-  } else {
-    injectSizeButtons();
-  }
-  setTimeout(injectSizeButtons, 500);
-})();
-</script>
-"""
-
-if "addPlayerAndBallSizeControls" not in html_code:
-    html_code = html_code + player_size_addon
-top3d_camera_addon = """
-<script>
-(function addTopDown3DCamera() {
-  window.__cam3dAngle = 0;
-
-  function apply3DTransform() {
     const targets = [
       document.getElementById("ts-canvas"),
       ...Array.from(document.querySelectorAll("canvas"))
@@ -139,55 +110,92 @@ top3d_camera_addon = """
       if (window.__cam3dAngle === 0) {
         btn.textContent = "🎥 3D علوي: إيقاف";
         btn.style.background = "#0f172a";
-        btn.style.color = "#e2e8f0";
       } else {
         btn.textContent = `🎥 3D علوي (${window.__cam3dAngle}°)`;
         btn.style.background = "#059669";
-        btn.style.color = "#ffffff";
       }
     }
-  }
-
-  window.cycleTop3DCamera = function () {
-    if (window.__cam3dAngle === 0) window.__cam3dAngle = 28;
-    else if (window.__cam3dAngle === 28) window.__cam3dAngle = 42;
-    else window.__cam3dAngle = 0;
-    apply3DTransform();
   };
 
-  function inject3DCameraButton() {
-    if (document.getElementById("btn-top3d-cam")) return;
-    const sizeBox = document.getElementById("player-size-control-box");
-    const btn = document.createElement("button");
-    btn.id = "btn-top3d-cam";
-    btn.type = "button";
-    btn.textContent = "🎥 3D علوي: إيقاف";
-    btn.onclick = cycleTop3DCamera;
-    btn.style.cssText =
-      "background:#0f172a;color:#e2e8f0;border:1px solid #64748b;border-radius:7px;padding:3px 8px;margin-right:6px;font-size:11px;font-weight:700;cursor:pointer;";
+  // تصدير الفيديو بجودة 1080p 60fps
+  window.exportBoardOrStudio1080p = function () {
+    const studio = document.getElementById("toot-training-studio");
+    const isStudioOpen = studio && studio.classList.contains("active");
+    const cvs = isStudioOpen ? document.getElementById("ts-canvas") : document.querySelector("canvas");
+    if (!cvs || typeof MediaRecorder === "undefined") return;
 
-    if (sizeBox) {
-      sizeBox.appendChild(btn);
-    } else {
-      btn.style.position = "fixed";
-      btn.style.bottom = "56px";
-      btn.style.right = "16px";
-      btn.style.zIndex = "99999";
-      document.body.appendChild(btn);
+    const btn = document.getElementById("btn-export-1080p-global");
+    if (btn) { btn.disabled = true; btn.textContent = "⏳ جاري التسجيل..."; }
+
+    const origW = cvs.width, origH = cvs.height;
+    const scaleFactor = Math.max(1, 1920 / Math.max(1, origW));
+    cvs.width = Math.round(origW * scaleFactor);
+    cvs.height = Math.round(origH * scaleFactor);
+    const ctx = cvs.getContext("2d");
+    if (ctx) ctx.scale(scaleFactor, scaleFactor);
+    redrawBoardSafely();
+
+    const stream = cvs.captureStream(60);
+    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      cvs.width = origW; cvs.height = origH;
+      redrawBoardSafely();
+      const url = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = "TootScouting-ProTactics-1080p60.webm"; a.click();
+      URL.revokeObjectURL(url);
+      if (btn) { btn.disabled = false; btn.textContent = "🎬 فيديو 1080p"; }
+    };
+
+    let durationMs = 4000;
+    if (isStudioOpen && typeof tsState !== "undefined") {
+      tsState.currentFrame = 0;
+      if (!tsState.playing && typeof tsTogglePlay === "function") tsTogglePlay();
+      durationMs = Math.max(3200, (tsState.keyframes?.length || 2) * 1400);
+    } else if (typeof playAnimation === "function") {
+      try { playAnimation(); } catch (e) {}
     }
+    recorder.start();
+    setTimeout(() => {
+      recorder.stop();
+      if (isStudioOpen && typeof tsState !== "undefined" && tsState.playing && typeof tsTogglePlay === "function") tsTogglePlay();
+    }, durationMs);
+  };
+
+  // شريط واحد رفيع تحت الملعب بعيد عن القائمة الجانبية تماماً
+  function injectCleanBottomBar() {
+    if (document.getElementById("clean-pro-bottom-bar")) return;
+    const bar = document.createElement("div");
+    bar.id = "clean-pro-bottom-bar";
+    bar.dir = "rtl";
+    bar.style.cssText =
+      "position:fixed;bottom:14px;left:35%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);border:1px solid #334155;border-radius:10px;padding:5px 10px;font-size:12px;color:#f8fafc;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.5);";
+
+    bar.innerHTML = `
+      <span style="color:#94a3b8;font-weight:600;">حجم اللاعب:</span>
+      <button type="button" onclick="changePlayerSize(-2)" style="background:#1e293b;color:#f8fafc;border:1px solid #475569;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">-</button>
+      <span id="player-size-label" onclick="resetPlayerSize()" style="min-width:34px;text-align:center;cursor:pointer;font-weight:700;color:#38bdf8;">16px</span>
+      <button type="button" onclick="changePlayerSize(2)" style="background:#1e293b;color:#f8fafc;border:1px solid #475569;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:bold;">+</button>
+      <button id="btn-top3d-cam" type="button" onclick="cycleTop3DCamera()" style="background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;">🎥 3D علوي: إيقاف</button>
+      <button id="btn-export-1080p-global" type="button" onclick="exportBoardOrStudio1080p()" style="background:#7c3aed;color:#ffffff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">🎬 فيديو 1080p</button>
+    `;
+    document.body.appendChild(bar);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", inject3DCameraButton);
+    document.addEventListener("DOMContentLoaded", injectCleanBottomBar);
   } else {
-    inject3DCameraButton();
+    injectCleanBottomBar();
   }
-  setTimeout(inject3DCameraButton, 700);
+  setTimeout(injectCleanBottomBar, 400);
 })();
 </script>
 """
 
-if "addTopDown3DCamera" not in html_code:
-    html_code = html_code + top3d_camera_addon
+if "initCleanProTactics" not in html_code:
+    html_code = html_code + clean_pro_addon
 
 components.html(html_code, height=1750, scrolling=False)
