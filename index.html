@@ -639,20 +639,15 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  const { data: profile, error } = await sbClient
-    .from("profiles")
-    .select("is_approved, full_name, plan, subscription_end")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error || !profile || !profile.is_approved) {
-    await sbClient.auth.signOut();
-    document.getElementById("landing-page")?.classList.add("hidden");
-    document.getElementById("auth-overlay")?.classList.remove("hidden");
-    msgBox.textContent = "⏳ تم استلام بياناتك بنجاح! حسابك قيد المراجعة والتفعيل من إدارة TootScouting.";
-    msgBox.className = "text-[11px] text-amber-300 bg-amber-950/60 border border-amber-700 rounded-lg px-2.5 py-2 text-center leading-relaxed";
-    msgBox.classList.remove("hidden");
-    return;
+ if (!profile) {
+    await sbClient.from("profiles").upsert({
+      id: user.id,
+      email: user.email,
+      full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "مدرب",
+      is_approved: true
+    });
+  } else if (!profile.is_approved) {
+    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
   }
 
   let effectivePlan = (profile.plan || "free").toLowerCase();
