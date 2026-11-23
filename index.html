@@ -639,14 +639,27 @@ async function showUserOnBoard(user) {
     return;
   }
 
- if (!profile) {
-    await sbClient.from("profiles").upsert({
+ let { data: profile, error } = await sbClient
+    .from("profiles")
+    .select("is_approved, full_name, plan, subscription_end")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile) {
+    const newProfile = {
       id: user.id,
       email: user.email,
       full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "مدرب",
-      is_approved: true
-    });
+      is_approved: true,
+      plan: "free",
+      subscription_end: null
+    };
+    await sbClient.from("profiles").upsert(newProfile);
+    profile = newProfile;
   } else if (!profile.is_approved) {
+    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
+    profile.is_approved = true;
+  }
     await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
   }
 
