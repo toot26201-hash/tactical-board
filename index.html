@@ -660,7 +660,6 @@ async function showUserOnBoard(user) {
     await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
     profile.is_approved = true;
   }
-    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
   }
 
   let effectivePlan = (profile.plan || "free").toLowerCase();
