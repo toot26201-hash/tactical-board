@@ -619,7 +619,6 @@ function applyPlanRestrictionsUI() {
 
 async function showUserOnBoard(user) {
   if (!user) return;
-  const msgBox = document.getElementById("auth-msg");
   isAdminUser = (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
   if (isAdminUser) {
@@ -639,20 +638,26 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  const { data: profile, error } = await sbClient
+  let { data: profile } = await sbClient
     .from("profiles")
     .select("is_approved, full_name, plan, subscription_end")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !profile || !profile.is_approved) {
-    await sbClient.auth.signOut();
-    document.getElementById("landing-page")?.classList.add("hidden");
-    document.getElementById("auth-overlay")?.classList.remove("hidden");
-    msgBox.textContent = "⏳ تم استلام بياناتك بنجاح! حسابك قيد المراجعة والتفعيل من إدارة TootScouting.";
-    msgBox.className = "text-[11px] text-amber-300 bg-amber-950/60 border border-amber-700 rounded-lg px-2.5 py-2 text-center leading-relaxed";
-    msgBox.classList.remove("hidden");
-    return;
+  if (!profile) {
+    const newProfile = {
+      id: user.id,
+      email: user.email,
+      full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "مدرب",
+      is_approved: true,
+      plan: "free",
+      subscription_end: null
+    };
+    await sbClient.from("profiles").upsert(newProfile);
+    profile = newProfile;
+  } else if (!profile.is_approved) {
+    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
+    profile.is_approved = true;
   }
 
   let effectivePlan = (profile.plan || "free").toLowerCase();
@@ -703,10 +708,15 @@ async function handleSupabaseAuth(e) {
     if (res.error) throw res.error;
     if (res.data?.session) {
       await showUserOnBoard(res.data.user);
-    } else {
-      msgBox.textContent = "تم تسجيل الحساب! يرجى تسجيل الدخول.";
-      msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-2 text-center";
-      msgBox.classList.remove("hidden");
+    } else if (res.data?.user) {
+      const loginRes = await sbClient.auth.signInWithPassword({ email, password });
+      if (loginRes.data?.session) {
+        await showUserOnBoard(loginRes.data.user);
+      } else {
+        msgBox.textContent = "تم إنشاء الحساب بنجاح! اضغط تسجيل الدخول للدخول مباشرة.";
+        msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-2 text-center";
+        msgBox.classList.remove("hidden");
+      }
     }
   } catch (err) {
     let errText = err.message;
