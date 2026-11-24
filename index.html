@@ -638,14 +638,24 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  let { data: profile } = await sbClient
-    .from("profiles")
-    .select("is_approved, full_name, plan, subscription_end")
-    .eq("id", user.id)
-    .maybeSingle();
+  const headers = {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+  };
+
+  let profile = null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?select=is_approved,full_name,plan,subscription_end&id=eq.${user.id}`,
+      { headers }
+    );
+    const rows = res.ok ? await res.json() : [];
+    profile = rows[0] || null;
+  } catch (e) {}
 
   if (!profile) {
-    const newProfile = {
+    profile = {
       id: user.id,
       email: user.email,
       full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "مدرب",
@@ -653,10 +663,17 @@ async function showUserOnBoard(user) {
       plan: "free",
       subscription_end: null
     };
-    await sbClient.from("profiles").upsert(newProfile);
-    profile = newProfile;
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+      method: "POST",
+      headers: { ...headers, "Prefer": "resolution=merge-duplicates" },
+      body: JSON.stringify(profile)
+    });
   } else if (!profile.is_approved) {
-    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ is_approved: true })
+    });
     profile.is_approved = true;
   }
 
@@ -667,7 +684,11 @@ async function showUserOnBoard(user) {
   userPlan = effectivePlan;
 
   localSessionToken = generateDeviceToken();
-  await sbClient.from("profiles").update({ active_session_token: localSessionToken }).eq("id", user.id);
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ active_session_token: localSessionToken })
+  });
   startSessionGuard(user.id);
 
   currentUser = user;
@@ -685,119 +706,6 @@ async function showUserOnBoard(user) {
   applyPlanRestrictionsUI();
   setTimeout(resizeCanvas, 50);
 }
-
-async function handleSupabaseAuth(e) {
-  e.preventDefault();
-  const email = document.getElementById("auth-email").value.trim();
-  const password = document.getElementById("auth-pass").value.trim();
-  const fullName = document.getElementById("auth-name").value.trim();
-  const btn = document.getElementById("auth-submit-btn");
-  const msgBox = document.getElementById("auth-msg");
-
-  btn.disabled = true;
-  btn.textContent = "جاري التحقق...";
-  msgBox.classList.add("hidden");
-
-  try {
-    let res;
-    if (authMode === "signup") {
-      res = await sbClient.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
-    } else {
-      res = await sbClient.auth.signInWithPassword({ email, password });
-    }
-    if (res.error) throw res.error;
-    if (res.data?.session) {
-      await showUserOnBoard(res.data.user);
-    } else if (res.data?.user) {
-      const loginRes = await sbClient.auth.signInWithPassword({ email, password });
-      if (loginRes.data?.session) {
-        await showUserOnBoard(loginRes.data.user);
-      } else {
-        msgBox.textContent = "تم إنشاء الحساب بنجاح! اضغط تسجيل الدخول للدخول مباشرة.";
-        msgBox.className = "text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-700 rounded-lg px-2.5 py-2 text-center";
-        msgBox.classList.remove("hidden");
-      }
-    }
-  } catch (err) {
-    let errText = err.message;
-    if (errText.includes("Invalid login credentials")) errText = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
-    if (errText.includes("User already registered")) errText = "هذا البريد مسجل بالفعل، انتقل لتبويب تسجيل الدخول";
-    msgBox.textContent = errText;
-    msgBox.className = "text-[11px] text-rose-400 bg-rose-950/60 border border-rose-800 rounded-lg px-2.5 py-2 text-center";
-    msgBox.classList.remove("hidden");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = authMode === "signup" ? "إنشاء حساب والدخول 🚀" : "دخول إلى غرفة التحليل 🔓";
-  }
-}
-
-async function checkAuthSession() {
-  const { data } = await sbClient.auth.getSession();
-  if (data?.session) await showUserOnBoard(data.session.user);
-}
-
-async function logoutSession() {
-  if (sessionGuardTimer) clearInterval(sessionGuardTimer);
-  if (currentUser && !isAdminUser) {
-    await sbClient.from("profiles").update({ active_session_token: null }).eq("id", currentUser.id);
-  }
-  await sbClient.auth.signOut();
-  currentUser = null;
-  localSessionToken = null;
-  document.getElementById("user-badge")?.classList.add("hidden");
-  document.getElementById("board-header")?.classList.add("hidden");
-  document.getElementById("board-main")?.classList.add("hidden");
-  document.getElementById("auth-overlay")?.classList.add("hidden");
-  document.getElementById("landing-page").classList.remove("hidden");
-}
-checkAuthSession();
-
-function openUpgradeModal() { document.getElementById("upgrade-modal").classList.remove("hidden"); }
-function closeUpgradeModal() { document.getElementById("upgrade-modal").classList.add("hidden"); }
-function requestProViaWhatsApp() {
-  const email = currentUser?.email || "";
-  const extra = email ? `\nالبريد الإلكتروني: ${email}` : "";
-  const msg = encodeURIComponent(`أهلاً إدارة TootScouting، أرغب في الاشتراك وتفعيل باقة ProTactics 3D PRO.${extra}`);
-  window.open(`https://wa.me/${WHATSAPP_ADMIN_PHONE}?text=${msg}`, "_blank");
-}
-
-function openCloudModal() {
-  if (!currentUser) return showToast("يرجى تسجيل الدخول أولاً");
-  document.getElementById("cloud-modal").classList.remove("hidden");
-  fetchCloudTactics();
-}
-function closeCloudModal() { document.getElementById("cloud-modal").classList.add("hidden"); }
-
-async function saveTacticToCloud() {
-  if (!currentUser) return showToast("يرجى تسجيل الدخول أولاً");
-  if (userPlan !== "pro" && !isAdminUser && cachedTacticsCount >= 1) {
-    closeCloudModal();
-    openUpgradeModal();
-    return showToast("الباقة المجانية تسمح بحفظ خطة واحدة فقط ⭐");
-  }
-  const titleInput = document.getElementById("cloud-tactic-title");
-  const title = titleInput.value.trim() || `خطة تكتيكية ${new Date().toLocaleDateString("ar-EG")}`;
-  const btn = document.getElementById("btn-save-cloud");
-  btn.disabled = true;
-  btn.textContent = "جاري الحفظ...";
-
-  try {
-    syncCurrentFrame();
-    const payload = { redTeamMeta, blueTeamMeta, pitchMode, pitchTheme, keyframes };
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_user_tactic`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({
-        p_user_id: currentUser.id,
-        p_title: title,
-        p_data: payload
-      })
-    });
 
     if (!res.ok) {
       const errText = await res.text();
