@@ -769,7 +769,7 @@ function openCloudModal() {
 function closeCloudModal() { document.getElementById("cloud-modal").classList.add("hidden"); }
 
 async function saveTacticToCloud() {
-  if (!currentUser) return;
+  if (!currentUser) return showToast("يرجى تسجيل الدخول أولاً");
   if (userPlan !== "pro" && !isAdminUser && cachedTacticsCount >= 1) {
     closeCloudModal();
     openUpgradeModal();
@@ -778,17 +778,29 @@ async function saveTacticToCloud() {
   const titleInput = document.getElementById("cloud-tactic-title");
   const title = titleInput.value.trim() || `خطة تكتيكية ${new Date().toLocaleDateString("ar-EG")}`;
   const btn = document.getElementById("btn-save-cloud");
-  btn.disabled = true; btn.textContent = "جاري الحفظ...";
-  syncCurrentFrame();
-  const payload = { redTeamMeta, blueTeamMeta, pitchMode, pitchTheme, keyframes };
-  const { error } = await sbClient.from("saved_tactics").insert({ user_id: currentUser.id, title, data: payload });
-  btn.disabled = false; btn.textContent = "حفظ الآن";
-  if (error) {
-    showToast("خطأ في الحفظ السحابي");
-  } else {
+  btn.disabled = true;
+  btn.textContent = "جاري الحفظ...";
+
+  try {
+    syncCurrentFrame();
+    const payload = { redTeamMeta, blueTeamMeta, pitchMode, pitchTheme, keyframes };
+    const { error } = await sbClient
+      .from("saved_tactics")
+      .insert({ user_id: currentUser.id, title, data: payload });
+
+    if (error) {
+      alert("خطأ من قاعدة البيانات: " + error.message);
+      return;
+    }
+
     titleInput.value = "";
     showToast("تم حفظ الخطة في حسابك بنجاح ☁️");
-    fetchCloudTactics();
+    await fetchCloudTactics();
+  } catch (err) {
+    alert("خطأ أثناء الحفظ: " + (err?.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "حفظ الآن";
   }
 }
 
