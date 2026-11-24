@@ -616,7 +616,6 @@ function applyPlanRestrictionsUI() {
     upgradeBtn.textContent = "⭐ ترقية لـ PRO";
   }
 }
-
 async function showUserOnBoard(user) {
   if (!user) return;
   isAdminUser = (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -638,14 +637,24 @@ async function showUserOnBoard(user) {
     return;
   }
 
-  let { data: profile } = await sbClient
-    .from("profiles")
-    .select("is_approved, full_name, plan, subscription_end")
-    .eq("id", user.id)
-    .maybeSingle();
+  const headers = {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+  };
+
+  let profile = null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?select=is_approved,full_name,plan,subscription_end&id=eq.${user.id}`,
+      { headers }
+    );
+    const rows = res.ok ? await res.json() : [];
+    profile = rows[0] || null;
+  } catch (e) {}
 
   if (!profile) {
-    const newProfile = {
+    profile = {
       id: user.id,
       email: user.email,
       full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "مدرب",
@@ -653,10 +662,17 @@ async function showUserOnBoard(user) {
       plan: "free",
       subscription_end: null
     };
-    await sbClient.from("profiles").upsert(newProfile);
-    profile = newProfile;
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+      method: "POST",
+      headers: { ...headers, "Prefer": "resolution=merge-duplicates" },
+      body: JSON.stringify(profile)
+    });
   } else if (!profile.is_approved) {
-    await sbClient.from("profiles").update({ is_approved: true }).eq("id", user.id);
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ is_approved: true })
+    });
     profile.is_approved = true;
   }
 
@@ -667,7 +683,11 @@ async function showUserOnBoard(user) {
   userPlan = effectivePlan;
 
   localSessionToken = generateDeviceToken();
-  await sbClient.from("profiles").update({ active_session_token: localSessionToken }).eq("id", user.id);
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ active_session_token: localSessionToken })
+  });
   startSessionGuard(user.id);
 
   currentUser = user;
