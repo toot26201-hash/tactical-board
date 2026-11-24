@@ -784,9 +784,11 @@ async function saveTacticToCloud() {
   try {
     syncCurrentFrame();
     const payload = { redTeamMeta, blueTeamMeta, pitchMode, pitchTheme, keyframes };
-    const { error } = await sbClient
-      .from("saved_tactics")
-      .insert({ user_id: currentUser.id, title, data: payload });
+    const { error } = await sbClient.rpc("save_user_tactic", {
+      p_user_id: currentUser.id,
+      p_title: title,
+      p_data: payload
+    });
 
     if (error) {
       alert("خطأ من قاعدة البيانات: " + error.message);
