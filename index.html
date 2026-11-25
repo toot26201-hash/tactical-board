@@ -106,7 +106,7 @@
       <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 transition">
         <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg float-icon-1"><i class="fa-solid fa-cube"></i></div>
         <h3 class="text-base font-extrabold text-white">عرض 2D و 3D تفاعلي</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">انتقل بضغطة واحدة بين الرؤية العلوية الكلاسيكية والمنظور الثلاثي الأبعاد 3D بـ 7 ثيمات ملاعب عالمية منها ملاعب الاستحواذ والمربعات المتجاورة.</p>
+        <p class="text-xs text-slate-400 leading-relaxed">انتقل بضغطة واحدة بين الرؤية العلوية الكلاسيكية والمنظور الثلاثي الأبعاد 3D بـ 8 ثيمات ملاعب عالمية منها ملعب الـ 18 منطقة وملاعب الاستحواذ.</p>
       </div>
 
       <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 transition">
@@ -235,6 +235,7 @@
   <div class="flex flex-wrap items-center gap-1.5">
     <select id="setpiece-select" onchange="loadSetPiece(this.value)" class="bg-amber-950/80 border border-amber-600 text-amber-300 text-[11px] font-bold px-2 py-1 rounded-lg">
       <option value="">⚡ مكتبة التكتيكات...</option>
+      <option value="tactical_18zones_match">🏟️ تحليل مباراة (18 منطقة + 22 لاعب)</option>
       <option value="dual_squares_8v8">📐 تدرج استحواذ 8v8 (مربعين 40×40)</option>
       <option value="possession_3teams">🟩 استحواذ 3 فرق (مربعات)</option>
       <option value="corner_att">ركنية هجومية</option>
@@ -250,6 +251,7 @@
 
     <select id="pitch-theme-select" onchange="setPitchTheme(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] px-2 py-1 rounded-lg">
       <option value="green">أخضر</option>
+      <option value="zones_18">ملعب 18 منطقة (Juego de Posición)</option>
       <option value="dual_squares">مربعين متجاورين (40m × 40m)</option>
       <option value="possession_grid">تمرين استحواذ (مربعات)</option>
       <option value="classic">كلاسيك</option>
@@ -987,6 +989,7 @@ let draggingPiece=null,draggingControlPoint=null,dragOffset={x:0,y:0},isDrawing=
 
 const pitchThemes={
   green:{outer:"#0d2618",inner:"#133824",lines:"rgba(255,255,255,0.68)",stripes:true,stripeColor:"rgba(255,255,255,0.03)"},
+  zones_18:{outer:"#2c5219",inner:"#3f7324",lines:"rgba(255,255,255,0.85)",checkered:true,lightTile:"#48822a",darkTile:"#3a6b21"},
   dual_squares:{outer:"#1e5622",inner:"#246b29",lines:"#38bdf8",stripes:true,stripeColor:"rgba(255,255,255,0.045)"},
   possession_grid:{outer:"#15572c",inner:"#1f7a3f",lines:"#0f172a",checkered:true,lightTile:"#268d4b",darkTile:"#1a6d37"},
   classic:{outer:"#14532d",inner:"#166534",lines:"rgba(255,255,255,0.85)",stripes:true,stripeColor:"rgba(255,255,255,0.05)"},
@@ -1090,16 +1093,59 @@ function exportVideo(){
 
 function loadSetPiece(t){
   if(!t)return;saveHistory();drawings=[];links=[];
-  if(t==="dual_squares_8v8"){
+  if(t==="tactical_18zones_match"){
+    setPitchMode("full");
+    setPitchTheme("zones_18");
+    redTeamMeta.name="Atletico"; blueTeamMeta.name="Bayern";
+    redTeamMeta.primary="#dc2626"; blueTeamMeta.primary="#1e3a8a";
+    document.getElementById("quick-red-primary").value="#dc2626";
+    document.getElementById("quick-blue-primary").value="#1e3a8a";
+    updateTeamBanner();
+    pieces=[
+      // الفريق الأحمر (يسار - 11 لاعب)
+      {id:"m_r1",type:"red",nx:0.11,ny:0.50,number:"13",label:"Oblak",customColor:"#10b981",numColor:"#ffffff",labelColor:"#ffffff"},
+      {id:"m_r2",type:"red",nx:0.32,ny:0.33,number:"22",label:"Grimaldo"},
+      {id:"m_r3",type:"red",nx:0.38,ny:0.49,number:"17",label:"Hancko"},
+      {id:"m_r4",type:"red",nx:0.33,ny:0.65,number:"24",label:"Le Normand"},
+      {id:"m_r5",type:"red",nx:0.36,ny:0.86,number:"18",label:"Pubill"},
+      {id:"m_r6",type:"red",nx:0.46,ny:0.40,number:"10",label:"Baena"},
+      {id:"m_r7",type:"red",nx:0.56,ny:0.48,number:"8",label:"Barrios"},
+      {id:"m_r8",type:"red",nx:0.52,ny:0.62,number:"14",label:"Llorente"},
+      {id:"m_r9",type:"red",nx:0.43,ny:0.75,number:"20",label:"Simeone"},
+      {id:"m_r10",type:"red",nx:0.67,ny:0.52,number:"19",label:"Alvarez"},
+      {id:"m_r11",type:"red",nx:0.67,ny:0.68,number:"9",label:"Sorloth"},
+
+      // الفريق الأزرق الداكن (يمين - 11 لاعب)
+      {id:"m_b1",type:"blue",nx:0.88,ny:0.50,number:"1",label:"Neuer",customColor:"#10b981",numColor:"#ffffff",labelColor:"#ffffff"},
+      {id:"m_b2",type:"blue",nx:0.65,ny:0.25,number:"27",label:"Laimer"},
+      {id:"m_b3",type:"blue",nx:0.71,ny:0.46,number:"2",label:"Upamecano"},
+      {id:"m_b4",type:"blue",nx:0.74,ny:0.68,number:"4",label:"Tah"},
+      {id:"m_b5",type:"blue",nx:0.43,ny:0.93,number:"19",label:"Davies"},
+      {id:"m_b6",type:"blue",nx:0.62,ny:0.56,number:"6",label:"Kimmich",spotlight:true},
+      {id:"m_b7",type:"blue",nx:0.57,ny:0.71,number:"8",label:"Bischof"},
+      {id:"m_b8",type:"blue",nx:0.47,ny:0.81,number:"44",label:"Stanišić"},
+      {id:"m_b9",type:"blue",nx:0.43,ny:0.15,number:"17",label:"Olise"},
+      {id:"m_b10",type:"blue",nx:0.48,ny:0.55,number:"42",label:"Karl"},
+      {id:"m_b11",type:"blue",nx:0.38,ny:0.66,number:"9",label:"Kane"},
+
+      {id:"ball_m",type:"ball",nx:0.635,ny:0.555}
+    ];
+    // تظليل منطقة الاختراق في نصف المساحة السفلى + أسهم التمرير
+    drawings.push(
+      {type:"polygon",points:[{nx:0.28,ny:0.58},{nx:0.58,ny:0.58},{nx:0.58,ny:0.99},{nx:0.28,ny:0.99}],color:"#92400e",width:1},
+      {type:"arrow",points:[{nx:0.62,ny:0.56},{nx:0.49,ny:0.56}],color:"#2563eb",width:3},
+      {type:"arrow",points:[{nx:0.62,ny:0.56},{nx:0.48,ny:0.79}],color:"#2563eb",width:3},
+      {type:"curved",points:[{nx:0.47,ny:0.81},{nx:0.24,ny:0.83}],cp:{nx:0.35,ny:0.84},color:"#2563eb",width:3}
+    );
+  }
+  else if(t==="dual_squares_8v8"){
     setPitchMode("full");
     setPitchTheme("dual_squares");
     pieces=[
-      // === المربع الأيسر (4 أرباع - 8v8 + 4 جوكر) ===
       {id:"l_c1",type:"joker",nx:0.08,ny:0.42,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a"},
       {id:"l_c2",type:"joker",nx:0.39,ny:0.44,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a"},
       {id:"l_c3",type:"joker",nx:0.18,ny:0.57,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a"},
       {id:"l_c4",type:"joker",nx:0.38,ny:0.78,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a"},
-      // فريق X الأزرق (شمال)
       {id:"l_x1",type:"blue",nx:0.19,ny:0.43,number:"X",label:""},
       {id:"l_x2",type:"blue",nx:0.27,ny:0.42,number:"X",label:""},
       {id:"l_x3",type:"blue",nx:0.34,ny:0.60,number:"X",label:""},
@@ -1108,7 +1154,6 @@ function loadSetPiece(t){
       {id:"l_x6",type:"blue",nx:0.32,ny:0.71,number:"X",label:""},
       {id:"l_x7",type:"blue",nx:0.17,ny:0.78,number:"X",label:""},
       {id:"l_x8",type:"blue",nx:0.29,ny:0.84,number:"X",label:""},
-      // فريق V الأحمر (شمال)
       {id:"l_v1",type:"red",nx:0.15,ny:0.48,number:"V",label:""},
       {id:"l_v2",type:"red",nx:0.32,ny:0.44,number:"V",label:""},
       {id:"l_v3",type:"red",nx:0.31,ny:0.61,number:"V",label:""},
@@ -1118,11 +1163,8 @@ function loadSetPiece(t){
       {id:"l_v7",type:"red",nx:0.36,ny:0.72,number:"V",label:""},
       {id:"l_v8",type:"red",nx:0.29,ny:0.77,number:"V",label:""},
       {id:"ball_l",type:"ball",nx:0.38,ny:0.65},
-
-      // === المربع الأيمن (نصفين - 8v8 + 2 جوكر) ===
       {id:"r_c1",type:"joker",nx:0.71,ny:0.53,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a",spotlight:true},
       {id:"r_c2",type:"joker",nx:0.80,ny:0.54,number:"C",label:"",customColor:"#eab308",numColor:"#0f172a"},
-      // فريق X الأزرق (يمين)
       {id:"r_x1",type:"blue",nx:0.70,ny:0.32,number:"X",label:""},
       {id:"r_x2",type:"blue",nx:0.77,ny:0.43,number:"X",label:""},
       {id:"r_x3",type:"blue",nx:0.87,ny:0.38,number:"X",label:""},
@@ -1131,7 +1173,6 @@ function loadSetPiece(t){
       {id:"r_x6",type:"blue",nx:0.84,ny:0.68,number:"X",label:""},
       {id:"r_x7",type:"blue",nx:0.89,ny:0.76,number:"X",label:""},
       {id:"r_x8",type:"blue",nx:0.78,ny:0.82,number:"X",label:""},
-      // فريق V الأحمر (يمين)
       {id:"r_v1",type:"red",nx:0.67,ny:0.50,number:"V",label:""},
       {id:"r_v2",type:"red",nx:0.82,ny:0.42,number:"V",label:""},
       {id:"r_v3",type:"red",nx:0.86,ny:0.50,number:"V",label:""},
@@ -1207,12 +1248,24 @@ function drawPitch(){
   const{w,h,canvasW,canvasH}=pitchRect;if(w<=0||h<=0)return;
   const th=pitchThemes[pitchTheme]||pitchThemes.green;
   ctx.fillStyle=th.outer;ctx.fillRect(0,0,canvasW,canvasH);
+
+  // إطارات لوحات الإعلانات الجانبية لملعب الـ 18 منطقة
+  if(pitchTheme==="zones_18"){
+    ctx.save();
+    ctx.fillStyle="#1e293b";
+    ctx.fillRect(4, pitchRect.y, 6, pitchRect.h);
+    ctx.fillRect(canvasW-10, pitchRect.y, 6, pitchRect.h);
+    ctx.fillStyle="#facc15";
+    ctx.fillRect(pitchRect.x, 4, pitchRect.w, 5);
+    ctx.restore();
+  }
+
   const tl=normToCanvas(0,0),tr=normToCanvas(1,0),br=normToCanvas(1,1),bl=normToCanvas(0,1);
   ctx.save();ctx.beginPath();ctx.moveTo(tl.x,tl.y);ctx.lineTo(tr.x,tr.y);ctx.lineTo(br.x,br.y);ctx.lineTo(bl.x,bl.y);ctx.closePath();
   ctx.fillStyle=th.inner;ctx.fill();ctx.clip();
 
   if(th.checkered){
-    const cols=14,rows=8;
+    const cols=pitchTheme==="zones_18"?18:14,rows=pitchTheme==="zones_18"?10:8;
     for(let r=0;r<rows;r++){
       for(let c=0;c<cols;c++){
         const pA=normToCanvas(c/cols,r/rows),pB=normToCanvas((c+1)/cols,r/rows),pC=normToCanvas((c+1)/cols,(r+1)/rows),pD=normToCanvas(c/cols,(r+1)/rows);
@@ -1251,7 +1304,6 @@ function drawPitch(){
       ctx.restore();
     }
 
-    // المربع الأيسر (مقسم 4 أرباع)
     ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 2;
     rectN(0.03, 0.13, 0.40, 0.76);
     ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineWidth = 1.6;
@@ -1263,7 +1315,6 @@ function drawPitch(){
     const lSideA = normToCanvas(0.46, 0.13), lSideB = normToCanvas(0.46, 0.89);
     drawDimLabel(lSideA.x, lSideA.y, lSideB.x, lSideB.y, "40 m");
 
-    // المربع الأيمن (مقسم نصفين)
     ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 2;
     rectN(0.54, 0.13, 0.40, 0.76);
     ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineWidth = 1.6;
@@ -1297,7 +1348,21 @@ function drawPitch(){
     arcN(0,0,cRx,cRy,0,Math.PI/2);
     arcN(0,1,cRx,cRy,-Math.PI/2,0);
 
-    if(showZones){ctx.save();ctx.strokeStyle="rgba(250,204,21,0.4)";ctx.setLineDash([5,5]);[penY,goalY,goalY+goalH,penY+penH].forEach(ny=>lineN(0,ny,1,ny));[1/3,2/3].forEach(nx=>lineN(nx,0,nx,1));ctx.restore();}
+    // رسم الشبكة التكتيكية الـ 18 منطقة تلقائياً في ثيم zones_18 أو عند تفعيل الممرات
+    if(showZones || pitchTheme==="zones_18"){
+      ctx.save();
+      ctx.strokeStyle=pitchTheme==="zones_18"?"rgba(255,255,255,0.72)":"rgba(250,204,21,0.45)";
+      ctx.lineWidth=pitchTheme==="zones_18"?1.6:1.2;
+      ctx.setLineDash([6,5]);
+      [penY,goalY,goalY+goalH,penY+penH].forEach(ny=>lineN(0,ny,1,ny));
+      if(pitchTheme==="zones_18"){
+        [0.28,0.58,0.72].forEach(nx=>lineN(nx,0,nx,1));
+      } else {
+        [1/3,2/3].forEach(nx=>lineN(nx,0,nx,1));
+      }
+      ctx.restore();
+    }
+
     if(pitchMode==="full"){
       lineN(0.5,0,0.5,1);
       rectN(1-penW,penY,penW,penH);rectN(1-goalW,goalY,goalW,goalH);
@@ -1387,9 +1452,9 @@ function drawPieces(){
       ctx.fillStyle=p.numColor||meta.numColor||(isJoker?"#0f172a":"#ffffff");
       ctx.fillText(p.number||"",pos.x,pos.y);
       if(p.label){
-        ctx.font="bold 10px Cairo,sans-serif";
-        const lw=ctx.measureText(p.label).width+8;
-        ctx.fillStyle="rgba(15,23,42,0.88)";
+        ctx.font="bold 10px Inter, Cairo, sans-serif";
+        const lw=ctx.measureText(p.label).width+10;
+        ctx.fillStyle=p.type==="blue"?"rgba(14,116,144,0.92)":(p.type==="red"?"rgba(127,29,29,0.92)":"rgba(15,23,42,0.88)");
         ctx.fillRect(pos.x-lw/2,pos.y+r+3,lw,14);
         ctx.fillStyle=p.labelColor||meta.labelColor||"#f8fafc";
         ctx.fillText(p.label,pos.x,pos.y+r+10);
