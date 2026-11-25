@@ -106,7 +106,7 @@
       <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 transition">
         <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg float-icon-1"><i class="fa-solid fa-cube"></i></div>
         <h3 class="text-base font-extrabold text-white">عرض 2D و 3D تفاعلي</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">انتقل بضغطة واحدة بين الرؤية العلوية الكلاسيكية والمنظور الثلاثي الأبعاد 3D بـ 5 ثيمات ملاعب عالمية منها ثيم Opta و Midnight الذهبي.</p>
+        <p class="text-xs text-slate-400 leading-relaxed">انتقل بضغطة واحدة بين الرؤية العلوية الكلاسيكية والمنظور الثلاثي الأبعاد 3D بـ 6 ثيمات ملاعب عالمية منها ثيم Opta وملعب الاستحواذ المربعات.</p>
       </div>
 
       <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 transition">
@@ -136,7 +136,7 @@
           <div class="text-2xl font-black text-white">الباقة المجانية (Free)</div>
           <ul class="space-y-2 text-xs text-slate-300 pt-2">
             <li>✔ جميع أدوات الرسم والتشكيلات ووضع 3D</li>
-            <li>✔ مكتبة الكرات الثابتة الجاهزة</li>
+            <li>✔ مكتبة الكرات الثابتة والاستحواذ الجاهزة</li>
             <li>✔ حفظ خطة واحدة على السحابة</li>
             <li>✔ تصدير صور عالية الجودة PNG</li>
             <li class="text-slate-500">✖ تصدير الفيديو غير متاح</li>
@@ -170,6 +170,7 @@
     جميع الحقوق محفوظة © <span class="text-amber-400 font-en font-bold">TootScouting</span> — تطوير وتصميم لمحللي الأداء في كرة القدم
   </footer>
 </div>
+
 <!-- ================= 2. شاشة تسجيل الدخول وإنشاء الحساب ================= -->
 <div id="auth-overlay" class="hidden fixed inset-0 z-[100] bg-[#070b14]/95 backdrop-blur-md flex items-center justify-center p-4">
   <div class="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4 relative">
@@ -234,6 +235,7 @@
   <div class="flex flex-wrap items-center gap-1.5">
     <select id="setpiece-select" onchange="loadSetPiece(this.value)" class="bg-amber-950/80 border border-amber-600 text-amber-300 text-[11px] font-bold px-2 py-1 rounded-lg">
       <option value="">⚡ مكتبة التكتيكات...</option>
+      <option value="possession_3teams">🟩 استحواذ 3 فرق (مربعات)</option>
       <option value="corner_att">ركنية هجومية</option>
       <option value="fk_direct">ضربة حرة</option>
       <option value="gk_buildup">بناء اللعب</option>
@@ -247,6 +249,7 @@
 
     <select id="pitch-theme-select" onchange="setPitchTheme(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] px-2 py-1 rounded-lg">
       <option value="green">أخضر</option>
+      <option value="possession_grid">تمرين استحواذ (مربعات)</option>
       <option value="classic">كلاسيك</option>
       <option value="navy">كحلي</option>
       <option value="midnight">ذهبي داكن</option>
@@ -316,6 +319,7 @@
     <div class="grid grid-cols-2 gap-1">
       <button onclick="addPiece('red')" class="bg-red-950 text-red-300 border border-red-800 py-1 rounded text-[11px]">+ لاعب 1</button>
       <button onclick="addPiece('blue')" class="bg-sky-950 text-sky-300 border border-sky-800 py-1 rounded text-[11px]">+ لاعب 2</button>
+      <button onclick="addPiece('joker')" class="col-span-2 bg-slate-100 hover:bg-white text-slate-900 font-bold border border-slate-300 py-1 rounded text-[11px]">+ جوكر (فريق 3 محايد)</button>
       <button onclick="addPiece('ball')" class="bg-slate-800 text-slate-200 border border-slate-700 py-1 rounded text-[11px]">+ كرة</button>
       <button onclick="addPiece('cone')" class="bg-amber-950 text-amber-300 border border-amber-800 py-1 rounded text-[11px]">+ قمع</button>
       <button onclick="addPiece('mannequin')" class="bg-purple-950 text-purple-300 border border-purple-800 py-1 rounded text-[11px]">+ دمية</button>
@@ -428,9 +432,18 @@
       <button onclick="requestProViaWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg">
         <i class="fa-brands fa-whatsapp text-base"></i> طلب تفعيل PRO عبر واتساب
       </button>
+      <div class="pt-3 mt-2 border-t border-slate-800 space-y-2">
+        <label class="block text-[11px] font-bold text-amber-400">لديك كود تفعيل؟ أدخله هنا لتفعيل باقة PRO فوراً:</label>
+        <div class="flex gap-1.5">
+          <input type="text" id="promo-code-input" placeholder="مثال: TOOT-MONTH-01" class="flex-1 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-1.5 text-xs text-white uppercase font-en text-center outline-none" dir="ltr">
+          <button type="button" onclick="redeemPromoCode()" id="btn-redeem-code" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-4 py-1.5 rounded-lg shrink-0">تفعيل</button>
+        </div>
+        <div id="promo-msg" class="hidden text-[11px] text-center py-1 rounded"></div>
+      </div>
     </div>
   </div>
 </div>
+
 <!-- نافذة الحفظ والتحميل السحابي (Cloud Tactics) -->
 <div id="cloud-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3">
   <div class="bg-[#111827] border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
@@ -579,25 +592,27 @@ function startSessionGuard(userId) {
   if (sessionGuardTimer) clearInterval(sessionGuardTimer);
   sessionGuardTimer = setInterval(async () => {
     if (!currentUser || !localSessionToken || isAdminUser) return;
-    const { data } = await sbClient
-      .from("profiles")
-      .select("active_session_token, is_approved")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (data && data.active_session_token && data.active_session_token !== localSessionToken) {
-      clearInterval(sessionGuardTimer);
-      await sbClient.auth.signOut();
-      currentUser = null;
-      document.getElementById("user-badge")?.classList.add("hidden");
-      document.getElementById("board-header")?.classList.add("hidden");
-      document.getElementById("board-main")?.classList.add("hidden");
-      document.getElementById("auth-overlay").classList.remove("hidden");
-      const msgBox = document.getElementById("auth-msg");
-      msgBox.textContent = "⚠️ تم تسجيل الخروج تلقائياً لفتح الحساب من جهاز أو متصفح آخر (مسموح بجهاز واحد فقط).";
-      msgBox.className = "text-[11px] text-rose-400 bg-rose-950/70 border border-rose-800 rounded-lg px-2.5 py-2 text-center leading-relaxed";
-      msgBox.classList.remove("hidden");
-    }
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?select=active_session_token,is_approved&id=eq.${userId}`,
+        { headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` } }
+      );
+      const rows = res.ok ? await res.json() : [];
+      const data = rows[0] || null;
+      if (data && data.active_session_token && data.active_session_token !== localSessionToken) {
+        clearInterval(sessionGuardTimer);
+        await sbClient.auth.signOut();
+        currentUser = null;
+        document.getElementById("user-badge")?.classList.add("hidden");
+        document.getElementById("board-header")?.classList.add("hidden");
+        document.getElementById("board-main")?.classList.add("hidden");
+        document.getElementById("auth-overlay").classList.remove("hidden");
+        const msgBox = document.getElementById("auth-msg");
+        msgBox.textContent = "⚠️ تم تسجيل الخروج تلقائياً لفتح الحساب من جهاز أو متصفح آخر (مسموح بجهاز واحد فقط).";
+        msgBox.className = "text-[11px] text-rose-400 bg-rose-950/70 border border-rose-800 rounded-lg px-2.5 py-2 text-center leading-relaxed";
+        msgBox.classList.remove("hidden");
+      }
+    } catch (e) {}
   }, 15000);
 }
 
@@ -616,6 +631,7 @@ function applyPlanRestrictionsUI() {
     upgradeBtn.textContent = "⭐ ترقية لـ PRO";
   }
 }
+
 async function showUserOnBoard(user) {
   if (!user) return;
   isAdminUser = (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -759,7 +775,11 @@ async function checkAuthSession() {
 async function logoutSession() {
   if (sessionGuardTimer) clearInterval(sessionGuardTimer);
   if (currentUser && !isAdminUser) {
-    await sbClient.from("profiles").update({ active_session_token: null }).eq("id", currentUser.id);
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentUser.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ active_session_token: null })
+    });
   }
   await sbClient.auth.signOut();
   currentUser = null;
@@ -779,6 +799,58 @@ function requestProViaWhatsApp() {
   const extra = email ? `\nالبريد الإلكتروني: ${email}` : "";
   const msg = encodeURIComponent(`أهلاً إدارة TootScouting، أرغب في الاشتراك وتفعيل باقة ProTactics 3D PRO.${extra}`);
   window.open(`https://wa.me/${WHATSAPP_ADMIN_PHONE}?text=${msg}`, "_blank");
+}
+
+async function redeemPromoCode() {
+  if (!currentUser) return showToast("يرجى تسجيل الدخول أولاً");
+  const input = document.getElementById("promo-code-input");
+  const msgEl = document.getElementById("promo-msg");
+  const btn = document.getElementById("btn-redeem-code");
+  const code = input.value.trim();
+
+  if (!code) return;
+  btn.disabled = true;
+  btn.textContent = "جاري التفعيل...";
+  msgEl.classList.add("hidden");
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/redeem_activation_code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        p_user_id: currentUser.id,
+        p_code: code
+      })
+    });
+
+    const result = await res.json();
+    if (result === "INVALID") {
+      msgEl.textContent = "❌ كود التفعيل غير صحيح، تأكد من كتابته بشكل سليم.";
+      msgEl.className = "text-[11px] text-rose-400 bg-rose-950/60 py-1.5 rounded text-center";
+      msgEl.classList.remove("hidden");
+    } else if (result === "USED") {
+      msgEl.textContent = "⚠️ هذا الكود تم استخدامه مسبقاً.";
+      msgEl.className = "text-[11px] text-amber-300 bg-amber-950/60 py-1.5 rounded text-center";
+      msgEl.classList.remove("hidden");
+    } else if (typeof result === "string" && result.startsWith("SUCCESS:")) {
+      const days = result.split(":")[1];
+      input.value = "";
+      closeUpgradeModal();
+      showToast(`🎉 تم تفعيل باقة PRO بنجاح لمدة ${days} يوماً!`);
+      await showUserOnBoard(currentUser);
+    }
+  } catch (err) {
+    msgEl.textContent = "حدث خطأ أثناء الاتصال، حاول مرة أخرى.";
+    msgEl.className = "text-[11px] text-rose-400 bg-rose-950/60 py-1.5 rounded text-center";
+    msgEl.classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "تفعيل";
+  }
 }
 
 function openCloudModal() {
@@ -840,17 +912,24 @@ async function fetchCloudTactics() {
   const listEl = document.getElementById("cloud-tactics-list");
   const limitBadge = document.getElementById("cloud-limit-badge");
   listEl.innerHTML = `<div class="text-center text-slate-500 py-4">جاري تحميل خططك...</div>`;
-  const { data, error } = await sbClient
-    .from("saved_tactics")
-    .select("id, title, created_at, data")
-    .order("created_at", { ascending: false });
 
-  cachedTacticsCount = data ? data.length : 0;
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/saved_tactics?select=id,title,created_at,data&user_id=eq.${currentUser.id}&order=created_at.desc`,
+    {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    }
+  );
+  const data = res.ok ? await res.json() : [];
+
+  cachedTacticsCount = Array.isArray(data) ? data.length : 0;
   if (limitBadge) {
     limitBadge.textContent = (userPlan === "pro" || isAdminUser) ? `${cachedTacticsCount} خطة (PRO غير محدود)` : `${cachedTacticsCount} / 1 (باقة Free)`;
   }
 
-  if (error || !data || data.length === 0) {
+  if (!Array.isArray(data) || data.length === 0) {
     listEl.innerHTML = `<div class="text-center text-slate-500 py-4">لا توجد خطط محفوظة بعد في حسابك.</div>`;
     return;
   }
@@ -882,7 +961,13 @@ async function fetchCloudTactics() {
       showToast(`تم تحميل: ${item.title}`);
     };
     row.querySelector(".del-btn").onclick = async () => {
-      await sbClient.from("saved_tactics").delete().eq("id", item.id);
+      await fetch(`${SUPABASE_URL}/rest/v1/saved_tactics?id=eq.${item.id}`, {
+        method: "DELETE",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
       fetchCloudTactics();
       showToast("تم حذف الخطة");
     };
@@ -898,7 +983,15 @@ let redLogoImg=null,blueLogoImg=null,tempRedLogo=null,tempBlueLogo=null;
 let pieces=[],drawings=[],links=[],linkSourceId=null,historyStack=[],keyframes=[],currentFrameIdx=0,isPlaying=false,isLooping=false,animRaf=null,isRecordingVideo=false;
 let draggingPiece=null,draggingControlPoint=null,dragOffset={x:0,y:0},isDrawing=false,currentDraft=null,polygonPoints=[],editingPieceId=null,pendingTextPos=null,pulsePhase=0;
 
-const pitchThemes={green:{outer:"#0d2618",inner:"#133824",lines:"rgba(255,255,255,0.68)",stripes:true,stripeColor:"rgba(255,255,255,0.03)"},classic:{outer:"#14532d",inner:"#166534",lines:"rgba(255,255,255,0.85)",stripes:true,stripeColor:"rgba(255,255,255,0.05)"},navy:{outer:"#0f172a",inner:"#122c3d",lines:"rgba(148,163,184,0.65)",stripes:false},midnight:{outer:"#09090b",inner:"#1a1a1a",lines:"rgba(212,175,55,0.65)",stripes:false},opta:{outer:"#e2e8f0",inner:"#ffffff",lines:"rgba(30,41,59,0.55)",stripes:false}};
+const pitchThemes={
+  green:{outer:"#0d2618",inner:"#133824",lines:"rgba(255,255,255,0.68)",stripes:true,stripeColor:"rgba(255,255,255,0.03)"},
+  possession_grid:{outer:"#15572c",inner:"#1f7a3f",lines:"#0f172a",checkered:true,lightTile:"#268d4b",darkTile:"#1a6d37"},
+  classic:{outer:"#14532d",inner:"#166534",lines:"rgba(255,255,255,0.85)",stripes:true,stripeColor:"rgba(255,255,255,0.05)"},
+  navy:{outer:"#0f172a",inner:"#122c3d",lines:"rgba(148,163,184,0.65)",stripes:false},
+  midnight:{outer:"#09090b",inner:"#1a1a1a",lines:"rgba(212,175,55,0.65)",stripes:false},
+  opta:{outer:"#e2e8f0",inner:"#ffffff",lines:"rgba(30,41,59,0.55)",stripes:false}
+};
+
 const formationTemplates={
   "5-4-1":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.12,num:"3",label:"LWB"},{nx:0.20,ny:0.31,num:"4",label:"LCB"},{nx:0.19,ny:0.5,num:"5",label:"CB"},{nx:0.20,ny:0.69,num:"6",label:"RCB"},{nx:0.22,ny:0.88,num:"2",label:"RWB"},{nx:0.34,ny:0.20,num:"11",label:"LM"},{nx:0.33,ny:0.41,num:"8",label:"CM"},{nx:0.33,ny:0.59,num:"14",label:"CM"},{nx:0.34,ny:0.80,num:"7",label:"RM"},{nx:0.47,ny:0.5,num:"9",label:"ST"}],
   "4-3-3":[{nx:0.06,ny:0.5,num:"1",label:"GK"},{nx:0.22,ny:0.15,num:"3",label:"LB"},{nx:0.20,ny:0.38,num:"4",label:"CB"},{nx:0.20,ny:0.62,num:"5",label:"CB"},{nx:0.22,ny:0.85,num:"2",label:"RB"},{nx:0.33,ny:0.5,num:"6",label:"DM"},{nx:0.39,ny:0.30,num:"8",label:"CM"},{nx:0.39,ny:0.70,num:"10",label:"CM"},{nx:0.46,ny:0.16,num:"11",label:"LW"},{nx:0.48,ny:0.5,num:"9",label:"ST"},{nx:0.46,ny:0.84,num:"7",label:"RW"}],
@@ -948,7 +1041,7 @@ function updateTeamBanner(){
   document.getElementById("display-red-name").textContent=redTeamMeta.name;document.getElementById("quick-red-form").value=redTeamMeta.formation;
   document.getElementById("display-blue-name").textContent=blueTeamMeta.name;document.getElementById("quick-blue-form").value=blueTeamMeta.formation;
 }
-function setPitchTheme(t){pitchTheme=t;render();}
+function setPitchTheme(t){pitchTheme=t;const sel=document.getElementById("pitch-theme-select");if(sel)sel.value=t;render();}
 function toggleTrails(){showTrails=!showTrails;document.getElementById("btn-toggle-trails").classList.toggle("active",showTrails);render();}
 function toggleLoopAnim(){isLooping=!isLooping;document.getElementById("btn-loop-anim").classList.toggle("text-emerald-400",isLooping);}
 function toggleNotesPanel(){const p=document.getElementById("notes-panel");p.classList.toggle("hidden");document.getElementById("btn-toggle-notes").classList.toggle("active",!p.classList.contains("hidden"));setTimeout(resizeCanvas,50);}
@@ -994,7 +1087,40 @@ function exportVideo(){
 
 function loadSetPiece(t){
   if(!t)return;saveHistory();drawings=[];links=[];
-  if(t==="corner_att"){setPitchMode("half");pieces=[{id:"r_gk",type:"red",nx:0.05,ny:0.5,number:"1",label:"GK"},{id:"r1",type:"red",nx:0.14,ny:0.36,number:"4",label:"Zonal"},{id:"r2",type:"red",nx:0.14,ny:0.46,number:"5",label:"Zonal"},{id:"b_taker",type:"blue",nx:0.02,ny:0.03,number:"10",label:"Taker",spotlight:true},{id:"b1",type:"blue",nx:0.23,ny:0.31,number:"4",label:"Near"},{id:"ball_1",type:"ball",nx:0.03,ny:0.04}];drawings.push({type:"curved",points:[{nx:0.03,ny:0.04},{nx:0.15,ny:0.44}],cp:{nx:0.14,ny:0.18},color:"#facc15",width:3});}
+  if(t==="possession_3teams"){
+    setPitchMode("full");
+    setPitchTheme("possession_grid");
+    pieces=[
+      // 4 مرمى صغير على زوايا مستطيل اللعب
+      {id:"mg1",type:"minigoal",nx:0.135,ny:0.20},
+      {id:"mg2",type:"minigoal",nx:0.135,ny:0.80},
+      {id:"mg3",type:"minigoal",nx:0.865,ny:0.20},
+      {id:"mg4",type:"minigoal",nx:0.865,ny:0.80},
+      // الفريق الأول (بنفسجي/أحمر) - 5 لاعبين
+      {id:"r1",type:"red",nx:0.44,ny:0.22,number:"4",label:"",customColor:"#8b5cf6"},
+      {id:"r2",type:"red",nx:0.57,ny:0.20,number:"6",label:"",customColor:"#8b5cf6"},
+      {id:"r3",type:"red",nx:0.79,ny:0.21,number:"8",label:"",customColor:"#8b5cf6"},
+      {id:"r4",type:"red",nx:0.50,ny:0.41,number:"10",label:"",customColor:"#8b5cf6"},
+      {id:"r5",type:"red",nx:0.56,ny:0.76,number:"5",label:"",customColor:"#8b5cf6"},
+      {id:"r6",type:"red",nx:0.75,ny:0.75,number:"7",label:"",customColor:"#8b5cf6"},
+      // الفريق الثاني (أخضر فسفوري/أزرق) - 5 لاعبين
+      {id:"b1",type:"blue",nx:0.63,ny:0.20,number:"11",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      {id:"b2",type:"blue",nx:0.47,ny:0.35,number:"9",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      {id:"b3",type:"blue",nx:0.79,ny:0.34,number:"3",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      {id:"b4",type:"blue",nx:0.51,ny:0.58,number:"14",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      {id:"b5",type:"blue",nx:0.75,ny:0.48,number:"2",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      {id:"b6",type:"blue",nx:0.77,ny:0.63,number:"15",label:"",customColor:"#84cc16",numColor:"#0f172a"},
+      // الفريق الثالث الجوكر (أبيض محايد - داخل الملعب وعلى الأطراف)
+      {id:"j1",type:"joker",nx:0.10,ny:0.50,number:"J1",label:"جوكر",spotlight:true},
+      {id:"j2",type:"joker",nx:0.89,ny:0.50,number:"J2",label:"جوكر"},
+      {id:"j3",type:"joker",nx:0.57,ny:0.06,number:"J3",label:"جوكر"},
+      {id:"j4",type:"joker",nx:0.64,ny:0.93,number:"J4",label:"جوكر"},
+      {id:"j5",type:"joker",nx:0.63,ny:0.52,number:"J5",label:"محور",spotlight:true},
+      // الكرة
+      {id:"ball_1",type:"ball",nx:0.60,ny:0.52}
+    ];
+  }
+  else if(t==="corner_att"){setPitchMode("half");pieces=[{id:"r_gk",type:"red",nx:0.05,ny:0.5,number:"1",label:"GK"},{id:"r1",type:"red",nx:0.14,ny:0.36,number:"4",label:"Zonal"},{id:"r2",type:"red",nx:0.14,ny:0.46,number:"5",label:"Zonal"},{id:"b_taker",type:"blue",nx:0.02,ny:0.03,number:"10",label:"Taker",spotlight:true},{id:"b1",type:"blue",nx:0.23,ny:0.31,number:"4",label:"Near"},{id:"ball_1",type:"ball",nx:0.03,ny:0.04}];drawings.push({type:"curved",points:[{nx:0.03,ny:0.04},{nx:0.15,ny:0.44}],cp:{nx:0.14,ny:0.18},color:"#facc15",width:3});}
   else if(t==="fk_direct"){setPitchMode("half");pieces=[{id:"r_gk",type:"red",nx:0.05,ny:0.56,number:"1",label:"GK"},{id:"rw1",type:"red",nx:0.25,ny:0.41,number:"4",label:"Wall"},{id:"rw2",type:"red",nx:0.25,ny:0.46,number:"5",label:"Wall"},{id:"b_fk1",type:"blue",nx:0.44,ny:0.42,number:"10",label:"Shooter",spotlight:true},{id:"ball_1",type:"ball",nx:0.41,ny:0.44}];drawings.push({type:"curved",points:[{nx:0.41,ny:0.44},{nx:0.04,ny:0.41}],cp:{nx:0.23,ny:0.28},color:"#facc15",width:3});}
   else if(t==="gk_buildup"){setPitchMode("full");pieces=[{id:"r_gk",type:"red",nx:0.05,ny:0.5,number:"1",label:"GK"},{id:"r_cb1",type:"red",nx:0.14,ny:0.32,number:"4",label:"LCB"},{id:"r_cb2",type:"red",nx:0.14,ny:0.68,number:"5",label:"RCB"},{id:"r_dm",type:"red",nx:0.24,ny:0.50,number:"6",label:"Pivot",spotlight:true},{id:"b_st",type:"blue",nx:0.22,ny:0.42,number:"9",label:"Press"},{id:"ball_1",type:"ball",nx:0.07,ny:0.5}];links=[{from:"r_cb1",to:"r_dm",color:"#facc15"},{from:"r_cb2",to:"r_dm",color:"#facc15"}];}
   else if(t==="high_press"){setPitchMode("full");pieces=[];formationTemplates["4-2-3-1"].forEach((p,i)=>pieces.push({id:"red_"+i,type:"red",nx:p.nx*0.85,ny:p.ny,number:p.num,label:p.label}));formationTemplates["4-3-3"].forEach((p,i)=>pieces.push({id:"blue_"+i,type:"blue",nx:1-p.nx*1.45,ny:p.ny,number:p.num,label:p.label,spotlight:p.num==="9"}));pieces.push({id:"ball_1",type:"ball",nx:0.18,ny:0.38});}
@@ -1027,33 +1153,61 @@ function drawPitch(){
   const tl=normToCanvas(0,0),tr=normToCanvas(1,0),br=normToCanvas(1,1),bl=normToCanvas(0,1);
   ctx.save();ctx.beginPath();ctx.moveTo(tl.x,tl.y);ctx.lineTo(tr.x,tr.y);ctx.lineTo(br.x,br.y);ctx.lineTo(bl.x,bl.y);ctx.closePath();
   ctx.fillStyle=th.inner;ctx.fill();ctx.clip();
-  if(th.stripes){const s=pitchMode==="full"?14:8;for(let i=0;i<s;i+=2){const pA=normToCanvas(i/s,0),pB=normToCanvas((i+1)/s,0),pC=normToCanvas((i+1)/s,1),pD=normToCanvas(i/s,1);ctx.fillStyle=th.stripeColor;ctx.beginPath();ctx.moveTo(pA.x,pA.y);ctx.lineTo(pB.x,pB.y);ctx.lineTo(pC.x,pC.y);ctx.lineTo(pD.x,pD.y);ctx.closePath();ctx.fill();}}
+
+  if(th.checkered){
+    const cols=14,rows=8;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const pA=normToCanvas(c/cols,r/rows),pB=normToCanvas((c+1)/cols,r/rows),pC=normToCanvas((c+1)/cols,(r+1)/rows),pD=normToCanvas(c/cols,(r+1)/rows);
+        ctx.fillStyle=((r+c)%2===0)?th.lightTile:th.darkTile;
+        ctx.beginPath();ctx.moveTo(pA.x,pA.y);ctx.lineTo(pB.x,pB.y);ctx.lineTo(pC.x,pC.y);ctx.lineTo(pD.x,pD.y);ctx.closePath();ctx.fill();
+      }
+    }
+  } else if(th.stripes){
+    const s=pitchMode==="full"?14:8;
+    for(let i=0;i<s;i+=2){const pA=normToCanvas(i/s,0),pB=normToCanvas((i+1)/s,0),pC=normToCanvas((i+1)/s,1),pD=normToCanvas(i/s,1);ctx.fillStyle=th.stripeColor;ctx.beginPath();ctx.moveTo(pA.x,pA.y);ctx.lineTo(pB.x,pB.y);ctx.lineTo(pC.x,pC.y);ctx.lineTo(pD.x,pD.y);ctx.closePath();ctx.fill();}
+  }
   ctx.restore();
+
   function lineN(nx1,ny1,nx2,ny2){const a=normToCanvas(nx1,ny1),b=normToCanvas(nx2,ny2);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
   function rectN(nx,ny,nw,nh){const a=normToCanvas(nx,ny),b=normToCanvas(nx+nw,ny),c=normToCanvas(nx+nw,ny+nh),d=normToCanvas(nx,ny+nh);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.stroke();}
   function arcN(cxN,cyN,rxN,ryN,sAng,eAng){ctx.beginPath();for(let i=0;i<=28;i++){const ang=sAng+(eAng-sAng)*(i/28);const pt=normToCanvas(cxN+Math.cos(ang)*rxN,cyN+Math.sin(ang)*ryN);if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y);}ctx.stroke();}
   function spotN(nx,ny){const pt=normToCanvas(nx,ny);ctx.beginPath();ctx.arc(pt.x,pt.y,3,0,Math.PI*2);ctx.fillStyle=th.lines;ctx.fill();}
 
-  ctx.strokeStyle=th.lines;ctx.lineWidth=2;rectN(0,0,1,1);
-  const len=pitchMode==="full"?105:52.5,penW=16.5/len,penH=40.32/68,penY=(1-penH)/2,goalW=5.5/len,goalH=18.32/68,goalY=(1-goalH)/2;
-  const spotX=11/len,arcRx=9.15/len,arcRy=9.15/68,theta=Math.acos(5.5/9.15),cRx=1.2/len,cRy=1.2/68;
+  if(pitchTheme==="possession_grid"){
+    // تصميم ملعب الاستحواذ: حدود بيضاء خفيفة + مستطيل اللعب بالخط الأسود المتصل + مناطق الجوكر بالخط الأسود المتقطع
+    ctx.save();
+    ctx.strokeStyle="rgba(255,255,255,0.65)";ctx.lineWidth=2;rectN(0,0,1,1);
+    ctx.strokeStyle="#0f172a";ctx.lineWidth=2.4;
+    rectN(0.14,0.12,0.72,0.76); // منطقة اللعب الرئيسية
+    ctx.setLineDash([6,5]);ctx.lineWidth=2;
+    rectN(0.14,0.01,0.72,0.11); // قناة الجوكر العلوية
+    rectN(0.14,0.88,0.72,0.11); // قناة الجوكر السفلية
+    rectN(0.06,0.24,0.08,0.52); // قناة الجوكر اليسرى
+    rectN(0.86,0.24,0.08,0.52); // قناة الجوكر اليمنى
+    ctx.restore();
+  } else {
+    ctx.strokeStyle=th.lines;ctx.lineWidth=2;rectN(0,0,1,1);
+    const len=pitchMode==="full"?105:52.5,penW=16.5/len,penH=40.32/68,penY=(1-penH)/2,goalW=5.5/len,goalH=18.32/68,goalY=(1-goalH)/2;
+    const spotX=11/len,arcRx=9.15/len,arcRy=9.15/68,theta=Math.acos(5.5/9.15),cRx=1.2/len,cRy=1.2/68;
 
-  rectN(0,penY,penW,penH);rectN(0,goalY,goalW,goalH);
-  arcN(spotX,0.5,arcRx,arcRy,-theta,theta);
-  spotN(spotX,0.5);
-  arcN(0,0,cRx,cRy,0,Math.PI/2);
-  arcN(0,1,cRx,cRy,-Math.PI/2,0);
+    rectN(0,penY,penW,penH);rectN(0,goalY,goalW,goalH);
+    arcN(spotX,0.5,arcRx,arcRy,-theta,theta);
+    spotN(spotX,0.5);
+    arcN(0,0,cRx,cRy,0,Math.PI/2);
+    arcN(0,1,cRx,cRy,-Math.PI/2,0);
 
-  if(showZones){ctx.save();ctx.strokeStyle="rgba(250,204,21,0.4)";ctx.setLineDash([5,5]);[penY,goalY,goalY+goalH,penY+penH].forEach(ny=>lineN(0,ny,1,ny));[1/3,2/3].forEach(nx=>lineN(nx,0,nx,1));ctx.restore();}
-  if(pitchMode==="full"){
-    lineN(0.5,0,0.5,1);
-    rectN(1-penW,penY,penW,penH);rectN(1-goalW,goalY,goalW,goalH);
-    arcN(0.5,0.5,arcRx,arcRy,0,Math.PI*2);
-    spotN(0.5,0.5);
-    arcN(1-spotX,0.5,arcRx,arcRy,Math.PI-theta,Math.PI+theta);
-    spotN(1-spotX,0.5);
-    arcN(1,0,cRx,cRy,Math.PI/2,Math.PI);
-    arcN(1,1,cRx,cRy,Math.PI,Math.PI*1.5);
+    if(showZones){ctx.save();ctx.strokeStyle="rgba(250,204,21,0.4)";ctx.setLineDash([5,5]);[penY,goalY,goalY+goalH,penY+penH].forEach(ny=>lineN(0,ny,1,ny));[1/3,2/3].forEach(nx=>lineN(nx,0,nx,1));ctx.restore();}
+    if(pitchMode==="full"){
+      lineN(0.5,0,0.5,1);
+      rectN(1-penW,penY,penW,penH);rectN(1-goalW,goalY,goalW,goalH);
+      arcN(0.5,0.5,arcRx,arcRy,0,Math.PI*2);
+      spotN(0.5,0.5);
+      arcN(1-spotX,0.5,arcRx,arcRy,Math.PI-theta,Math.PI+theta);
+      spotN(1-spotX,0.5);
+      arcN(1,0,cRx,cRy,Math.PI/2,Math.PI);
+      arcN(1,1,cRx,cRy,Math.PI,Math.PI*1.5);
+    }
   }
   if(showOffside){ctx.save();ctx.strokeStyle="#f43f5e";ctx.setLineDash([7,5]);lineN(offsideNx,0,offsideNx,1);ctx.restore();}
 
@@ -1121,15 +1275,16 @@ function drawPieces(){
   const baseR=Math.max(14,Math.min(18,pitchRect.w*0.021)),pulseExpand=Math.sin(pulsePhase)*4.5,pulseAlpha=0.22+Math.abs(Math.sin(pulsePhase))*0.22;
   pieces.forEach(p=>{
     const pos=normToCanvas(p.nx,p.ny),r=baseR*(pos.scale||1);ctx.save();
-    if(p.type==="red"||p.type==="blue"){
+    if(p.type==="red"||p.type==="blue"||p.type==="joker"){
       if(p.spotlight||p.id===linkSourceId){ctx.beginPath();ctx.arc(pos.x,pos.y,r+8+pulseExpand,0,Math.PI*2);ctx.fillStyle=`rgba(250,204,21,${pulseAlpha.toFixed(2)})`;ctx.fill();ctx.strokeStyle="#facc15";ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);}
-      const meta=p.type==="red"?redTeamMeta:blueTeamMeta;
+      const isJoker = p.type==="joker";
+      const meta = p.type==="red" ? redTeamMeta : (p.type==="blue" ? blueTeamMeta : {primary:"#ffffff",secondary:"#0f172a",pattern:"solid",numColor:"#0f172a",labelColor:"#f8fafc"});
       ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.clip();ctx.fillStyle=p.customColor||meta.primary;ctx.fillRect(pos.x-r,pos.y-r,r*2,r*2);
-      if(!p.customColor&&meta.pattern==="striped"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x-r*0.48,pos.y-r,r*0.32,r*2);ctx.fillRect(pos.x+r*0.16,pos.y-r,r*0.32,r*2);}
-      else if(!p.customColor&&meta.pattern==="halves"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x,pos.y-r,r,r*2);}
-      ctx.restore();ctx.save();ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.strokeStyle=pitchTheme==="opta"?"#0f172a":"#fff";ctx.lineWidth=2;ctx.stroke();
+      if(!isJoker&&!p.customColor&&meta.pattern==="striped"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x-r*0.48,pos.y-r,r*0.32,r*2);ctx.fillRect(pos.x+r*0.16,pos.y-r,r*0.32,r*2);}
+      else if(!isJoker&&!p.customColor&&meta.pattern==="halves"){ctx.fillStyle=meta.secondary;ctx.fillRect(pos.x,pos.y-r,r,r*2);}
+      ctx.restore();ctx.save();ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.strokeStyle=(isJoker||pitchTheme==="opta")?"#0f172a":"#fff";ctx.lineWidth=2;ctx.stroke();
       ctx.font=`bold ${r*0.72}px Inter,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillStyle=p.numColor||meta.numColor||"#ffffff";
+      ctx.fillStyle=p.numColor||meta.numColor||(isJoker?"#0f172a":"#ffffff");
       ctx.fillText(p.number||"",pos.x,pos.y);
       if(p.label){
         ctx.font="bold 10px Cairo,sans-serif";
@@ -1142,7 +1297,7 @@ function drawPieces(){
     }else if(p.type==="ball"){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(pos.x,pos.y,r*0.62,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#0f172a";ctx.lineWidth=2;ctx.stroke();}
     else if(p.type==="cone"){const cr=r*0.65;ctx.fillStyle="#f97316";ctx.beginPath();ctx.moveTo(pos.x,pos.y-cr);ctx.lineTo(pos.x+cr,pos.y+cr*0.8);ctx.lineTo(pos.x-cr,pos.y+cr*0.8);ctx.closePath();ctx.fill();}
     else if(p.type==="mannequin"){ctx.fillStyle="#a855f7";ctx.fillRect(pos.x-r*0.36,pos.y-r*0.5,r*0.72,r*1.1);}
-    else if(p.type==="minigoal"){ctx.strokeStyle="#10b981";ctx.lineWidth=2.5;ctx.strokeRect(pos.x-r*0.5,pos.y-r*1.1,r,r*2.2);}
+    else if(p.type==="minigoal"){ctx.fillStyle="rgba(255,255,255,0.28)";ctx.fillRect(pos.x-r*0.45,pos.y-r*0.95,r*0.9,r*1.9);ctx.strokeStyle=pitchTheme==="possession_grid"?"#0f172a":"#10b981";ctx.lineWidth=2.5;ctx.strokeRect(pos.x-r*0.45,pos.y-r*0.95,r*0.9,r*1.9);}
     else if(p.type==="hurdle"){ctx.strokeStyle="#38bdf8";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(pos.x-r*0.8,pos.y);ctx.lineTo(pos.x+r*0.8,pos.y);ctx.stroke();}
     else if(p.type==="ladder"){ctx.strokeStyle="#facc15";ctx.lineWidth=2;ctx.strokeRect(pos.x-r*0.4,pos.y-r,r*0.8,r*2);}
     ctx.restore();
@@ -1157,7 +1312,7 @@ canvas.addEventListener("mousedown",e=>{
   const pos=getPointerPos(e),norm=canvasToNorm(pos.x,pos.y);
   if(showOffside&&Math.abs(pos.x-normToCanvas(offsideNx,0.5).x)<14){draggingOffside=true;return;}
   if(currentTool==="link"){const hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit){if(!linkSourceId)linkSourceId=hit.id;else if(linkSourceId!==hit.id){saveHistory();const idx=links.findIndex(l=>(l.from===linkSourceId&&l.to===hit.id)||(l.from===hit.id&&l.to===linkSourceId));if(idx>=0)links.splice(idx,1);else links.push({from:linkSourceId,to:hit.id,color:currentColor});linkSourceId=null;syncCurrentFrame();}render();}return;}
-  if(currentTool==="spotlight"){const hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit&&(hit.type==="red"||hit.type==="blue")){saveHistory();hit.spotlight=!hit.spotlight;syncCurrentFrame();render();}return;}
+  if(currentTool==="spotlight"){const hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});if(hit&&(hit.type==="red"||hit.type==="blue"||hit.type==="joker")){saveHistory();hit.spotlight=!hit.spotlight;syncCurrentFrame();render();}return;}
   if(currentTool==="select"){
     const hitCurve=[...drawings].reverse().find(d=>{if(d.type!=="arrow"&&d.type!=="pass"&&d.type!=="curved")return false;const cp=normToCanvas(getCurveControlPoint(d).nx,getCurveControlPoint(d).ny);return Math.hypot(pos.x-cp.x,pos.y-cp.y)<=12;});
     if(hitCurve){saveHistory();draggingControlPoint=hitCurve;return;}
@@ -1173,7 +1328,7 @@ canvas.addEventListener("dblclick",e=>{
   const pos=getPointerPos(e),hit=[...pieces].reverse().find(p=>{const c=normToCanvas(p.nx,p.ny);return Math.hypot(pos.x-c.x,pos.y-c.y)<=22;});
   if(hit){
     editingPieceId=hit.id;
-    const m=hit.type==="red"?redTeamMeta:blueTeamMeta;
+    const m=hit.type==="red"?redTeamMeta:(hit.type==="blue"?blueTeamMeta:{numColor:"#0f172a",labelColor:"#f8fafc"});
     document.getElementById("edit-number").value=hit.number||"";
     document.getElementById("edit-label").value=hit.label||"";
     document.getElementById("edit-use-custom-color").checked=!!hit.customColor;
@@ -1185,8 +1340,8 @@ canvas.addEventListener("dblclick",e=>{
   }
 });
 
-function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,keyframes})],{type:"application/json"}));a.download=`TootScouting_Tactic_${Date.now()}.json`;a.click();}
-function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.redTeamMeta)redTeamMeta=d.redTeamMeta;if(d.blueTeamMeta)blueTeamMeta=d.blueTeamMeta;if(d.keyframes?.length){keyframes=d.keyframes;selectKeyframe(0);}updateTeamBanner();renderFramesBar();resizeCanvas();}catch{}};r.readAsText(f);}
+function exportJSON(){syncCurrentFrame();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({redTeamMeta,blueTeamMeta,pitchMode,pitchTheme,keyframes})],{type:"application/json"}));a.download=`TootScouting_Tactic_${Date.now()}.json`;a.click();}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.redTeamMeta)redTeamMeta=d.redTeamMeta;if(d.blueTeamMeta)blueTeamMeta=d.blueTeamMeta;if(d.pitchTheme)setPitchTheme(d.pitchTheme);if(d.keyframes?.length){keyframes=d.keyframes;selectKeyframe(0);}updateTeamBanner();renderFramesBar();resizeCanvas();}catch{}};r.readAsText(f);}
 function setTool(t){currentTool=t;linkSourceId=null;document.querySelectorAll(".tool-btn").forEach(b=>b.classList.remove("active"));document.getElementById("tool-"+t)?.classList.add("active");render();}
 function setColor(hex){currentColor=hex;document.querySelectorAll(".color-btn").forEach(b=>b.classList.toggle("ring-2",b.dataset.color===hex));}
 function setPitchMode(m){pitchMode=m;document.querySelectorAll(".pitch-mode-btn").forEach(b=>b.classList.remove("bg-slate-700","text-white"));document.getElementById("btn-pitch-"+m).classList.add("bg-slate-700","text-white");resizeCanvas();}
@@ -1197,7 +1352,16 @@ function saveHistory(){historyStack.push({pieces:JSON.parse(JSON.stringify(piece
 function undoAction(){if(!historyStack.length)return;const prev=historyStack.pop();pieces=prev.pieces;drawings=prev.drawings;links=prev.links||[];syncCurrentFrame();render();}
 function clearDrawings(){saveHistory();drawings=[];links=[];polygonPoints=[];syncCurrentFrame();render();}
 function resetBoard(){saveHistory();drawings=[];links=[];initDefaultPieces();render();}
-function addPiece(type){saveHistory();const m=type==="red"?redTeamMeta:blueTeamMeta;pieces.push({id:type+Date.now(),type,nx:0.5,ny:0.5,number:type==="red"||type==="blue"?"12":"",label:"",spotlight:false,numColor:m?.numColor||"#ffffff",labelColor:m?.labelColor||"#f8fafc"});syncCurrentFrame();render();}
+function addPiece(type){
+  saveHistory();
+  if(type==="joker"){
+    pieces.push({id:"joker"+Date.now(),type:"joker",nx:0.5,ny:0.5,number:"J",label:"جوكر",spotlight:false,numColor:"#0f172a",labelColor:"#f8fafc"});
+  } else {
+    const m=type==="red"?redTeamMeta:blueTeamMeta;
+    pieces.push({id:type+Date.now(),type,nx:0.5,ny:0.5,number:type==="red"||type==="blue"?"12":"",label:"",spotlight:false,numColor:m?.numColor||"#ffffff",labelColor:m?.labelColor||"#f8fafc"});
+  }
+  syncCurrentFrame();render();
+}
 function finishPolygon(){if(polygonPoints.length>=3){saveHistory();drawings.push({type:"polygon",points:[...polygonPoints],color:currentColor,width:currentStrokeWidth});syncCurrentFrame();}cancelPolygon();}
 function cancelPolygon(){polygonPoints=[];document.getElementById("polygon-controls").classList.add("hidden");render();}
 function closeTextModal(){document.getElementById("text-modal").classList.add("hidden");}
@@ -1287,38 +1451,10 @@ window.addEventListener("resize",resizeCanvas);
 initDefaultPieces();
 render();
 setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
-</script>
-</body>
-</html>
 
-
-<script>
-(function silentProUpgrades() {
-  // حذف أي شريط عائم قديم تماماً
-  ["clean-pro-bottom-bar", "pro-tactics-master-dock", "custom-equip-dock", "player-size-control-box", "btn-export-1080p-global", "btn-top3d-cam"].forEach(id => {
-    document.querySelectorAll("#" + id).forEach(el => el.remove());
-  });
-
-  // رفع جودة تسجيل MediaRecorder تلقائياً إلى 12 Mbps (Full HD) عند استخدام زرار "فيديو" الأصلي في الموقع
-  if (typeof MediaRecorder !== "undefined") {
-    const OrigMediaRecorder = window.MediaRecorder;
-    window.MediaRecorder = function (stream, options) {
-      const upgradedOptions = Object.assign({}, options || {}, {
-        videoBitsPerSecond: 12000000
-      });
-      return new OrigMediaRecorder(stream, upgradedOptions);
-    };
-    window.MediaRecorder.prototype = OrigMediaRecorder.prototype;
-    window.MediaRecorder.isTypeSupported = OrigMediaRecorder.isTypeSupported.bind(OrigMediaRecorder);
-  }
-})();
-</script>
-
-<script>
 (function initSidebarPlayerSizeAndHD() {
   window.__globalPlayerRadius = window.__globalPlayerRadius || 16;
 
-  // 1. رفع جودة تصدير الفيديو تلقائياً في الخلفية عند الضغط على زرار "فيديو"
   if (typeof MediaRecorder !== "undefined") {
     const OrigMediaRecorder = window.MediaRecorder;
     window.MediaRecorder = function (stream, options) {
@@ -1331,7 +1467,6 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
     window.MediaRecorder.isTypeSupported = OrigMediaRecorder.isTypeSupported.bind(OrigMediaRecorder);
   }
 
-  // 2. تعديل حجم اللاعبين وأرقامهم على السبورة
   const origArc = CanvasRenderingContext2D.prototype.arc;
   CanvasRenderingContext2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
     let finalRadius = radius;
@@ -1367,7 +1502,6 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
   function redrawBoardSafely() {
     try {
       if (typeof render === "function") render();
-      if (typeof tsDraw === "function") tsDraw();
     } catch (e) {}
   }
 
@@ -1385,10 +1519,8 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
     redrawBoardSafely();
   };
 
-  // 3. دمج أزرار حجم اللاعب جوه القائمة الجانبية اليمنى تحت "سلم سرعة / حاجز قفز"
   function injectInsideRightSidebar() {
     if (document.getElementById("sidebar-player-size-box")) return;
-
     const allButtons = Array.from(document.querySelectorAll("button"));
     const targetBtn = allButtons.find(b => b.textContent && (b.textContent.includes("سلم سرعة") || b.textContent.includes("حاجز قفز")));
 
@@ -1423,6 +1555,7 @@ setTimeout(()=>{resizeCanvas();syncIframeHeight();},150);
     injectInsideRightSidebar();
   }
   setTimeout(injectInsideRightSidebar, 500);
-  setTimeout(injectInsideRightSidebar, 1500);
 })();
 </script>
+</body>
+</html>
